@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.importWizards">
+      <wizard
+            category="category.jgralab"
+            class="de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.Ecore2TgWizard"
+            id="ecore2tg.Ecore2TgWizard"
+            name="Ecore2Tg">
+      </wizard>
+      <category
+            id="category.jgralab"
+            name="JGraLab">
+      </category>
+      <wizard
+            category="category.jgralab"
+            class="de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.Tg2EcoreWizard"
+            id="ecore2tg.Tg2EcoreWizard"
+            name="Tg2Ecore">
+      </wizard>
+   </extension>
+
+</plugin>

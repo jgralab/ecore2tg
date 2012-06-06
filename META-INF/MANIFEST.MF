@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Ecore2Tg
+Bundle-SymbolicName: ecore2tg;singleton:=true
+Bundle-Version: 0.0.1
+Bundle-Activator: de.uni_koblenz.jgralab.utilities.ecore2tg.plugin.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.emf.ecore;bundle-version="2.7.0",
+ org.eclipse.emf.ecore.xmi;bundle-version="2.7.0",
+ de.uni_koblenz.jgralab;bundle-version="6.2.4"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
