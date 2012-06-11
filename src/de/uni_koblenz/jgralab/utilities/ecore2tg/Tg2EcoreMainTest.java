@@ -23,8 +23,9 @@ public class Tg2EcoreMainTest {
 	public static void jamoppTest(String root, String modelfile)
 			throws GraphIOException, IOException {
 		Ecore2Tg ec2tg = new Ecore2Tg(root + ".ecore");
-		ec2tg.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
-		ec2tg.setConvertBigNumbers(true);
+		ec2tg.getConfiguration().setTransformationOption(
+				Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		ec2tg.getConfiguration().setConvertBigNumbers(true);
 		ec2tg.transform("emftext.JamoppJavaModel");
 		SchemaGraph sg = ec2tg.getSchemaGraph();
 		SchemaGraph2Schema sg2s = new SchemaGraph2Schema();
@@ -52,7 +53,8 @@ public class Tg2EcoreMainTest {
 		String file_java_modisco = root + ".ecore";
 
 		Ecore2Tg ec2tg = new Ecore2Tg(file_java_modisco);
-		ec2tg.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		ec2tg.getConfiguration().setTransformationOption(
+				Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
 		ec2tg.transform("org.modisco.ModiscoJavaModel");
 		SchemaGraph sg = ec2tg.getSchemaGraph();
 		SchemaGraph2Schema sg2s = new SchemaGraph2Schema();

@@ -1,5 +1,6 @@
 package de.uni_koblenz.jgralab.utilities.ecore2tg;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -2939,7 +2940,7 @@ public class Tg2Ecore {
 	 *            to save place
 	 */
 	public void saveEcoreModel(ArrayList<EObject> eobs, String path) {
-		if (path.contains(".")) {
+		if (path.substring(path.lastIndexOf(File.separator)).contains(".")) {
 			this.saveEcoreModel(eobs, path, false);
 		} else {
 			this.saveEcoreModel(eobs, path, true);

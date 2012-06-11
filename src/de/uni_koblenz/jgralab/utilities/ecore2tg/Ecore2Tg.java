@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 
 import org.apache.commons.cli.CommandLine;
@@ -33,14 +32,12 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.pcollections.ArrayPSet;
 import org.pcollections.ArrayPVector;
 import org.pcollections.PCollection;
 import org.pcollections.PVector;
-import org.riediger.plist.PList;
-import org.riediger.plist.PListDict;
-import org.riediger.plist.PListException;
 
 import de.uni_koblenz.ist.utilities.option_handler.OptionHandler;
 import de.uni_koblenz.jgralab.AttributedElement;
@@ -135,32 +132,34 @@ public class Ecore2Tg {
 		// Getting name of config file
 		String configfile = cli.getOptionValue(OPTION_FILENAME_CONFIG);
 		if (configfile != null) {
-			ecore2tg.fillWithConfigurationsFromFile(configfile);
+			Ecore2TgConfiguration conf = Ecore2TgConfiguration
+					.loadConfigurationFromFile(configfile);
+			ecore2tg.setConfiguration(conf);
 		}
 
 		// Getting name of graphclass if an eclass is set
 		String graphclassname = cli.getOptionValue(OPTION_IS_GRAPHCLASS);
 		if (graphclassname != null) {
-			ecore2tg.setAsGraphClass(graphclassname);
+			ecore2tg.getConfiguration().setAsGraphClass(graphclassname);
 		}
 
 		// Getting name of graphclass
 		String graphclassn = cli.getOptionValue(OPTION_GRAPHCLASS_NAME);
 		if (graphclassn != null) {
-			ecore2tg.setGraphclassName(graphclassn);
+			ecore2tg.getConfiguration().setGraphclassName(graphclassn);
 		}
 
 		// Getting names of EdgeClasses
 		String[] edgenames = cli.getOptionValues(OPTION_EDGE_CLASS_NAME);
 		if (edgenames != null) {
 			for (int i = 0; i < edgenames.length; i += 2) {
-				ecore2tg.getNamesOfEdgeClassesMap().put(edgenames[i],
-						edgenames[i + 1]);
+				ecore2tg.getConfiguration().getNamesOfEdgeClassesMap()
+						.put(edgenames[i], edgenames[i + 1]);
 			}
 		}
 
 		if (cli.hasOption(OPTION_GENERATE_ROLE_NAME)) {
-			ecore2tg.setGenerateRoleNames(true);
+			ecore2tg.getConfiguration().setGenerateRoleNames(true);
 		}
 		/*
 		 * String rootp = cli.getOptionValue(OPTION_ROOT_PACKAGE); if (rootp !=
@@ -171,7 +170,7 @@ public class Ecore2Tg {
 		String aggVal = cli.getOptionValue(OPTION_AGGREGATION_INFLUENCE);
 		if (aggVal != null) {
 			int i = Integer.parseInt(aggVal);
-			ecore2tg.setAggregationInfluenceOnDirection(i);
+			ecore2tg.getConfiguration().setAggregationInfluenceOnDirection(i);
 		}
 
 		// Directions of EdgeClasses
@@ -190,7 +189,8 @@ public class Ecore2Tg {
 									+ directOfEC[i] + ".");
 					continue;
 				}
-				ecore2tg.getDirectionMap().put(directOfEC[i], direction);
+				ecore2tg.getConfiguration().getDirectionMap()
+						.put(directOfEC[i], direction);
 			}
 		}
 
@@ -198,7 +198,7 @@ public class Ecore2Tg {
 		String[] edgeCs = cli.getOptionValues(OPTION_IS_EDGECLASS);
 		if (edgeCs != null) {
 			for (String e : edgeCs) {
-				ecore2tg.getEdgeClassesList().add(e);
+				ecore2tg.getConfiguration().getEdgeClassesList().add(e);
 			}
 		}
 
@@ -206,8 +206,9 @@ public class Ecore2Tg {
 		String[] packs = cli.getOptionValues(OPTION_PACKAGE_OF_EDGE_CLASS);
 		if (packs != null) {
 			for (int i = 0; i < packs.length; i += 2) {
-				ecore2tg.getDefinedPackagesOfEdgeClassesMap().put(packs[i],
-						packs[i + 1]);
+				ecore2tg.getConfiguration()
+						.getDefinedPackagesOfEdgeClassesMap()
+						.put(packs[i], packs[i + 1]);
 			}
 		}
 
@@ -215,8 +216,8 @@ public class Ecore2Tg {
 		String[] over = cli.getOptionValues(OPTION_OVERWRITES);
 		if (over != null) {
 			for (int i = 0; i < over.length; i += 2) {
-				ecore2tg.getPairsOfOverwritingEReferences().put(over[i],
-						over[i + 1]);
+				ecore2tg.getConfiguration().getPairsOfOverwritingEReferences()
+						.put(over[i], over[i + 1]);
 			}
 		}
 
@@ -229,10 +230,11 @@ public class Ecore2Tg {
 		} else {
 			para = TransformParams.JUST_LIKE_ECORE;
 		}
-		ecore2tg.setTransformationOption(para);
+		ecore2tg.getConfiguration().setTransformationOption(para);
 
 		// Should we try to convert EBigInteger/EBigDecimal to Long/Double?
-		ecore2tg.setConvertBigNumbers(cli.hasOption(OPTION_CONVERT_BIG_NUMBERS));
+		ecore2tg.getConfiguration().setConvertBigNumbers(
+				cli.hasOption(OPTION_CONVERT_BIG_NUMBERS));
 
 		// Take Schemaname
 		String schemNa = cli.getOptionValue(OPTION_SCHEMA_NAME);
@@ -649,6 +651,8 @@ public class Ecore2Tg {
 	 * */
 	private RecordDomain dateDomain = null;
 
+	private String schemaName;
+
 	// --------------------------------------------------------------------------
 	// --------------------------------------------------------------------------
 	// -------Constants----------------------------------------------------------
@@ -689,245 +693,6 @@ public class Ecore2Tg {
 	 * */
 	public static final int TO = 1;
 
-	// --------------------------------------------------------------------------
-	// --------------------------------------------------------------------------
-	// -------User Options------------------------------------------------------
-	// --------------------------------------------------------------------------
-	// --------------------------------------------------------------------------
-
-	/**
-	 * This map includes qualified names of EReferences and maps them to a
-	 * direction value {@link TO} or {@link FROM}
-	 * */
-	private final HashMap<String, Integer> referencesWithDirections;
-
-	/**
-	 * This map includes qualified names of an EReference or an EClass that
-	 * should become EdgeClass and maps them to a user chosen name
-	 * */
-	private final HashMap<String, String> edgeNames;
-
-	/**
-	 * Defines whether missing role names should become generated
-	 */
-	private boolean generateRoleNames = false;
-
-	/**
-	 * Determines if EBigInterger/EBigDecimal attributes should be transformed
-	 * to Long/Double. If there are really values in the model that don't fit,
-	 * an exception will be thrown when transforming the model.
-	 */
-	private boolean convertBigNumbers = false;
-
-	/**
-	 * This map includes qualified names of an EReference or an EClass that
-	 * should become EdgeClass and maps them to the qualified name of the
-	 * Package, the user wants the resulting EdgeClass to place
-	 * */
-	private final HashMap<String, String> reference2packagenameMap;
-
-	/**
-	 * This map includes qualified names of EReferences and maps them to the
-	 * qualified names of that EReferences that are overwritten by the Key
-	 * EReferences ones
-	 * */
-	private final HashMap<String, String> erefs2overwritteneref;
-
-	/**
-	 * Defines if the aggregation value has influence on the direction of the
-	 * resulting EdgeClass Possible values are
-	 * {@link NO_DIRECTION_FROM_AGGREGATION} {@link DIRECTION_WHOLE_TO_PART} or
-	 * {@link DIRECTION_PART_TO_WHOLE}
-	 * */
-	private int aggregationInfluenceOnDirection = NO_DIRECTION_FROM_AGGREGATION;
-
-	/**
-	 * Saves name of user defined GraphClass if there is one
-	 * */
-	private String nameOfEClassThatIsGraphClass = "";
-
-	/**
-	 * User determined Name of GraphClass, should be set if no EClass is chosen
-	 * to become the GraphClass
-	 */
-	private String graphclassName;
-
-	/**
-	 * Name of the Schema
-	 */
-	private String schemaName = "";
-
-	/**
-	 * List of qualified names of EClasses that the user wants to become
-	 * EdgeClasses
-	 * */
-	private final ArrayList<String> eclassesThatAreEdgeClasses;
-
-	private TransformParams transopt = TransformParams.AUTOMATIC_TRANSFORMATION;
-
-	// --------------------------------------------------------------------------
-	// --------------------------------------------------------------------------
-	// -------Getter/Setter for user influence----------------------------------
-	// --------------------------------------------------------------------------
-	// --------------------------------------------------------------------------
-
-	/**
-	 * @return name of the GraphClass
-	 */
-	public String getGraphclassName() {
-		return this.graphclassName;
-	}
-
-	/**
-	 * Sets the name which the resulting GraphClass should have
-	 * 
-	 * @param graphclassName
-	 */
-	public void setGraphclassName(String graphclassName) {
-		this.graphclassName = graphclassName;
-	}
-
-	/**
-	 * @return the convertBigNumbers
-	 */
-	public boolean isConvertBigNumbers() {
-		return this.convertBigNumbers;
-	}
-
-	/**
-	 * Convert EBigInteger/EBigDecimal to Long/Double, if
-	 * <code>convertBigNumbers</code> is true.
-	 * 
-	 * @param convertBigNumbers
-	 *            the convertBigNumbers to set
-	 */
-	public void setConvertBigNumbers(boolean convertBigNumbers) {
-		this.convertBigNumbers = convertBigNumbers;
-	}
-
-	/**
-	 * Returns a list with the qualified names of all EClasses that should
-	 * become EdgeClasses
-	 * 
-	 * @return ArrayList with qualified names of EClasses that are conceptual
-	 *         EdgeClasses
-	 * */
-	public ArrayList<String> getEdgeClassesList() {
-		return this.eclassesThatAreEdgeClasses;
-	}
-
-	/**
-	 * Sets the qualified name of that EClass that should become the GraphClass.
-	 * 
-	 * @param qualifiedEClassName
-	 *            name of an EClass that is the conceptual GraphClass
-	 * */
-	public void setAsGraphClass(String qualifiedEClassName) {
-		this.nameOfEClassThatIsGraphClass = qualifiedEClassName;
-	}
-
-	/**
-	 * Sets the qualified name of the schema
-	 * 
-	 * @param qualifiedEPackageName
-	 *            name of an EPackage that is the root package of the metamodel
-	 * */
-	public void setSchemaName(String name) {
-		this.schemaName = name;
-	}
-
-	/**
-	 * Sets the influence of aggregation on the direction of resulting
-	 * EdgeClasses. Valid values are Ecore2Tg.NO_DIRECTION_FROM_AGGREGATION,
-	 * Ecore2Tg.DIRECTION_PART_TO_WHOLE and Ecore2Tg.DIRECTION_WHOLE_TO_PART
-	 * 
-	 * @param i
-	 *            integer value setting aggregation direction influence
-	 * */
-	public void setAggregationInfluenceOnDirection(int i) {
-		if ((i != DIRECTION_PART_TO_WHOLE) && (i != DIRECTION_WHOLE_TO_PART)
-				&& (i != NO_DIRECTION_FROM_AGGREGATION)) {
-			System.err.println("Warning: Setting of aggregation influence on "
-					+ "direction was not successful because " + i
-					+ " is not a valid value. Valid values are"
-					+ " Ecore2Tg.NO_DIRECTION_FROM_AGGREGATION, "
-					+ "Ecore2Tg.DIRECTION_PART_TO_WHOLE and "
-					+ "Ecore2Tg.DIRECTION_WHOLE_TO_PART.");
-		} else {
-			this.aggregationInfluenceOnDirection = i;
-		}
-	}
-
-	/**
-	 * Returns a map with pairs of qualified names of EReferences and EPackages.
-	 * The EdgeClass resulting from transforming the specified EReference will
-	 * become placed into the Package resulting from transforming the EPackage.
-	 * 
-	 * @return HashMap map with pairs of qualified names of EReferences and
-	 *         EPackages
-	 * */
-	public HashMap<String, String> getDefinedPackagesOfEdgeClassesMap() {
-		return this.reference2packagenameMap;
-	}
-
-	/**
-	 * Returns a map with pairs of qualified names of EReferences and
-	 * directions. This map defines which direction the EdgeClass resulting from
-	 * the transformation of the EReference will be. As directions the constants
-	 * Ecore2Tg.TO and Ecore2Tg.FROM are accepted.
-	 * 
-	 * @return HashMap map with pairs of EReferences and directions
-	 * */
-	public HashMap<String, Integer> getDirectionMap() {
-		return this.referencesWithDirections;
-	}
-
-	/**
-	 * Returns a map with pairs of qualified names. The key should be the
-	 * qualified name of an EReference. The second name can become chosen
-	 * freely. The EdgeClass resulting from the specified EReference will become
-	 * the specified name from the value part.
-	 * 
-	 * @return HashMap map with pairs of qualified names
-	 * */
-	public HashMap<String, String> getNamesOfEdgeClassesMap() {
-		return this.edgeNames;
-	}
-
-	/**
-	 * Specifies whether missing role names should become generated.
-	 * 
-	 * @param b
-	 *            defines whether missing role names should become generated
-	 * */
-	public void setGenerateRoleNames(boolean b) {
-		this.generateRoleNames = b;
-	}
-
-	/**
-	 * Returns a map with pairs of qualified names of EReferences. The
-	 * EReference specified in the key part overwrites the EReference specified
-	 * in the value part.
-	 * 
-	 * @return HashMap map with pairs of qualified EReference names
-	 * */
-	public HashMap<String, String> getPairsOfOverwritingEReferences() {
-		return this.erefs2overwritteneref;
-	}
-
-	/**
-	 * Specifies whether the program should look for conceptual EdgeClasses
-	 * automatically.
-	 * 
-	 * @param t
-	 *            valid values are Ecore2Tg.TransformParams.JUST_LIKE_ECORE
-	 *            Ecore2Tg.TransformParams.PRINT_PROPOSALS and
-	 *            Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION
-	 * */
-	public void setTransformationOption(TransformParams t) {
-		this.transopt = t;
-	}
-
 	/**
 	 * Returns the resulting SchemaGraph after the transformation.
 	 * 
@@ -941,279 +706,25 @@ public class Ecore2Tg {
 		return this.schem;
 	}
 
+	// ---------------------------
+	// -- Configuration
+	// ----------------------------
+
+	private Ecore2TgConfiguration configuration;
+
+	public Ecore2TgConfiguration getConfiguration() {
+		return this.configuration;
+	}
+
+	public void setConfiguration(Ecore2TgConfiguration conf) {
+		this.configuration = conf;
+	}
+
 	// --------------------------------------------------------------------------
 	// --------------------------------------------------------------------------
 	// --Start of real code-----------------------------------------------------
 	// --------------------------------------------------------------------------
 	// --------------------------------------------------------------------------
-
-	/**
-	 * Loads a configuration file from the give URI and adds the content to the
-	 * options
-	 * 
-	 * @param uri
-	 *            path to configuration file
-	 * */
-	@SuppressWarnings("unchecked")
-	public void fillWithConfigurationsFromFile(String uri) {
-		PList x = new PList();
-		try {
-			x.loadFrom(uri);
-		} catch (PListException e) {
-			System.err
-					.println("Error while loading the configuration file with uri "
-							+ uri);
-			e.printStackTrace();
-			return;
-		}
-		PListDict ds = x.getDict();
-
-		// GraphClass
-		String name = (String) ds.get("graphclass");
-		if (name != null) {
-			this.nameOfEClassThatIsGraphClass = name;
-		}
-
-		/*
-		 * // Root Package String rpname = (String) ds.get("rootpackage"); if
-		 * (rpname != null) { this.setRootPackageOfMetamodel(rpname); }
-		 */
-
-		// EdgeClasses
-		Object conn = ds.get("edgeclasses");
-		if (conn instanceof Vector) {
-			Vector<String> con = (Vector<String>) conn;
-			if (con != null) {
-				this.eclassesThatAreEdgeClasses.addAll(con);
-			}
-		}
-
-		// Direction out of aggregation
-		String aggr_dir = (String) ds.get("edgeclassdirection_aggregation");
-		if (aggr_dir != null) {
-			if (aggr_dir.equals("aggregation_part_to_wohle")) {
-				this.aggregationInfluenceOnDirection = DIRECTION_PART_TO_WHOLE;
-			} else if (aggr_dir.equals("aggregation_whole_to_part")) {
-				this.aggregationInfluenceOnDirection = DIRECTION_WHOLE_TO_PART;
-			} else {
-				System.err
-						.println("Configuration file "
-								+ uri
-								+ " contains invalid direction determination based on aggregation: "
-								+ aggr_dir
-								+ "\n Valid values are \"aggregation_part_to_wohle\" and \"aggregation_wohle_to_part\"");
-			}
-		}
-
-		// Direction direct
-		Object dirr = ds.get("edgeclassdirection_reference_specific");
-		if (dirr instanceof Vector) {
-			Vector<String> dir = (Vector<String>) dirr;
-			if (dir != null) {
-				for (String s : dir) {
-					String intval = s.substring(s.indexOf(',') + 1);
-					int direction = -1;
-					if (intval.equals("FROM")) {
-						direction = FROM;
-					} else if (intval.equals("TO")) {
-						direction = TO;
-					} else {
-						System.err
-								.println("Configuration file "
-										+ uri
-										+ " contains invalid direction determination based on references: "
-										+ intval + " instead of FROM or TO.");
-						continue;
-					}
-					this.getDirectionMap().put(s.substring(0, s.indexOf(',')),
-							direction);
-				}
-			}
-		}
-
-		// Names
-		Object ref2namess = ds.get("reference_to_edgeclassname");
-		if (ref2namess instanceof Vector) {
-			Vector<String> ref2names = (Vector<String>) ref2namess;
-			if (ref2names != null) {
-				for (String s : ref2names) {
-					this.edgeNames.put(s.substring(0, s.indexOf(',')),
-							s.substring(s.indexOf(',') + 1));
-				}
-			}
-		}
-
-		// Rolenames
-		if (ds.containsKey("generate_role_names")) {
-			Boolean b = ds.getBoolean("generate_role_names");
-			this.generateRoleNames = b;
-		}
-
-		// Packages
-		Object ref2paa = ds.get("reference_to_packagename");
-		if (ref2paa instanceof Vector) {
-			Vector<String> ref2pa = (Vector<String>) ref2paa;
-			if (ref2pa != null) {
-				for (String s : ref2pa) {
-					this.reference2packagenameMap.put(
-							s.substring(0, s.indexOf(',')),
-							s.substring(s.indexOf(',') + 1));
-				}
-			}
-		}
-		// Overwritten EReferences
-		Object ref2reff = ds.get("reference_overwrites_reference");
-		if (ref2reff instanceof Vector) {
-			Vector<String> ref2ref = (Vector<String>) ref2reff;
-			if (ref2ref != null) {
-				for (String s : ref2ref) {
-					this.erefs2overwritteneref.put(
-							s.substring(0, s.indexOf(',')),
-							s.substring(s.indexOf(',') + 1));
-				}
-			}
-		}
-		// Transform Parameter
-		String transStr = (String) ds.get("search_for_edge_classes");
-		TransformParams tp = TransformParams.JUST_LIKE_ECORE;
-		if (transStr != null) {
-			if (transStr.equals("take_automatic")) {
-				tp = TransformParams.AUTOMATIC_TRANSFORMATION;
-			} else if (transStr.equals("print_proposals")) {
-				tp = TransformParams.PRINT_PROPOSALS;
-			} else {
-				System.err
-						.println("Configuration file "
-								+ uri
-								+ " contains invalid transformation parameter: "
-								+ transStr
-								+ "\n Valid values are \"take_automatic\" and \"print_proposals\"");
-
-			}
-			this.transopt = tp;
-		}
-
-	}
-
-	private void addConfigurationAsComment(GraphClass defpack) {
-
-		// Transformation Option
-		Comment co = this.schemagraph.createComment();
-		co.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
-				+ " transformation mode: " + this.transopt.toString());
-		defpack.add_comment(co);
-
-		// root Package
-		if ((this.schemaName != null) && !this.schemaName.equals("")) {
-			Comment c = this.schemagraph.createComment();
-			c.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
-					+ " name of taken root package: " + this.schemaName);
-			defpack.add_comment(c);
-		}
-
-		// Graphclass
-		if ((this.nameOfEClassThatIsGraphClass != null)
-				&& !this.nameOfEClassThatIsGraphClass.equals("")) {
-			Comment c = this.schemagraph.createComment();
-			c.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
-					+ " name of eclass transformed to graphclass: "
-					+ this.nameOfEClassThatIsGraphClass);
-			defpack.add_comment(c);
-		}
-
-		// EdgeClass declaration
-		if ((this.eclassesThatAreEdgeClasses != null)
-				&& !this.eclassesThatAreEdgeClasses.isEmpty()) {
-			Comment c = this.schemagraph.createComment();
-			String text = EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
-					+ " declared conceptual edgeclasses: ";
-			for (String ec : this.eclassesThatAreEdgeClasses) {
-				text += ec + ", ";
-			}
-			c.set_text(text.substring(0, text.length() - 2));
-			defpack.add_comment(c);
-		}
-
-		// Aggregation Influence
-		if (this.aggregationInfluenceOnDirection != NO_DIRECTION_FROM_AGGREGATION) {
-			Comment c = this.schemagraph.createComment();
-			if (this.aggregationInfluenceOnDirection == DIRECTION_PART_TO_WHOLE) {
-				c.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
-						+ " aggregation influence DIRECTION_PART_TO_WHOLE");
-			} else {
-				c.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
-						+ " aggregation influence DIRECTION_WHOLE_TO_PART");
-			}
-			defpack.add_comment(c);
-		}
-
-		// Directions
-		if ((this.referencesWithDirections != null)
-				&& !this.referencesWithDirections.isEmpty()) {
-			Comment c = this.schemagraph.createComment();
-			String text = EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
-					+ " direction of references : ";
-			for (String re : this.referencesWithDirections.keySet()) {
-				text += re;
-				if (this.referencesWithDirections.get(re) == TO) {
-					text += " TO, ";
-				} else {
-					text += " FROM, ";
-				}
-			}
-			c.set_text(text.substring(0, text.length() - 2));
-			defpack.add_comment(c);
-		}
-
-		// names of edgeclasses
-		if ((this.edgeNames != null) && !this.edgeNames.isEmpty()) {
-			Comment c = this.schemagraph.createComment();
-			String text = EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
-					+ " names of edgeclasses"
-					+ " resulting from the following ereferences: ";
-			for (String str : this.edgeNames.keySet()) {
-				text += str + " results in " + this.edgeNames.get(str) + ", ";
-			}
-			c.set_text(text.substring(0, text.length() - 2));
-			defpack.add_comment(c);
-		}
-
-		// generate role names
-		if (this.generateRoleNames) {
-			Comment c = this.schemagraph.createComment();
-			c.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
-					+ " rolenames are created");
-			defpack.add_comment(c);
-		}
-
-		// declare packages
-		if ((this.reference2packagenameMap != null)
-				&& !this.reference2packagenameMap.isEmpty()) {
-			Comment c = this.schemagraph.createComment();
-			String text = EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
-					+ " packages for edgeclasses: ";
-			for (String str : this.reference2packagenameMap.keySet()) {
-				text += str + " belongs to "
-						+ this.reference2packagenameMap.get(str) + ", ";
-			}
-			c.set_text(text.substring(0, text.length() - 2));
-			defpack.add_comment(c);
-		}
-
-		// overwriting references
-		if ((this.erefs2overwritteneref != null)
-				&& !this.erefs2overwritteneref.isEmpty()) {
-			Comment c = this.schemagraph.createComment();
-			String text = EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
-					+ " overwriting ereferences: ";
-			for (String str : this.erefs2overwritteneref.keySet()) {
-				text += str + " overwrites "
-						+ this.erefs2overwritteneref.get(str) + ", ";
-			}
-			c.set_text(text.substring(0, text.length() - 2));
-			defpack.add_comment(c);
-		}
-	}
 
 	/**
 	 * Constructor Loads the Ecore file and initializes the needed maps.
@@ -1224,25 +735,23 @@ public class Ecore2Tg {
 	public Ecore2Tg(String pathToEcoreFile) {
 		// Load the Ecore metamodel
 		this.metamodelResource = loadMetaModelFromEcoreFile(pathToEcoreFile);
-
-		// Initializing maps and lists for user settings
-		this.referencesWithDirections = new HashMap<String, Integer>();
-		this.edgeNames = new HashMap<String, String>();
-		this.reference2packagenameMap = new HashMap<String, String>();
-		this.erefs2overwritteneref = new HashMap<String, String>();
-		this.eclassesThatAreEdgeClasses = new ArrayList<String>();
+		this.configuration = new Ecore2TgConfiguration();
 	}
 
 	public Ecore2Tg(Resource ecoreSchema) {
-		// Load the Ecore metamodel
 		this.metamodelResource = ecoreSchema;
+		this.configuration = new Ecore2TgConfiguration();
+	}
 
-		// Initializing maps and lists for user settings
-		this.referencesWithDirections = new HashMap<String, Integer>();
-		this.edgeNames = new HashMap<String, String>();
-		this.reference2packagenameMap = new HashMap<String, String>();
-		this.erefs2overwritteneref = new HashMap<String, String>();
-		this.eclassesThatAreEdgeClasses = new ArrayList<String>();
+	public Ecore2Tg(String pathToEcoreFile, Ecore2TgConfiguration conf) {
+		// Load the Ecore metamodel
+		this.metamodelResource = loadMetaModelFromEcoreFile(pathToEcoreFile);
+		this.configuration = conf;
+	}
+
+	public Ecore2Tg(Resource ecoreSchema, Ecore2TgConfiguration conf) {
+		this.metamodelResource = ecoreSchema;
+		this.configuration = conf;
 	}
 
 	// -------------------------------------------------------------------------
@@ -1350,15 +859,16 @@ public class Ecore2Tg {
 		// Create the default GraphClass for the Schema
 		this.graphclass = this.schemagraph.createGraphClass();
 		// Check if an EClass is defined as GraphClass
-		if ((this.nameOfEClassThatIsGraphClass != null)
-				&& !this.nameOfEClassThatIsGraphClass.equals("")) {
-			this.graphclass.set_qualifiedName(this.nameOfEClassThatIsGraphClass
-					+ "Graph");
+		if ((this.getConfiguration().getAsGraphClass() != null)
+				&& !this.getConfiguration().getAsGraphClass().equals("")) {
+			this.graphclass.set_qualifiedName(this.getConfiguration()
+					.getAsGraphClass() + "Graph");
 		}
 		// Check if a GraphClass name is defined
-		else if ((this.graphclassName != null)
-				&& !this.graphclassName.equals("")) {
-			this.graphclass.set_qualifiedName(this.graphclassName);
+		else if ((this.getConfiguration().getGraphclassName() != null)
+				&& !this.getConfiguration().getGraphclassName().equals("")) {
+			this.graphclass.set_qualifiedName(this.getConfiguration()
+					.getGraphclassName());
 		}
 		// If not, take the schema name
 		else {
@@ -1377,8 +887,9 @@ public class Ecore2Tg {
 		this.examineUserNamesAndPackages();
 
 		// Does the user want the program to search for EdgeClasses?
-		if (this.transopt != Ecore2Tg.TransformParams.JUST_LIKE_ECORE) {
-			this.searchForEdgeClasses(this.transopt);
+		if (this.getConfiguration().getTransformationOption() != Ecore2Tg.TransformParams.JUST_LIKE_ECORE) {
+			this.searchForEdgeClasses(this.getConfiguration()
+					.getTransformationOption());
 		}
 
 		// Add the 2 Attributes nsPrefix and nsURI to the GraphClass
@@ -1432,8 +943,8 @@ public class Ecore2Tg {
 		this.sortEdgeClasses();
 
 		// Check on a user defined GraphClass
-		if ((this.nameOfEClassThatIsGraphClass == null)
-				|| this.nameOfEClassThatIsGraphClass.equals("")) {
+		if ((this.getConfiguration().getAsGraphClass() == null)
+				|| this.getConfiguration().getAsGraphClass().equals("")) {
 			Comment gccom = this.schemagraph.createComment();
 			gccom.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 					+ EAnnotationKeys.GENERATED_GRAPHCLASS);
@@ -1450,7 +961,8 @@ public class Ecore2Tg {
 		this.createEdgeClassNames();
 
 		// Save configurations as comments
-		this.addConfigurationAsComment(this.graphclass);
+		this.configuration.addConfigurationAsComment(this.schemagraph,
+				this.graphclass);
 
 		for (EPackage old : this.packagemap.keySet()) {
 			if (!this.packagemap.get(old).get_subpackage().iterator().hasNext()
@@ -1486,7 +998,7 @@ public class Ecore2Tg {
 	 * its subclasses into the {@link edgeclasses} list
 	 * */
 	private void examineUsersEdgeClassList() {
-		for (String name : this.eclassesThatAreEdgeClasses) {
+		for (String name : this.getConfiguration().getEdgeClassesList()) {
 			EClass eclass = this.getEClassByName(name);
 			if (eclass == null) {
 				System.err.println("Invalid user input: Can not declare "
@@ -1507,20 +1019,20 @@ public class Ecore2Tg {
 	 * {@link fromEReferences} and {@link toEReferences}
 	 * */
 	private void examineUsersDirectionMap() {
-		for (String name : this.referencesWithDirections.keySet()) {
+		for (String name : this.configuration.getDirectionMap().keySet()) {
 			EReference ref = this.getEReferenceByName(name);
 			if (ref != null) {
-				if (this.referencesWithDirections.get(name) == FROM) {
+				if (this.configuration.getDirectionMap().get(name) == FROM) {
 					this.fromERefererences.add(ref);
-				} else if (this.referencesWithDirections.get(name) == TO) {
+				} else if (this.configuration.getDirectionMap().get(name) == TO) {
 					this.toEReferences.add(ref);
 				} else {
 					System.err
 							.println("Invalid user input: Setting direction for "
 									+ name
 									+ " is not possible. As arguments are 0 or 1 expected. User entered "
-									+ this.referencesWithDirections.get(name)
-									+ " instead.");
+									+ this.configuration.getDirectionMap().get(
+											name) + " instead.");
 				}
 			} else {
 				System.err.println("Invalid user input: Setting direction for "
@@ -1535,16 +1047,19 @@ public class Ecore2Tg {
 	 * {@link erefs2overwrittenerefs}
 	 * */
 	private void examineUsersOverwrittenEReferenceList() {
-		for (String word : this.erefs2overwritteneref.keySet()) {
+		for (String word : this.configuration
+				.getPairsOfOverwritingEReferences().keySet()) {
 			EReference keyref = this.getEReferenceByName(word);
-			EReference valref = this
-					.getEReferenceByName(this.erefs2overwritteneref.get(word));
+			EReference valref = this.getEReferenceByName(this.configuration
+					.getPairsOfOverwritingEReferences().get(word));
 			if ((keyref == null) || (valref == null)) {
 				System.err
 						.println("Invalid user input: "
 								+ word
 								+ " should overwrite "
-								+ this.erefs2overwritteneref.get(word)
+								+ this.configuration
+										.getPairsOfOverwritingEReferences()
+										.get(word)
 								+ " but at least one of the EReferences does not exist.");
 				continue;
 			}
@@ -1585,25 +1100,33 @@ public class Ecore2Tg {
 	 * user has given correct input.
 	 * */
 	private void examineUserNamesAndPackages() {
-		for (String key : this.edgeNames.keySet()) {
+		for (String key : this.configuration.getNamesOfEdgeClassesMap()
+				.keySet()) {
 			if ((this.getEReferenceByName(key) == null)
 					&& (this.getEClassByName(key) == null)) {
-				System.err.println("Invalid user input: " + key
-						+ " does not exist. Name " + this.edgeNames.get(key)
-						+ " is not set.");
+				System.err.println("Invalid user input: "
+						+ key
+						+ " does not exist. Name "
+						+ this.configuration.getNamesOfEdgeClassesMap()
+								.get(key) + " is not set.");
 			}
 		}
-		for (String key : this.reference2packagenameMap.keySet()) {
+		for (String key : this.configuration
+				.getDefinedPackagesOfEdgeClassesMap().keySet()) {
 			if (this.getEReferenceByName(key) == null) {
-				System.err.println("Invalid user input: EReference " + key
+				System.err.println("Invalid user input: EReference "
+						+ key
 						+ " does not exist. Package "
-						+ this.reference2packagenameMap.get(key)
+						+ this.configuration
+								.getDefinedPackagesOfEdgeClassesMap().get(key)
 						+ " is not set.");
 			} else {
-				if (this.getEPackageByName(this.reference2packagenameMap
-						.get(key)) == null) {
+				if (this.getEPackageByName(this.configuration
+						.getDefinedPackagesOfEdgeClassesMap().get(key)) == null) {
 					System.err.println("Invalid user input: EPackage "
-							+ this.reference2packagenameMap.get(key)
+							+ this.configuration
+									.getDefinedPackagesOfEdgeClassesMap().get(
+											key)
 							+ " does not exist. Package for " + key
 							+ " is not set.");
 				}
@@ -3127,9 +2650,8 @@ public class Ecore2Tg {
 			else {
 				// --User wants the EClass to become the GraphClass
 
-				if (this.nameOfEClassThatIsGraphClass
-						.endsWith((packageprefixForFurtherCalls + classifier
-								.getName()))) {
+				if (this.configuration.getAsGraphClass().endsWith(
+						(packageprefixForFurtherCalls + classifier.getName()))) {
 					this.graphclass.set_qualifiedName(((EClass) classifier)
 							.getName());
 					// Transform EAttributes
@@ -3157,10 +2679,10 @@ public class Ecore2Tg {
 
 					this.graphclass.set_qualifiedName(((EClass) classifier)
 							.getName());
-					if ((this.nameOfEClassThatIsGraphClass == null)
-							|| this.nameOfEClassThatIsGraphClass.equals("")) {
-						this.nameOfEClassThatIsGraphClass = this.graphclass
-								.get_qualifiedName();
+					if ((this.configuration.getAsGraphClass() == null)
+							|| this.configuration.getAsGraphClass().equals("")) {
+						this.configuration.setAsGraphClass(this.graphclass
+								.get_qualifiedName());
 
 					}
 					// Transform EAttributes
@@ -3548,7 +3070,8 @@ public class Ecore2Tg {
 		}
 
 		// Maybe try to convert EBigInteger/EBigDecimal to Long/Double
-		if (this.convertBigNumbers && typename.equals("EBigInteger")) {
+		if (this.configuration.isConvertBigNumbers()
+				&& typename.equals("EBigInteger")) {
 			System.err.println("Info: Converting " + typename
 					+ " to Long as requested by -" + OPTION_CONVERT_BIG_NUMBERS
 					+ " option.");
@@ -3560,7 +3083,8 @@ public class Ecore2Tg {
 			elForComment.add_comment(c);
 			return dom;
 		}
-		if (this.convertBigNumbers && typename.equals("EBigDecimal")) {
+		if (this.configuration.isConvertBigNumbers()
+				&& typename.equals("EBigDecimal")) {
 			System.err.println("Info: Converting " + typename
 					+ " to Double as requested by -"
 					+ OPTION_CONVERT_BIG_NUMBERS + " option.");
@@ -3619,9 +3143,11 @@ public class Ecore2Tg {
 
 			// Looking, if the user wants the EdgeClass' name different
 			String qualName = this.getQualifiedEClassName(eclass);
-			String key = this.getKeyIfPossible(qualName, this.edgeNames);
+			String key = this.getKeyIfPossible(qualName,
+					this.configuration.getNamesOfEdgeClassesMap());
 			if (key != null) {
-				String na = this.edgeNames.get(key);
+				String na = this.configuration.getNamesOfEdgeClassesMap().get(
+						key);
 				// name is qualified
 				if (na.contains(".")) {
 					edgeclass.set_qualifiedName(na);
@@ -3920,11 +3446,15 @@ public class Ecore2Tg {
 				}
 			}
 			// Look for Containment Preferences
-			else if (((inc1.get_aggregation() == AggregationKind.COMPOSITE) && (this.aggregationInfluenceOnDirection == DIRECTION_PART_TO_WHOLE))
-					|| ((inc2.get_aggregation() == AggregationKind.COMPOSITE) && (this.aggregationInfluenceOnDirection == DIRECTION_WHOLE_TO_PART))) {
+			else if (((inc1.get_aggregation() == AggregationKind.COMPOSITE) && (this.configuration
+					.getAggregationInfluenceOnDirection() == DIRECTION_PART_TO_WHOLE))
+					|| ((inc2.get_aggregation() == AggregationKind.COMPOSITE) && (this.configuration
+							.getAggregationInfluenceOnDirection() == DIRECTION_WHOLE_TO_PART))) {
 				direction1to2 = true;
-			} else if (((inc2.get_aggregation() == AggregationKind.COMPOSITE) && (this.aggregationInfluenceOnDirection == DIRECTION_PART_TO_WHOLE))
-					|| ((inc1.get_aggregation() == AggregationKind.COMPOSITE) && (this.aggregationInfluenceOnDirection == DIRECTION_WHOLE_TO_PART))) {
+			} else if (((inc2.get_aggregation() == AggregationKind.COMPOSITE) && (this.configuration
+					.getAggregationInfluenceOnDirection() == DIRECTION_PART_TO_WHOLE))
+					|| ((inc1.get_aggregation() == AggregationKind.COMPOSITE) && (this.configuration
+							.getAggregationInfluenceOnDirection() == DIRECTION_WHOLE_TO_PART))) {
 				direction1to2 = false;
 			}
 			/*
@@ -4345,7 +3875,7 @@ public class Ecore2Tg {
 		}
 		// --Check if Composition changes the direction
 		else if (ereference.isContainment()
-				&& (this.aggregationInfluenceOnDirection == DIRECTION_PART_TO_WHOLE)) {
+				&& (this.configuration.getAggregationInfluenceOnDirection() == DIRECTION_PART_TO_WHOLE)) {
 			start = eclass2;
 			direction = FROM;
 		}
@@ -4380,9 +3910,10 @@ public class Ecore2Tg {
 		String name = "";// Set an empty Name
 
 		// ---Test, if the user has determined a name for the EReference
-		String keystring = this.getKeyIfPossible(refName, this.edgeNames);
+		String keystring = this.getKeyIfPossible(refName,
+				this.configuration.getNamesOfEdgeClassesMap());
 		if (keystring != null) {
-			name = this.edgeNames.get(keystring);
+			name = this.configuration.getNamesOfEdgeClassesMap().get(keystring);
 		}
 
 		// ---Test if there is an EAnnotation for the name
@@ -4505,16 +4036,19 @@ public class Ecore2Tg {
 		activeEdgeClass.set_qualifiedName(""); // Set an empty Name
 		String name = "";
 		// ---Test, if the user has determined a name for the EReference
-		String keystring = this.getKeyIfPossible(refName, this.edgeNames);
+		String keystring = this.getKeyIfPossible(refName,
+				this.configuration.getNamesOfEdgeClassesMap());
 		if (keystring != null) {
-			name = this.edgeNames.get(keystring);
+			name = this.configuration.getNamesOfEdgeClassesMap().get(keystring);
 			helpvar = 1;
 		}
 		// ---If not, test, if the user has determined a name for the Opposite
 		else {
-			keystring = this.getKeyIfPossible(oppName, this.edgeNames);
+			keystring = this.getKeyIfPossible(oppName,
+					this.configuration.getNamesOfEdgeClassesMap());
 			if (keystring != null) {
-				name = this.edgeNames.get(keystring);
+				name = this.configuration.getNamesOfEdgeClassesMap().get(
+						keystring);
 				helpvar = 2;
 			}
 		}
@@ -4588,12 +4122,16 @@ public class Ecore2Tg {
 			direction = FROM;
 		}
 		// Check if Composition changes the direction
-		else if ((ereference.isContainment() && (this.aggregationInfluenceOnDirection == DIRECTION_WHOLE_TO_PART))
-				|| (opposite.isContainment() && (this.aggregationInfluenceOnDirection == DIRECTION_PART_TO_WHOLE))) {
+		else if ((ereference.isContainment() && (this.configuration
+				.getAggregationInfluenceOnDirection() == DIRECTION_WHOLE_TO_PART))
+				|| (opposite.isContainment() && (this.configuration
+						.getAggregationInfluenceOnDirection() == DIRECTION_PART_TO_WHOLE))) {
 			start = eclass1;
 			direction = TO;
-		} else if ((opposite.isContainment() && (this.aggregationInfluenceOnDirection == DIRECTION_WHOLE_TO_PART))
-				|| (ereference.isContainment() && (this.aggregationInfluenceOnDirection == DIRECTION_PART_TO_WHOLE))) {
+		} else if ((opposite.isContainment() && (this.configuration
+				.getAggregationInfluenceOnDirection() == DIRECTION_WHOLE_TO_PART))
+				|| (ereference.isContainment() && (this.configuration
+						.getAggregationInfluenceOnDirection() == DIRECTION_PART_TO_WHOLE))) {
 			start = eclass2;
 			direction = FROM;
 		}
@@ -5026,11 +4564,12 @@ public class Ecore2Tg {
 
 	private Package lookUpPackage(String name) {
 		String packagekey = this.getKeyIfPossible(name,
-				this.reference2packagenameMap);
+				this.configuration.getDefinedPackagesOfEdgeClassesMap());
 		if (packagekey == null) {
 			return null;
 		}
-		String packagename = this.reference2packagenameMap.get(packagekey);
+		String packagename = this.configuration
+				.getDefinedPackagesOfEdgeClassesMap().get(packagekey);
 		return this.getPackageByName(packagename);
 	}
 
@@ -5214,7 +4753,6 @@ public class Ecore2Tg {
 						.getAttributedElementClass((transVC.get_qualifiedName()));
 
 				Vertex activeVertex = graph.createVertex(vertexclass);
-
 				this.objectsToVertexes.put(eob, activeVertex);
 			}
 			// EObject is an Edge
@@ -5472,7 +5010,8 @@ public class Ecore2Tg {
 			return rec;
 		}
 		// if it is a BigInteger and they should become transformed to Long
-		else if (this.convertBigNumbers && (atContent instanceof BigInteger)) {
+		else if (this.configuration.isConvertBigNumbers()
+				&& (atContent instanceof BigInteger)) {
 			BigInteger bi = (BigInteger) atContent;
 			BigInteger min = BigInteger.valueOf(Long.MIN_VALUE);
 			BigInteger max = BigInteger.valueOf(Long.MAX_VALUE);
@@ -5487,7 +5026,8 @@ public class Ecore2Tg {
 			return l;
 		}
 		// if it is a BigDecimal and they should become transformed to Double
-		else if (this.convertBigNumbers && (atContent instanceof BigDecimal)) {
+		else if (this.configuration.isConvertBigNumbers()
+				&& (atContent instanceof BigDecimal)) {
 			BigDecimal bd = (BigDecimal) atContent;
 			double d = bd.doubleValue();
 			System.err.println("Warning: Converted BigDecimal " + bd
@@ -5711,9 +5251,12 @@ public class Ecore2Tg {
 					.getAttributedElementClass(transEC.get_qualifiedName());
 
 			// Create the Edge
-			Edge edge = graph.createEdge(edgeclass,
-					this.objectsToVertexes.get(start),
-					this.objectsToVertexes.get(end));
+			Vertex alpha = this.objectsToVertexes.get(start);
+			Vertex omega = this.objectsToVertexes.get(end);
+			if (alpha == null || omega == null) {
+				System.err.println("Hlp " + start + " " + end);
+			}
+			Edge edge = graph.createEdge(edgeclass, alpha, omega);
 
 			// Transform Attributes
 			this.transformAttributeValues(eob, edge, graph);
@@ -5777,15 +5320,17 @@ public class Ecore2Tg {
 			URI fileURI = URI.createFileURI(path);
 
 			ResourceSet resSet = new ResourceSetImpl();
-			Resource xmiResource = resSet.getResource(fileURI, true);
 
 			// Register the Metamodel to verify the namespace
 			resSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
 					.put("xmi", new XMIResourceFactoryImpl());
 			resSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
-					.put("ecore", new XMIResourceFactoryImpl());
+					.put("ecore", new EcoreResourceFactoryImpl());
 			resSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
 					.put("javaxmi", new XMIResourceFactoryImpl());
+
+			Resource xmiResource = resSet.getResource(fileURI, true);
+
 			for (EObject o : xmiResource.getContents()) {
 				EPackage p = (EPackage) o;
 				registerEPackagesAndExtensions(p, resSet);
@@ -5816,6 +5361,7 @@ public class Ecore2Tg {
 		// Get the ResourceSet
 		ResourceSet resSet = this.metamodelResource.getResourceSet();
 
+		ArrayList<Resource> modelResources = new ArrayList<Resource>();
 		for (String path : paths) {
 			// The URI to load
 			URI uri = URI.createFileURI(path);
@@ -5823,16 +5369,16 @@ public class Ecore2Tg {
 			// Load the resource
 			Resource res = resSet.getResource(uri, true);
 			list.addAll(res.getContents());
+			modelResources.add(res);
 		}
+
 		// Reset the URI for more than 1 model file
-		if (resSet.getResources().size() > 1) {
+		if (modelResources.size() > 1) {
 			int index = 0;
-			for (int i = 0; i < resSet.getResources().get(0).getURI()
-					.segments().length; i++) {
-				String segment = resSet.getResources().get(0).getURI()
-						.segments()[i];
+			for (int i = 0; i < modelResources.get(0).getURI().segments().length; i++) {
+				String segment = modelResources.get(0).getURI().segments()[i];
 				boolean equal = true;
-				for (Resource r : resSet.getResources()) {
+				for (Resource r : modelResources) {
 					if (!r.getURI().segments()[i].equals(segment)) {
 						equal = false;
 					}
@@ -5844,7 +5390,7 @@ public class Ecore2Tg {
 					break;
 				}
 			}
-			for (Resource r : resSet.getResources()) {
+			for (Resource r : modelResources) {
 				String newURIstring = "";
 				for (int i = index; i < r.getURI().segments().length; i++) {
 					newURIstring = newURIstring + "."
@@ -5853,6 +5399,7 @@ public class Ecore2Tg {
 				r.setURI(URI.createURI(newURIstring.substring(1)));
 			}
 		}
+
 		return list;
 	}
 
@@ -5922,7 +5469,7 @@ public class Ecore2Tg {
 				if (p >= 0) {
 					toRole = toRole.substring(p + 1);
 				}
-				if (this.generateRoleNames) {
+				if (this.configuration.getGenerateRoleNames()) {
 
 					VertexClass fromVC = (VertexClass) from
 							.getFirstEndsAtIncidence().getThat();
@@ -5985,7 +5532,7 @@ public class Ecore2Tg {
 						fromRole = fromRole.substring(p + 1);
 					}
 
-					if (this.generateRoleNames) {
+					if (this.configuration.getGenerateRoleNames()) {
 
 						VertexClass toVC = (VertexClass) to
 								.getFirstEndsAtIncidence().getThat();
