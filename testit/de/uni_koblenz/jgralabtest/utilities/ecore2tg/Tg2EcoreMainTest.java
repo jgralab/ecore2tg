@@ -1,4 +1,4 @@
-package de.uni_koblenz.jgralab.utilities.ecore2tg;
+package de.uni_koblenz.jgralabtest.utilities.ecore2tg;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,6 +13,9 @@ import de.uni_koblenz.jgralab.ImplementationType;
 import de.uni_koblenz.jgralab.codegenerator.CodeGeneratorConfiguration;
 import de.uni_koblenz.jgralab.grumlschema.SchemaGraph;
 import de.uni_koblenz.jgralab.schema.Schema;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2Ecore;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.TransformParams;
 import de.uni_koblenz.jgralab.utilities.rsa.Rsa2Tg;
 import de.uni_koblenz.jgralab.utilities.tg2dot.Tg2Dot;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.Schema2SchemaGraph;
@@ -24,7 +27,7 @@ public class Tg2EcoreMainTest {
 			throws GraphIOException, IOException {
 		Ecore2Tg ec2tg = new Ecore2Tg(root + ".ecore");
 		ec2tg.getConfiguration().setTransformationOption(
-				Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+				TransformParams.AUTOMATIC_TRANSFORMATION);
 		ec2tg.getConfiguration().setConvertBigNumbers(true);
 		ec2tg.transform("emftext.JamoppJavaModel");
 		SchemaGraph sg = ec2tg.getSchemaGraph();
@@ -54,7 +57,7 @@ public class Tg2EcoreMainTest {
 
 		Ecore2Tg ec2tg = new Ecore2Tg(file_java_modisco);
 		ec2tg.getConfiguration().setTransformationOption(
-				Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+				TransformParams.AUTOMATIC_TRANSFORMATION);
 		ec2tg.transform("org.modisco.ModiscoJavaModel");
 		SchemaGraph sg = ec2tg.getSchemaGraph();
 		SchemaGraph2Schema sg2s = new SchemaGraph2Schema();

@@ -1,4 +1,4 @@
-package de.uni_koblenz.jgralab.utilities.ecore2tg;
+package de.uni_koblenz.jgralabtest.utilities.ecore2tg;
 
 import java.io.IOException;
 
@@ -9,6 +9,8 @@ import de.uni_koblenz.jgralab.GraphIO;
 import de.uni_koblenz.jgralab.GraphIOException;
 import de.uni_koblenz.jgralab.grumlschema.SchemaGraph;
 import de.uni_koblenz.jgralab.schema.Schema;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.TransformParams;
 import de.uni_koblenz.jgralab.utilities.rsa.SchemaGraph2XMI;
 import de.uni_koblenz.jgralab.utilities.tg2dot.Tg2Dot;
