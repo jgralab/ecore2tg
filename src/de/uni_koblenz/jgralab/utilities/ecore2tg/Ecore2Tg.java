@@ -181,9 +181,9 @@ public class Ecore2Tg {
 				String intval = directOfEC[i + 1];
 				int direction = -1;
 				if (intval.equals("FROM")) {
-					direction = FROM;
+					direction = Ecore2TgConfiguration.FROM;
 				} else if (intval.equals("TO")) {
-					direction = TO;
+					direction = Ecore2TgConfiguration.TO;
 				} else {
 					System.err
 							.println("Warning: Direction determination failed for "
@@ -583,14 +583,6 @@ public class Ecore2Tg {
 	private HashMap<EReference, ArrayList<EReference>> ereferenceWithOverwritten;
 
 	/**
-	 * Saves the Result of the {@link #getEdgesEReferences(EClass candidate,
-	 * ArrayList<EReference> resultlist)} method because it is very
-	 * time-consuming and it can become called more than once
-	 * */
-	// private HashMap<EClass, ArrayList<EReference>> ereferencesOfEdgeClasses;
-	// private HashMap<EClass, boolean[]> ereferencesOfEdgeClassesresult;
-
-	/**
 	 * Set of user defined EReferences with the direction FROM
 	 * */
 	private HashSet<EReference> fromERefererences;
@@ -632,45 +624,23 @@ public class Ecore2Tg {
 
 	private String schemaName;
 
+	// ---
+	// -- Analyzer
+	// -----------
+
+	private Ecore2TgAnalyzer analyzer;
+
+	// ---------------------------
+	// -- Configuration
+	// ----------------------------
+
+	private Ecore2TgConfiguration configuration;
+
 	// --------------------------------------------------------------------------
 	// --------------------------------------------------------------------------
-	// -------Constants----------------------------------------------------------
+	// -------Getter/Setter ----------------------------------------------------
 	// --------------------------------------------------------------------------
 	// --------------------------------------------------------------------------
-
-	/**
-	 * Constants to define if the composition value of an EReference has
-	 * influence on the direction of the resulting EdgeClass
-	 * */
-
-	/**
-	 * Composition has no influence on direction
-	 * */
-	public static final int NO_DIRECTION_FROM_AGGREGATION = 0;
-
-	/**
-	 * Composition EdgeClasses direct from whole to part
-	 * */
-	public static final int DIRECTION_WHOLE_TO_PART = 1;
-
-	/**
-	 * Composition EdgeClasses direct from part to whole
-	 * */
-	public static final int DIRECTION_PART_TO_WHOLE = 2;
-
-	/**
-	 * Constants for Direction determination for EReferences
-	 * */
-
-	/**
-	 * Value for EReference direction FROM
-	 * */
-	public static final int FROM = 0;
-
-	/**
-	 * Value for EReference direction TO
-	 * */
-	public static final int TO = 1;
 
 	/**
 	 * Returns the resulting SchemaGraph after the transformation.
@@ -684,18 +654,6 @@ public class Ecore2Tg {
 	public de.uni_koblenz.jgralab.schema.Schema getSchema() {
 		return this.schem;
 	}
-
-	// ---
-	// -- Analyzer
-	// -----------
-
-	private Ecore2TgAnalyzer analyzer;
-
-	// ---------------------------
-	// -- Configuration
-	// ----------------------------
-
-	private Ecore2TgConfiguration configuration;
 
 	public Ecore2TgConfiguration getConfiguration() {
 		return this.configuration;
@@ -998,7 +956,7 @@ public class Ecore2Tg {
 			this.analyzer.getFoundEdgeClasses().add(eclass);
 		}
 		// Check for Subclasses
-		ArrayList<EClass> childs = Ecore2TgAnalyzer.getSubclassesToEdgeClasses(
+		ArrayList<EClass> childs = Ecore2TgAnalyzer.getSubclassesOfEClasses(
 				this.metamodelResource, this.analyzer.getFoundEdgeClasses());
 		this.analyzer.getFoundEdgeClasses().addAll(childs);
 	}
@@ -1011,9 +969,9 @@ public class Ecore2Tg {
 		for (String name : this.configuration.getDirectionMap().keySet()) {
 			EReference ref = this.getEReferenceByName(name);
 			if (ref != null) {
-				if (this.configuration.getDirectionMap().get(name) == FROM) {
+				if (this.configuration.getDirectionMap().get(name) == Ecore2TgConfiguration.FROM) {
 					this.fromERefererences.add(ref);
-				} else if (this.configuration.getDirectionMap().get(name) == TO) {
+				} else if (this.configuration.getDirectionMap().get(name) == Ecore2TgConfiguration.TO) {
 					this.toEReferences.add(ref);
 				} else {
 					System.err
@@ -2024,14 +1982,14 @@ public class Ecore2Tg {
 			}
 			// Look for Containment Preferences
 			else if (((inc1.get_aggregation() == AggregationKind.COMPOSITE) && (this.configuration
-					.getAggregationInfluenceOnDirection() == DIRECTION_PART_TO_WHOLE))
+					.getAggregationInfluenceOnDirection() == Ecore2TgConfiguration.DIRECTION_PART_TO_WHOLE))
 					|| ((inc2.get_aggregation() == AggregationKind.COMPOSITE) && (this.configuration
-							.getAggregationInfluenceOnDirection() == DIRECTION_WHOLE_TO_PART))) {
+							.getAggregationInfluenceOnDirection() == Ecore2TgConfiguration.DIRECTION_WHOLE_TO_PART))) {
 				direction1to2 = true;
 			} else if (((inc2.get_aggregation() == AggregationKind.COMPOSITE) && (this.configuration
-					.getAggregationInfluenceOnDirection() == DIRECTION_PART_TO_WHOLE))
+					.getAggregationInfluenceOnDirection() == Ecore2TgConfiguration.DIRECTION_PART_TO_WHOLE))
 					|| ((inc1.get_aggregation() == AggregationKind.COMPOSITE) && (this.configuration
-							.getAggregationInfluenceOnDirection() == DIRECTION_WHOLE_TO_PART))) {
+							.getAggregationInfluenceOnDirection() == Ecore2TgConfiguration.DIRECTION_WHOLE_TO_PART))) {
 				direction1to2 = false;
 			}
 			/*
@@ -2446,26 +2404,26 @@ public class Ecore2Tg {
 		// --Check if user has determined direction
 		if (this.toEReferences.contains(ereference)) {
 			start = eclass1;
-			direction = TO;
+			direction = Ecore2TgConfiguration.TO;
 		} else if (this.fromERefererences.contains(ereference)) {
 			start = eclass2;
-			direction = FROM;
+			direction = Ecore2TgConfiguration.FROM;
 		}
 		// --Check if Composition changes the direction
 		else if (ereference.isContainment()
-				&& (this.configuration.getAggregationInfluenceOnDirection() == DIRECTION_PART_TO_WHOLE)) {
+				&& (this.configuration.getAggregationInfluenceOnDirection() == Ecore2TgConfiguration.DIRECTION_PART_TO_WHOLE)) {
 			start = eclass2;
-			direction = FROM;
+			direction = Ecore2TgConfiguration.FROM;
 		}
 		// --Else, take the ereference direction
 		else {
 			start = eclass1;
-			direction = TO;
+			direction = Ecore2TgConfiguration.TO;
 		}
 
 		// Add the incidences to the created EdgeClass
 		Comment c = this.schemagraph.createComment();
-		if (direction == TO) {
+		if (direction == Ecore2TgConfiguration.TO) {
 			activeEdgeClass.add_from(inc1);
 			activeEdgeClass.add_to(inc2);
 			this.definingDirectionEReferences.add(ereference);
@@ -2656,16 +2614,16 @@ public class Ecore2Tg {
 		int direction;
 		if (this.toEReferences.contains(ereference)) {
 			start = eclass1;
-			direction = TO;
+			direction = Ecore2TgConfiguration.TO;
 		} else if (this.toEReferences.contains(opposite)) {
 			start = eclass2;
-			direction = FROM;
+			direction = Ecore2TgConfiguration.FROM;
 		} else if (this.fromERefererences.contains(ereference)) {
 			start = eclass2;
-			direction = FROM;
+			direction = Ecore2TgConfiguration.FROM;
 		} else if (this.fromERefererences.contains(opposite)) {
 			start = eclass1;
-			direction = TO;
+			direction = Ecore2TgConfiguration.TO;
 		}
 		// User hasn't determined Direction
 		// Check if a EReference is annotated
@@ -2674,10 +2632,10 @@ public class Ecore2Tg {
 			String s = ean.getDetails().get(EAnnotationKeys.KEY_FOR_DIRECTION);
 			if (s.equals("TO")) {
 				start = eclass1;
-				direction = TO;
+				direction = Ecore2TgConfiguration.TO;
 			} else {
 				start = eclass2;
-				direction = FROM;
+				direction = Ecore2TgConfiguration.FROM;
 			}
 		} else if ((eanOpp != null)
 				&& (eanOpp.getDetails().get(EAnnotationKeys.KEY_FOR_DIRECTION) != null)) {
@@ -2685,47 +2643,47 @@ public class Ecore2Tg {
 					EAnnotationKeys.KEY_FOR_DIRECTION);
 			if (s.equals("FROM")) {
 				start = eclass1;
-				direction = TO;
+				direction = Ecore2TgConfiguration.TO;
 			} else {
 				start = eclass2;
-				direction = FROM;
+				direction = Ecore2TgConfiguration.FROM;
 			}
 		}
 		// Check if user has named and indirectly defined
 		else if (helpvar == 1) {
 			start = eclass1;
-			direction = TO;
+			direction = Ecore2TgConfiguration.TO;
 		} else if (helpvar == 2) {
 			start = eclass2;
-			direction = FROM;
+			direction = Ecore2TgConfiguration.FROM;
 		}
 		// Check if Composition changes the direction
 		else if ((ereference.isContainment() && (this.configuration
-				.getAggregationInfluenceOnDirection() == DIRECTION_WHOLE_TO_PART))
+				.getAggregationInfluenceOnDirection() == Ecore2TgConfiguration.DIRECTION_WHOLE_TO_PART))
 				|| (opposite.isContainment() && (this.configuration
-						.getAggregationInfluenceOnDirection() == DIRECTION_PART_TO_WHOLE))) {
+						.getAggregationInfluenceOnDirection() == Ecore2TgConfiguration.DIRECTION_PART_TO_WHOLE))) {
 			start = eclass1;
-			direction = TO;
+			direction = Ecore2TgConfiguration.TO;
 		} else if ((opposite.isContainment() && (this.configuration
-				.getAggregationInfluenceOnDirection() == DIRECTION_WHOLE_TO_PART))
+				.getAggregationInfluenceOnDirection() == Ecore2TgConfiguration.DIRECTION_WHOLE_TO_PART))
 				|| (ereference.isContainment() && (this.configuration
-						.getAggregationInfluenceOnDirection() == DIRECTION_PART_TO_WHOLE))) {
+						.getAggregationInfluenceOnDirection() == Ecore2TgConfiguration.DIRECTION_PART_TO_WHOLE))) {
 			start = eclass2;
-			direction = FROM;
+			direction = Ecore2TgConfiguration.FROM;
 		}
 		// Take Default Alphabetical Order
 		else {
 			if (ereference.getName().compareTo(opposite.getName()) < 0) {
 				start = eclass1;
-				direction = TO;
+				direction = Ecore2TgConfiguration.TO;
 			} else {
 				start = eclass2;
-				direction = FROM;
+				direction = Ecore2TgConfiguration.FROM;
 			}
 		}
 
 		// Add the incidences to the created EdgeClass
-		if (direction == TO) {
+		if (direction == Ecore2TgConfiguration.TO) {
 			activeEdgeClass.add_from(inc1);
 			activeEdgeClass.add_to(inc2);
 			this.definingDirectionEReferences.add(ereference);

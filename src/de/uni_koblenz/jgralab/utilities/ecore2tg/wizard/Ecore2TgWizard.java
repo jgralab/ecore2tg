@@ -19,6 +19,7 @@ import de.uni_koblenz.jgralab.GraphIOException;
 import de.uni_koblenz.jgralab.schema.Schema;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg.TransformParams;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefInfoStructure;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefPackageEditingSupport;
 
@@ -181,10 +182,10 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 				}
 
 				if (refstruc.direction) {
-					ecore2tg.getDirectionMap().put(referencename, Ecore2Tg.TO);
+					ecore2tg.getDirectionMap().put(referencename, Ecore2TgConfiguration.TO);
 				} else {
 					ecore2tg.getDirectionMap()
-							.put(referencename, Ecore2Tg.FROM);
+							.put(referencename, Ecore2TgConfiguration.FROM);
 				}
 
 				if (refstruc.edgeClassName != null

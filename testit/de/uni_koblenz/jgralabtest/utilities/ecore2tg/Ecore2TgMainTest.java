@@ -330,7 +330,7 @@ public class Ecore2TgMainTest {
 			// test.getEdgeClassesList().add("complexwayandnode.structure.Way");
 			conf.getDirectionMap().put(
 					"complexwayandnode.structure.Node.outgoingWays",
-					Ecore2Tg.TO);
+					Ecore2TgConfiguration.TO);
 
 			conf.getDefinedPackagesOfEdgeClassesMap().put(
 					"complexwayandnode.carduse.Section.shownnodes",
@@ -385,7 +385,7 @@ public class Ecore2TgMainTest {
 		if (options) {
 			conf.getEdgeClassesList().add("simplenodeandway.Way");
 			conf.getDirectionMap().put("simplenodeandway.Node.incomingWays",
-					Ecore2Tg.TO);
+					Ecore2TgConfiguration.TO);
 
 			basefile += "Opt";
 			modelBasefileOut += "Opt";
@@ -445,9 +445,9 @@ public class Ecore2TgMainTest {
 
 		// Options
 		if (options) {
-			conf.setAggregationInfluenceOnDirection(Ecore2Tg.DIRECTION_PART_TO_WHOLE);
+			conf.setAggregationInfluenceOnDirection(Ecore2TgConfiguration.DIRECTION_PART_TO_WHOLE);
 			conf.getDirectionMap().put("librarysystem.Library.item",
-					Ecore2Tg.TO);
+					Ecore2TgConfiguration.TO);
 
 			basefile += "Opt";
 			modelBasefileOut += "Opt";
@@ -497,9 +497,9 @@ public class Ecore2TgMainTest {
 					"universitycourses");
 
 			conf.getDirectionMap().put(
-					"universitycourses.work.Lecture.lecturer", Ecore2Tg.TO);
+					"universitycourses.work.Lecture.lecturer", Ecore2TgConfiguration.TO);
 			conf.getDirectionMap().put("universitycourses.work.Course.visitor",
-					Ecore2Tg.TO);
+					Ecore2TgConfiguration.TO);
 			conf.setAsGraphClass("universitycourses.UniversityCoursesModel");
 			conf.saveConfigurationToFile("../../freshEcore2Tg/ecore2tg/tests/UniversityModel/savedconfig.plist");
 

@@ -152,7 +152,7 @@ public class Ecore2TgAnalyzer {
 		faults.clear();
 
 		// Take the childs of that candidates
-		ArrayList<EClass> childs = getSubclassesToEdgeClasses(
+		ArrayList<EClass> childs = getSubclassesOfEClasses(
 				this.metamodelResource, candidates);
 
 		// Check if count of EReferences are not greater than 2 and Multiplicity
@@ -261,7 +261,7 @@ public class Ecore2TgAnalyzer {
 				}
 			}
 		}
-		sortEdgeClasses(this.edgeclasses);
+		sortEClasses(this.edgeclasses);
 	}
 
 	/**
@@ -1466,6 +1466,10 @@ public class Ecore2TgAnalyzer {
 	/**
 	 * Returns the qualified name of an EReference in the Form
 	 * ....Package1.EClassName.EReferenceName
+	 * 
+	 * @param ref
+	 *            the EReference to find the qualified name for
+	 * @return the qualified name of the given EReference
 	 * */
 	public static String getQualifiedReferenceName(EReference ref) {
 		String name = "";
@@ -1484,6 +1488,10 @@ public class Ecore2TgAnalyzer {
 	/**
 	 * Returns the qualified name of an EClass in the Form
 	 * ....Package1.EClassName
+	 * 
+	 * @param ec
+	 *            the EClass to find the qualified name for
+	 * @return the qualified name of the given EClass
 	 * */
 	public static String getQualifiedEClassName(EClass ec) {
 		String name = "";
@@ -1499,7 +1507,8 @@ public class Ecore2TgAnalyzer {
 	}
 
 	/**
-	 * Searches in the Resource for all EReferences that references the EClass
+	 * Searches in the Resource for all EReferences that references the given
+	 * EClass
 	 * 
 	 * @param e
 	 *            The EClass, the pointing EReferences are searched for
@@ -1515,14 +1524,14 @@ public class Ecore2TgAnalyzer {
 
 	/**
 	 * Searches in the EPackage pack for all EReferences that references the
-	 * EClass
+	 * given EClass
 	 * 
 	 * @param e
-	 *            The EClass, the pointing EReferences are searched for
+	 *            the EClass, the pointing EReferences are searched for
 	 * @param pack
-	 *            The package, where the pointing EReferences are searched
+	 *            the package, where the pointing EReferences are searched
 	 * @param erefs
-	 *            The ArrayList of all found EReferences
+	 *            the ArrayList of all found EReferences
 	 * */
 	private static void getEReferences_that_point_on_EClass(EClass e,
 			EPackage pack, ArrayList<EReference> erefs) {
@@ -1545,20 +1554,22 @@ public class Ecore2TgAnalyzer {
 	}
 
 	/**
-	 * Adds all Subtypes of the EClasses in parents into the childs list The
-	 * Problem is, that there is no method to get all subtypes for an EClass -
-	 * so we have to iterate over all EClasses again
+	 * Finds all subtypes of the EClasses in parents. The problem is, that there
+	 * is no method to get all subtypes for an EClass - so we have to iterate
+	 * over all EClasses again
 	 * 
+	 * @param metamodelResource
+	 *            Resource of the metamodel to search in
 	 * @param parents
-	 *            List of declared EClasses to find children for
-	 * @param childs
-	 *            List where the results are put in
+	 *            list of declared EClasses to find children for
+	 * 
+	 * @return list with all subclasses of the given EClasses
 	 * */
-	public static ArrayList<EClass> getSubclassesToEdgeClasses(
+	public static ArrayList<EClass> getSubclassesOfEClasses(
 			Resource metamodelResource, ArrayList<EClass> parents) {
 		ArrayList<EClass> childs = new ArrayList<EClass>();
 		for (EObject ob : metamodelResource.getContents()) {
-			addSubclassesToEdgeClasses((EPackage) ob, parents, childs);
+			findSubclassesOfEClasses((EPackage) ob, parents, childs);
 		}
 		return childs;
 	}
@@ -1575,7 +1586,7 @@ public class Ecore2TgAnalyzer {
 	 * @param childs
 	 *            List where the results are put in
 	 * */
-	private static void addSubclassesToEdgeClasses(EPackage pack,
+	private static void findSubclassesOfEClasses(EPackage pack,
 			ArrayList<EClass> parents, ArrayList<EClass> childs) {
 		for (EClassifier classi : pack.getEClassifiers()) {
 			// if it is an EClass and
@@ -1593,31 +1604,34 @@ public class Ecore2TgAnalyzer {
 		}
 		// Search in subpackages
 		for (EPackage childpack : pack.getESubpackages()) {
-			addSubclassesToEdgeClasses(childpack, parents, childs);
+			findSubclassesOfEClasses(childpack, parents, childs);
 		}
 	}
 
 	/**
-	 * Sorts the EClasses in the edgeclasses list, so that no EClass appears
-	 * more than once and that one EClass has a greater index than its
-	 * supertypes.
+	 * Sorts the EClasses in the given list in place, so that afterward no
+	 * EClass appears more than once and that one EClass has a greater index
+	 * than its supertypes.
+	 * 
+	 * @param eclasses
+	 *            list of EClasses to sort topological
 	 * */
-	public static void sortEdgeClasses(ArrayList<EClass> edgeclasses) {
+	public static void sortEClasses(ArrayList<EClass> eclasses) {
 		// Sort edgeclasses
 		int i = 0;
-		while (i < edgeclasses.size()) {
+		while (i < eclasses.size()) {
 			boolean increment = true;
-			EClass eclass = edgeclasses.get(i);
-			for (int j = i + 1; j < edgeclasses.size(); j++) {
-				EClass compareeclass = edgeclasses.get(j);
+			EClass eclass = eclasses.get(i);
+			for (int j = i + 1; j < eclasses.size(); j++) {
+				EClass compareeclass = eclasses.get(j);
 				if (eclass == compareeclass) {
-					edgeclasses.remove(i);
+					eclasses.remove(i);
 					increment = false;
 					break;
 				}
 				if (eclass.getESuperTypes().contains(compareeclass)) {
-					edgeclasses.remove(i);
-					edgeclasses.add(j, eclass);
+					eclasses.remove(i);
+					eclasses.add(j, eclass);
 					increment = false;
 					break;
 				}

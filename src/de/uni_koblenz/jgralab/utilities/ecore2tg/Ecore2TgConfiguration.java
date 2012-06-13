@@ -13,17 +13,6 @@ import de.uni_koblenz.jgralab.grumlschema.structure.Comment;
 import de.uni_koblenz.jgralab.grumlschema.structure.GraphClass;
 
 public class Ecore2TgConfiguration {
-	// --------------------------------------------------------------------------
-	// --------------------------------------------------------------------------
-	// -------User Options------------------------------------------------------
-	// --------------------------------------------------------------------------
-	// --------------------------------------------------------------------------
-
-	// //////////////////////////////////////////////////////////////////////////
-	// #//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#/
-	// //////////////////////////////////////////////////////////////////////////
-	// #//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#/
-	// //////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Enumeration, defines how the transformation will happen
@@ -42,6 +31,52 @@ public class Ecore2TgConfiguration {
 		// No EdgeClasses are searched
 		JUST_LIKE_ECORE;
 	}
+
+	// --------------------------------------------------------------------------
+	// --------------------------------------------------------------------------
+	// -------Constants----------------------------------------------------------
+	// --------------------------------------------------------------------------
+	// --------------------------------------------------------------------------
+
+	/**
+	 * Constants to define if the composition value of an EReference has
+	 * influence on the direction of the resulting EdgeClass
+	 * */
+
+	/**
+	 * Composition EdgeClasses direct from part to whole
+	 * */
+	public static final int DIRECTION_PART_TO_WHOLE = 2;
+
+	/**
+	 * Composition EdgeClasses direct from whole to part
+	 * */
+	public static final int DIRECTION_WHOLE_TO_PART = 1;
+
+	/**
+	 * Composition has no influence on direction
+	 * */
+	public static final int NO_DIRECTION_FROM_AGGREGATION = 0;
+
+	/**
+	 * Constants for Direction determination for EReferences
+	 * */
+
+	/**
+	 * Value for EReference direction TO
+	 * */
+	public static final int TO = 1;
+
+	/**
+	 * Value for EReference direction FROM
+	 * */
+	public static final int FROM = 0;
+
+	// --------------------------------------------------------------------------
+	// --------------------------------------------------------------------------
+	// -------User Options------------------------------------------------------
+	// --------------------------------------------------------------------------
+	// --------------------------------------------------------------------------
 
 	/**
 	 * This map includes qualified names of EReferences and maps them to a
@@ -87,7 +122,7 @@ public class Ecore2TgConfiguration {
 	 * {@link NO_DIRECTION_FROM_AGGREGATION} {@link DIRECTION_WHOLE_TO_PART} or
 	 * {@link DIRECTION_PART_TO_WHOLE}
 	 * */
-	private int aggregationInfluenceOnDirection = Ecore2Tg.NO_DIRECTION_FROM_AGGREGATION;
+	private int aggregationInfluenceOnDirection = Ecore2TgConfiguration.NO_DIRECTION_FROM_AGGREGATION;
 
 	/**
 	 * Saves name of user defined GraphClass if there is one
@@ -111,6 +146,10 @@ public class Ecore2TgConfiguration {
 	 * */
 	private final ArrayList<String> eclassesThatAreEdgeClasses = new ArrayList<String>();
 
+	/**
+	 * Transformation Option that determines whether Ecore2Tg should look for
+	 * Transformation Options
+	 */
 	private TransformParams transopt = TransformParams.AUTOMATIC_TRANSFORMATION;
 
 	// --------------------------------------------------------------------------
@@ -201,9 +240,9 @@ public class Ecore2TgConfiguration {
 	 *            integer value setting aggregation direction influence
 	 * */
 	public void setAggregationInfluenceOnDirection(int i) {
-		if ((i != Ecore2Tg.DIRECTION_PART_TO_WHOLE)
-				&& (i != Ecore2Tg.DIRECTION_WHOLE_TO_PART)
-				&& (i != Ecore2Tg.NO_DIRECTION_FROM_AGGREGATION)) {
+		if ((i != Ecore2TgConfiguration.DIRECTION_PART_TO_WHOLE)
+				&& (i != Ecore2TgConfiguration.DIRECTION_WHOLE_TO_PART)
+				&& (i != Ecore2TgConfiguration.NO_DIRECTION_FROM_AGGREGATION)) {
 			System.err.println("Warning: Setting of aggregation influence on "
 					+ "direction was not successful because " + i
 					+ " is not a valid value. Valid values are"
@@ -297,6 +336,16 @@ public class Ecore2TgConfiguration {
 		return this.transopt;
 	}
 
+	// //////////////////////////////////////////////////////////////////////////
+	// //////////////////////////////////////////////////////////////////////////
+	// //////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Adds the the configurations as Comment to the GraphClass
+	 * 
+	 * @param schemagraph
+	 * @param defpack
+	 */
 	protected void addConfigurationAsComment(SchemaGraph schemagraph,
 			GraphClass defpack) {
 
@@ -338,9 +387,9 @@ public class Ecore2TgConfiguration {
 		}
 
 		// Aggregation Influence
-		if (this.aggregationInfluenceOnDirection != Ecore2Tg.NO_DIRECTION_FROM_AGGREGATION) {
+		if (this.aggregationInfluenceOnDirection != Ecore2TgConfiguration.NO_DIRECTION_FROM_AGGREGATION) {
 			Comment c = schemagraph.createComment();
-			if (this.aggregationInfluenceOnDirection == Ecore2Tg.DIRECTION_PART_TO_WHOLE) {
+			if (this.aggregationInfluenceOnDirection == Ecore2TgConfiguration.DIRECTION_PART_TO_WHOLE) {
 				c.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
 						+ " aggregation influence DIRECTION_PART_TO_WHOLE");
 			} else {
@@ -358,7 +407,7 @@ public class Ecore2TgConfiguration {
 					+ " direction of references : ";
 			for (String re : this.referencesWithDirections.keySet()) {
 				text += re;
-				if (this.referencesWithDirections.get(re) == Ecore2Tg.TO) {
+				if (this.referencesWithDirections.get(re) == Ecore2TgConfiguration.TO) {
 					text += " TO, ";
 				} else {
 					text += " FROM, ";
@@ -418,6 +467,12 @@ public class Ecore2TgConfiguration {
 		}
 	}
 
+	/**
+	 * Saves the configuration to the given URI
+	 * 
+	 * @param uri
+	 *            of file to save configuration in
+	 */
 	public void saveConfigurationToFile(String uri) {
 		PList x = new PList();
 		PListDict ds = x.getDict();
@@ -437,10 +492,10 @@ public class Ecore2TgConfiguration {
 		}
 
 		// Direction out of aggregation
-		if (this.aggregationInfluenceOnDirection == Ecore2Tg.DIRECTION_PART_TO_WHOLE) {
+		if (this.aggregationInfluenceOnDirection == Ecore2TgConfiguration.DIRECTION_PART_TO_WHOLE) {
 			ds.put("edgeclassdirection_aggregation",
 					"aggregation_part_to_wohle");
-		} else if (this.aggregationInfluenceOnDirection == Ecore2Tg.DIRECTION_WHOLE_TO_PART) {
+		} else if (this.aggregationInfluenceOnDirection == Ecore2TgConfiguration.DIRECTION_WHOLE_TO_PART) {
 			ds.put("edgeclassdirection_aggregation",
 					"aggregation_whole_to_part");
 		}
@@ -449,7 +504,7 @@ public class Ecore2TgConfiguration {
 		if (!this.referencesWithDirections.isEmpty()) {
 			Vector<String> vec = new Vector<String>();
 			for (String ref : this.referencesWithDirections.keySet()) {
-				String dir = this.referencesWithDirections.get(ref) == Ecore2Tg.FROM ? "FROM"
+				String dir = this.referencesWithDirections.get(ref) == Ecore2TgConfiguration.FROM ? "FROM"
 						: "TO";
 				vec.add(ref + "," + dir);
 			}
@@ -507,7 +562,11 @@ public class Ecore2TgConfiguration {
 		}
 	}
 
-	// ------------------------------------------------------
+	// //////////////////////////////////////////////////////////////////////////
+	// #//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#/
+	// //////////////////////////////////////////////////////////////////////////
+	// #//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#/
+	// //////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Loads a configuration file from the give URI and adds the content to the
@@ -556,9 +615,9 @@ public class Ecore2TgConfiguration {
 		String aggr_dir = (String) ds.get("edgeclassdirection_aggregation");
 		if (aggr_dir != null) {
 			if (aggr_dir.equals("aggregation_part_to_wohle")) {
-				conf.aggregationInfluenceOnDirection = Ecore2Tg.DIRECTION_PART_TO_WHOLE;
+				conf.aggregationInfluenceOnDirection = Ecore2TgConfiguration.DIRECTION_PART_TO_WHOLE;
 			} else if (aggr_dir.equals("aggregation_whole_to_part")) {
-				conf.aggregationInfluenceOnDirection = Ecore2Tg.DIRECTION_WHOLE_TO_PART;
+				conf.aggregationInfluenceOnDirection = Ecore2TgConfiguration.DIRECTION_WHOLE_TO_PART;
 			} else {
 				System.err
 						.println("Configuration file "
@@ -578,9 +637,9 @@ public class Ecore2TgConfiguration {
 					String intval = s.substring(s.indexOf(',') + 1);
 					int direction = -1;
 					if (intval.equals("FROM")) {
-						direction = Ecore2Tg.FROM;
+						direction = Ecore2TgConfiguration.FROM;
 					} else if (intval.equals("TO")) {
-						direction = Ecore2Tg.TO;
+						direction = Ecore2TgConfiguration.TO;
 					} else {
 						System.err
 								.println("Configuration file "
