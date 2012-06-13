@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ecore_backtransformation</key>
+	<false/>
+	<key>transform_one_role_to_uni</key>
+	<false/>
+	<key>transform_graphclass</key>
+	<true/>
+	<key>maek_graphclass_to_rootelement</key>
+	<true/>
+	<key>rootpackage_name</key>
+	<string>former_default</string>
+	<key>ns_prefix</key>
+	<string>org.test.former_default</string>
+	<key>ns_uri</key>
+	<string>http://library.org/former_default</string>
+	<key>define_rolenames</key>
+	<array>
+		<string>administration.Loans, TO, myLoans</string>
+		<string>administration.Loans, FROM, loansToUsers</string>
+	</array>
+</dict>
+</plist>

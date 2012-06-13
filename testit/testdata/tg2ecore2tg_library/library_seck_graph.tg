@@ -1,0 +1,58 @@
+// JGraLab - The Java graph laboratory
+//   Version : unknown
+//   Revision: unknown
+
+TGraph 2;
+Schema org.testschema.ExtendedLibrarySchema;
+GraphClass ExtendedLibraryGraph { version: String };
+Package administration;
+RecordDomain Article ( authornames: List<String>, keywords: List<String>, title: String );
+RecordDomain BusinessHours ( openText: String, specialClosed: List<Date> );
+EnumDomain Category ( KK, KB, JB, SL, S );
+RecordDomain Date ( day: Integer, month: Integer, year: Integer );
+RecordDomain ID ( category: Category, number: Long, year: Integer );
+EnumDomain MediaType ( VHS, DVD, CD, CASSETTE, BLUERAY );
+VertexClass Book: Medium;
+VertexClass Library { openingHours: BusinessHours };
+VertexClass Magazin: Medium { articles: List<Article>,  dateOfIssue: Date };
+abstract VertexClass Medium { bibID: ID,  title: String };
+VertexClass NewMedia: Medium { type: MediaType };
+EdgeClass HasAuthor from Book (0,*) role book to people.Person (1,1) role author;
+EdgeClass HasDirector from Library (0,1) role library aggregation shared to people.Person (1,1) role director;
+EdgeClass HasMedia from Library (0,1) role library to Medium (0,*) role media aggregation shared;
+EdgeClass Loans from people.User (0,*) role loaner to Medium (0,*) role items { dateOfLoan: Date,  dateOfReturn: Date };
+Package people;
+VertexClass Person { name: String };
+VertexClass User: Person { identityNumber: Long };
+Graph "K\u00d6B Seck" 65 ExtendedLibraryGraph (40 50 13 15) "Version0.0";
+Package administration;
+1 Library <4 5 6 7 8 9> ("Do 15-17 Uhr, So nach dem Gottesdienst" [(30 3 2011) (17 4 2011)]);
+Package people;
+2 Person <-3> "Ken Follet";
+3 Person <-2> "Joanne K. Rowling";
+4 Person <-1> "J. R. R. Tolkien";
+5 Person <-4> "Petra Hering";
+6 User <10 13> 1000 "Michelle Pr\u00fc\u00df";
+7 User <11 14> 1005 "Claudia Kreckel";
+8 User <12 15> 1011 "Isolde Schlicht";
+Package administration;
+9 NewMedia <-9 -11> (SL 20000 2000) "Robin Hood" DVD;
+10 Book <1 -5 -10 -15> (SL 1234 1970) "Lord of the Rings";
+11 Book <2 -6 -13 -14> (JB 11111 1998) "Harry Potter and the Philosophers Stone";
+12 Book <3 -7> (SL 55555 2010) "Fall of Giants";
+13 Magazin <-8 -12> [(["Heinz" "Fritz" "Hugo"] ["Firefox" "Browser" "Web"] "Browser Comparison") (["Tanja" "Kira"] ["JavaScript" "Web" "HTML"] "Benefits of JQuery") (["Dieter" "Steve" "David"] ["Programming" "Java" "C++"] "Clean Code")] (S 121211 2011) (5 1 2011) "CT 01/2011";
+1 HasAuthor;
+2 HasAuthor;
+3 HasAuthor;
+4 HasDirector;
+5 HasMedia;
+6 HasMedia;
+7 HasMedia;
+8 HasMedia;
+9 HasMedia;
+10 Loans (20 11 2010) (30 11 2010);
+11 Loans (20 12 2010) (5 1 2011);
+12 Loans (2 6 2010) (14 6 2010);
+13 Loans (20 2 2010) (3 3 2010);
+14 Loans (2 1 2010) (30 1 2010);
+15 Loans (20 4 2010) (9 5 2010);
