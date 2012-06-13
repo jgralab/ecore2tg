@@ -13,6 +13,7 @@ import de.uni_koblenz.jgralab.GraphIOException;
 import de.uni_koblenz.jgralab.codegenerator.CodeGeneratorConfiguration;
 import de.uni_koblenz.jgralab.grumlschema.SchemaGraph;
 import de.uni_koblenz.jgralab.schema.Schema;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.TransformParams;
 import de.uni_koblenz.jgralab.utilities.rsa.SchemaGraph2XMI;
 import de.uni_koblenz.jgralab.utilities.tg2dot.Tg2Dot;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.Schema2SchemaGraph;
@@ -87,7 +88,7 @@ public class RoundtripTest {
 
 		Ecore2Tg ec2tg = new Ecore2Tg(metamodel_filename);
 		ec2tg.getConfiguration().setTransformationOption(
-				Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+				TransformParams.AUTOMATIC_TRANSFORMATION);
 		ec2tg.transform("org.testschema.ExtendedLibrary");
 		SchemaGraph2Schema sg2s = new SchemaGraph2Schema();
 		GraphIO.saveSchemaToFile(sg2s.convert(ec2tg.getSchemaGraph()),
@@ -129,7 +130,7 @@ public class RoundtripTest {
 
 		Ecore2Tg ec2tg = new Ecore2Tg(metamodel_filename);
 		ec2tg.getConfiguration().setTransformationOption(
-				Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+				TransformParams.AUTOMATIC_TRANSFORMATION);
 		ec2tg.transform("org.test.ExtendedUniversity");
 		SchemaGraph2Schema sg2s_2 = new SchemaGraph2Schema();
 		GraphIO.saveSchemaToFile(sg2s_2.convert(ec2tg.getSchemaGraph()),

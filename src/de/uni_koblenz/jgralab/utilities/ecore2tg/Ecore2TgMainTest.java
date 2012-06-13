@@ -9,6 +9,7 @@ import de.uni_koblenz.jgralab.GraphIO;
 import de.uni_koblenz.jgralab.GraphIOException;
 import de.uni_koblenz.jgralab.grumlschema.SchemaGraph;
 import de.uni_koblenz.jgralab.schema.Schema;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.TransformParams;
 import de.uni_koblenz.jgralab.utilities.rsa.SchemaGraph2XMI;
 import de.uni_koblenz.jgralab.utilities.tg2dot.Tg2Dot;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.SchemaGraph2Schema;
@@ -105,7 +106,7 @@ public class Ecore2TgMainTest {
 		// {"../../freshEcore2Tg/ecore2tg/tests/InetFileTest/Grafcet2PetriNet_model_goodNs.ecore"};
 
 		String basefile = "../../freshEcore2Tg/ecore2tg/tests/InetFileTest/Grafcet";
-		String[] p = { "../../freshEcore2Tg/ecore2tg/tests/InetFileTest/example.ecore" };
+		String[] p = { "../../freshEcore2Tg/ecore2tg/tests/InetFileTest/example.xmi" };
 
 		// String basefile =
 		// "../../freshEcore2Tg/ecore2tg/tests/InetFileTest/IEEE1471ConceptualModel";
@@ -118,7 +119,7 @@ public class Ecore2TgMainTest {
 		String ecorefile = basefile + ".ecore";
 		Ecore2Tg test = new Ecore2Tg(ecorefile);
 		Ecore2TgConfiguration conf = test.getConfiguration();
-		conf.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
 		test.transform(schemName);
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -169,7 +170,7 @@ public class Ecore2TgMainTest {
 		basefile += "Opt";
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
 		test.transform("test.OverwrittenRefs");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -202,7 +203,7 @@ public class Ecore2TgMainTest {
 		basefile += "Opt";
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
 
 		test.transform("test.MultipleInheritance");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
@@ -225,7 +226,7 @@ public class Ecore2TgMainTest {
 		basefile += "Opt";
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
 		test.transform("test.Malbuch");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -246,7 +247,7 @@ public class Ecore2TgMainTest {
 		// basefile += "Opt";
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
 		test.transform("test.Malbuch2");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -267,7 +268,7 @@ public class Ecore2TgMainTest {
 		basefile += "Opt";
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
 		test.transform("test.Malbuch5");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -300,7 +301,7 @@ public class Ecore2TgMainTest {
 		}
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
 		test.transform("test.Usermanagement");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -338,7 +339,7 @@ public class Ecore2TgMainTest {
 		}
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
 		test.transform("test.ComplexNodeAndWay");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -389,7 +390,7 @@ public class Ecore2TgMainTest {
 		}
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
 		test.transform("tests.test.SimpleNodeAndWay");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -422,7 +423,7 @@ public class Ecore2TgMainTest {
 		}
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
 		test.transform("test.SpecialCases");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -451,7 +452,7 @@ public class Ecore2TgMainTest {
 		}
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.JUST_LIKE_ECORE);
+		conf.setTransformationOption(TransformParams.JUST_LIKE_ECORE);
 		test.transform("test.LibrarySystem");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -498,34 +499,19 @@ public class Ecore2TgMainTest {
 			conf.getDirectionMap().put("universitycourses.work.Course.visitor",
 					Ecore2Tg.TO);
 			conf.setAsGraphClass("universitycourses.UniversityCoursesModel");
+			conf.saveConfigurationToFile("../../freshEcore2Tg/ecore2tg/tests/UniversityModel/savedconfig.plist");
 
 			basefile += "Opt";
 			modelBasefileOut += "Opt";
 			modelBasefileOut2 += "Opt";
 		} else {
 			test.setConfiguration(Ecore2TgConfiguration
-					.loadConfigurationFromFile("../../freshEcore2Tg/ecore2tg/tests/UniversityModel/PListTest.plist"));
+					.loadConfigurationFromFile("../../freshEcore2Tg/ecore2tg/tests/UniversityModel/savedconfig.plist")); // PListTest.plist"));
 			conf = test.getConfiguration();
 		}
-		/*
-		 * String[] args2 = { "-i", ecorefile, "-o", basefile + "Cons.tg", "-n",
-		 * "universitycourses.work.Tutorial.belongingLecture",
-		 * "universitycourses.work.BelongsToLecture", "-n",
-		 * "universitycourses.people.Assistant.tutorial",
-		 * "universitycourses.HoldsTutorium", "-p",
-		 * "universitycourses.people.Professor.lecture", "universitycourses",
-		 * "-d", "universitycourses.work.Lecture.lecturer", "TO", "-d",
-		 * "universitycourses.work.Course.visitor", "TO", "-g",
-		 * "universitycourses.UniversityCoursesModel" };
-		 * 
-		 * try { Ecore2Tg.main(args2); } catch (IOException e) { // TODO
-		 * Auto-generated catch block e.printStackTrace(); } catch
-		 * (GraphIOException e) { // TODO Auto-generated catch block
-		 * e.printStackTrace(); }
-		 */
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.JUST_LIKE_ECORE);
+		conf.setTransformationOption(TransformParams.JUST_LIKE_ECORE);
 		test.transform("test.University");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -564,7 +550,7 @@ public class Ecore2TgMainTest {
 		}
 
 		// Start Transformation
-		conf.setTransformationOption(Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+		conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
 		test.transform("test.Catworld");
 		SchemaGraph schemaGraph = test.getSchemaGraph();
 		produceOutput(schemaGraph, basefile);
@@ -579,7 +565,7 @@ public class Ecore2TgMainTest {
 		String ecorefile = basefile + ".ecore";
 		Ecore2Tg test = new Ecore2Tg(ecorefile);
 		test.getConfiguration().setTransformationOption(
-				Ecore2Tg.TransformParams.AUTOMATIC_TRANSFORMATION);
+				TransformParams.AUTOMATIC_TRANSFORMATION);
 		test.transform("test.UMLstatemodel");
 		String a[] = { "../../freshEcore2Tg/ecore2tg/tests/TassiloModel/original_modelNeu.xmi" };
 		// String a[] =

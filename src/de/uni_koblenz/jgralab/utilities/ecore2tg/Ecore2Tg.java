@@ -70,6 +70,7 @@ import de.uni_koblenz.jgralab.grumlschema.structure.Package;
 import de.uni_koblenz.jgralab.grumlschema.structure.Schema;
 import de.uni_koblenz.jgralab.grumlschema.structure.VertexClass;
 import de.uni_koblenz.jgralab.impl.ConsoleProgressFunction;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.TransformParams;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.SchemaGraph2Schema;
 
 public class Ecore2Tg {
@@ -478,24 +479,6 @@ public class Ecore2Tg {
 	// #//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#/
 	// //////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * Enumeration, defines how the transformation will happen
-	 * */
-	public enum TransformParams {
-
-		// EdgeClasses are searched automatically
-		// --and treated as ones
-		AUTOMATIC_TRANSFORMATION,
-
-		// EdgeClasses are searched automatically
-		// --but the results are only printed
-		// --to the console
-		PRINT_PROPOSALS,
-
-		// No EdgeClasses are searched
-		JUST_LIKE_ECORE;
-	}
-
 	// --------------------------------------------------------------------------
 	// --------------------------------------------------------------------------
 	// -------Mappings-----------------------------------------------------------
@@ -888,7 +871,7 @@ public class Ecore2Tg {
 		this.examineUserNamesAndPackages();
 
 		// Does the user want the program to search for EdgeClasses?
-		if (this.getConfiguration().getTransformationOption() != Ecore2Tg.TransformParams.JUST_LIKE_ECORE) {
+		if (this.getConfiguration().getTransformationOption() != TransformParams.JUST_LIKE_ECORE) {
 			this.analyzer.searchForEdgeClasses(this.getConfiguration()
 					.getTransformationOption());
 			this.badEReferences.addAll(this.analyzer.getIgnoredEReferences());

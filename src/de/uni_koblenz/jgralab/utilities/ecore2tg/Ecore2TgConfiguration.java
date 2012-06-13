@@ -11,7 +11,6 @@ import org.riediger.plist.PListException;
 import de.uni_koblenz.jgralab.grumlschema.SchemaGraph;
 import de.uni_koblenz.jgralab.grumlschema.structure.Comment;
 import de.uni_koblenz.jgralab.grumlschema.structure.GraphClass;
-import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg.TransformParams;
 
 public class Ecore2TgConfiguration {
 	// --------------------------------------------------------------------------
@@ -19,6 +18,30 @@ public class Ecore2TgConfiguration {
 	// -------User Options------------------------------------------------------
 	// --------------------------------------------------------------------------
 	// --------------------------------------------------------------------------
+
+	// //////////////////////////////////////////////////////////////////////////
+	// #//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#/
+	// //////////////////////////////////////////////////////////////////////////
+	// #//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#//#/
+	// //////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Enumeration, defines how the transformation will happen
+	 * */
+	public enum TransformParams {
+
+		// EdgeClasses are searched automatically
+		// --and treated as ones
+		AUTOMATIC_TRANSFORMATION,
+
+		// EdgeClasses are searched automatically
+		// --but the results are only printed
+		// --to the console
+		PRINT_PROPOSALS,
+
+		// No EdgeClasses are searched
+		JUST_LIKE_ECORE;
+	}
 
 	/**
 	 * This map includes qualified names of EReferences and maps them to a
@@ -394,6 +417,97 @@ public class Ecore2TgConfiguration {
 			defpack.add_comment(c);
 		}
 	}
+
+	public void saveConfigurationToFile(String uri) {
+		PList x = new PList();
+		PListDict ds = x.getDict();
+
+		// GraphClass
+		if (this.nameOfEClassThatIsGraphClass != null
+				&& !this.nameOfEClassThatIsGraphClass.equals("")) {
+			ds.put("graphclass", this.nameOfEClassThatIsGraphClass);
+		}
+
+		// EdgeClasses
+		if (this.eclassesThatAreEdgeClasses != null
+				&& !this.eclassesThatAreEdgeClasses.isEmpty()) {
+			Vector<String> vec = new Vector<String>();
+			vec.addAll(this.eclassesThatAreEdgeClasses);
+			ds.put("edgeclasses", vec);
+		}
+
+		// Direction out of aggregation
+		if (this.aggregationInfluenceOnDirection == Ecore2Tg.DIRECTION_PART_TO_WHOLE) {
+			ds.put("edgeclassdirection_aggregation",
+					"aggregation_part_to_wohle");
+		} else if (this.aggregationInfluenceOnDirection == Ecore2Tg.DIRECTION_WHOLE_TO_PART) {
+			ds.put("edgeclassdirection_aggregation",
+					"aggregation_whole_to_part");
+		}
+
+		// Direction direct
+		if (!this.referencesWithDirections.isEmpty()) {
+			Vector<String> vec = new Vector<String>();
+			for (String ref : this.referencesWithDirections.keySet()) {
+				String dir = this.referencesWithDirections.get(ref) == Ecore2Tg.FROM ? "FROM"
+						: "TO";
+				vec.add(ref + "," + dir);
+			}
+			ds.put("edgeclassdirection_reference_specific", vec);
+
+		}
+
+		// EdgeClass names
+		if (!this.edgeNames.isEmpty()) {
+			Vector<String> vec = new Vector<String>();
+			for (String refName : this.edgeNames.keySet()) {
+				vec.add(refName + "," + this.edgeNames.get(refName));
+			}
+		}
+
+		// Generate rolenames
+		if (this.generateRoleNames) {
+			ds.put("generate_role_names", true);
+		}
+
+		// Package names
+		if (!this.reference2packagenameMap.isEmpty()) {
+			Vector<String> vec = new Vector<String>();
+			for (String refName : this.reference2packagenameMap.keySet()) {
+				vec.add(refName + ","
+						+ this.reference2packagenameMap.get(refName));
+			}
+			ds.put("reference_to_packagename", vec);
+		}
+
+		// Overwritten EReferences
+		if (!this.erefs2overwritteneref.isEmpty()) {
+			Vector<String> vec = new Vector<String>();
+			for (String refName : this.erefs2overwritteneref.keySet()) {
+				vec.add(refName + "," + this.erefs2overwritteneref.get(refName));
+			}
+			ds.put("reference_overwrites_reference", vec);
+		}
+
+		// Search for edgeclasses
+		if (!this.transopt.equals(TransformParams.JUST_LIKE_ECORE)) {
+			if (this.transopt.equals(TransformParams.AUTOMATIC_TRANSFORMATION)) {
+				ds.put("search_for_edge_classes", "take_automatic");
+			} else if (this.transopt.equals(TransformParams.PRINT_PROPOSALS)) {
+				ds.put("search_for_edge_classes", "print_proposals");
+			}
+		}
+
+		try {
+			x.storeTo(uri);
+		} catch (PListException e) {
+			System.err.println("Error while saving configuration to " + uri
+					+ ".");
+			e.printStackTrace();
+		}
+	}
+
+	// ------------------------------------------------------
 
 	/**
 	 * Loads a configuration file from the give URI and adds the content to the

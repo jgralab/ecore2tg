@@ -12,7 +12,7 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.resource.Resource;
 
-import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg.TransformParams;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.TransformParams;
 
 public class Ecore2TgAnalyzer {
 
