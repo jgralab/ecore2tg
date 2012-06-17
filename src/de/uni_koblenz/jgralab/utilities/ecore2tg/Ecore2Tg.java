@@ -555,7 +555,18 @@ public class Ecore2Tg {
 	 * */
 	private HashSet<EAttribute> badEAttributes;
 
-	// private ArrayList<EClass> edgeclasses;
+	/**
+	 * Remembers for an EdgeClass the EReferences that connect it to its alpha
+	 * and omega
+	 */
+	private HashMap<EClass, ArrayList<EReference>> ereferencesOfEdgeClasses = new HashMap<EClass, ArrayList<EReference>>();
+
+	/**
+	 * Remembers for an EdgeClass whether alpha or omega is a subtype of another
+	 */
+	private HashMap<EClass, boolean[]> ereferencesOfEdgeClassesresult = new HashMap<EClass, boolean[]>();
+
+	private ArrayList<EClass> edgeclasses;
 
 	/**
 	 * Set of all EReferences that define the direction for EReferences with or
@@ -731,6 +742,9 @@ public class Ecore2Tg {
 		this.transformedEReferences = new HashSet<EReference>();
 		this.badEReferences = new HashSet<EReference>();
 		this.badEAttributes = new HashSet<EAttribute>();
+		this.edgeclasses = new ArrayList<EClass>();
+		this.ereferencesOfEdgeClasses = new HashMap<EClass, ArrayList<EReference>>();
+		this.ereferencesOfEdgeClassesresult = new HashMap<EClass, boolean[]>();
 		this.definingDirectionEReferences = new HashSet<EReference>();
 		this.ereferencesEdgeClass2start = new HashSet<EReference>();
 		this.ereferencesEdgeClass2target = new HashSet<EReference>();
@@ -832,10 +846,18 @@ public class Ecore2Tg {
 		if (this.getConfiguration().getTransformationOption() != TransformParams.JUST_LIKE_ECORE) {
 			this.analyzer.searchForEdgeClasses(this.getConfiguration()
 					.getTransformationOption());
-			this.badEReferences.addAll(this.analyzer.getIgnoredEReferences());
-			this.ereferenceWithOverwritten.putAll(this.analyzer
-					.getEReferences2OverwrittenEReferencesMap());
+			if (this.getConfiguration().getTransformationOption() == TransformParams.AUTOMATIC_TRANSFORMATION) {
+				this.badEReferences.addAll(this.analyzer
+						.getIgnoredEReferences());
+				this.ereferencesOfEdgeClasses.putAll(this.analyzer
+						.getEreferencesOfEdgeClasses());
+				this.ereferencesOfEdgeClassesresult.putAll(this.analyzer
+						.getEreferencesOfEdgeClassesresult());
+				this.edgeclasses.addAll(this.analyzer.getFoundEdgeClasses());
+			}
+
 		}
+		Ecore2TgAnalyzer.sortEClasses(this.edgeclasses);
 
 		// Add the 2 Attributes nsPrefix and nsURI to the GraphClass
 		if (((EPackage) this.metamodelResource.getContents().get(0))
@@ -953,12 +975,12 @@ public class Ecore2Tg {
 								+ name
 								+ " as EdgeClass, because the EClass is not found.");
 			}
-			this.analyzer.getFoundEdgeClasses().add(eclass);
+			this.edgeclasses.add(eclass);
 		}
 		// Check for Subclasses
 		ArrayList<EClass> childs = Ecore2TgAnalyzer.getSubclassesOfEClasses(
-				this.metamodelResource, this.analyzer.getFoundEdgeClasses());
-		this.analyzer.getFoundEdgeClasses().addAll(childs);
+				this.metamodelResource, this.edgeclasses);
+		this.edgeclasses.addAll(childs);
 	}
 
 	/**
@@ -1194,8 +1216,7 @@ public class Ecore2Tg {
 					}
 				}
 				// --User wants the EClass to become an EdgeClass
-				else if (this.analyzer.getFoundEdgeClasses().contains(
-						classifier)) {
+				else if (this.edgeclasses.contains(classifier)) {
 					EdgeClass ec = this.schemagraph.createEdgeClass();
 					this.edgeclassmap.put((EClass) classifier, ec);
 					this.edgeclassmaprevers.put(ec, (EClass) classifier);
@@ -1238,8 +1259,7 @@ public class Ecore2Tg {
 					// the direction
 					// is clear too
 					EdgeClass ec = this.schemagraph.createEdgeClass();
-					this.analyzer.getFoundEdgeClasses()
-							.add((EClass) classifier);
+					this.edgeclasses.add((EClass) classifier);
 					this.edgeclassmap.put((EClass) classifier, ec);
 					this.edgeclassmaprevers.put(ec, (EClass) classifier);
 				}
@@ -1638,7 +1658,7 @@ public class Ecore2Tg {
 	 * belonging EReferences into the transformedEReferences set
 	 * */
 	private void transformEClassesIntoEdgeClasses() {
-		for (EClass eclass : this.analyzer.getFoundEdgeClasses()) {
+		for (EClass eclass : this.edgeclasses) {
 
 			// Take the empty edgeclass from the map
 			EdgeClass edgeclass = this.edgeclassmap.get(eclass);
@@ -1717,10 +1737,12 @@ public class Ecore2Tg {
 			// ------Incidences--------------------------------------------------
 			// ------------------------------------------------------------------
 
-			boolean[] subtypes = this.analyzer
-					.getResultofEReferencesForEdgeClass(eclass);
-			ArrayList<EReference> resultlist = this.analyzer
-					.getEReferencesOfEdgeClass(eclass);
+			ArrayList<EReference> resultlist = new ArrayList<EReference>();
+			boolean[] subtypes = Ecore2TgAnalyzer.getEdgesEReferences(
+					this.metamodelResource, eclass,
+					this.ereferenceWithOverwritten, resultlist,
+					this.badEReferences, this.ereferencesOfEdgeClasses,
+					this.ereferencesOfEdgeClassesresult);
 
 			EReference erefFromEdgeToEClass1 = resultlist.get(0);
 			EReference erefFromEClass1ToEdge = resultlist.get(1);
@@ -2052,8 +2074,13 @@ public class Ecore2Tg {
 											parentendeclass))
 									&& (eclass.getEReferences().size() != 0)) {
 								// Try.......
-								ArrayList<EReference> res = this.analyzer
-										.getEReferencesOfEdgeClass(parent);
+								ArrayList<EReference> res = new ArrayList<EReference>();
+								Ecore2TgAnalyzer.getEdgesEReferences(
+										this.metamodelResource, parent,
+										this.ereferenceWithOverwritten, res,
+										this.badEReferences,
+										this.ereferencesOfEdgeClasses,
+										this.ereferencesOfEdgeClassesresult);
 
 								EReference erefPFromEdgeToEClass1 = res.get(0);
 								EReference erefPFromEdgeToEClass2 = res.get(2);

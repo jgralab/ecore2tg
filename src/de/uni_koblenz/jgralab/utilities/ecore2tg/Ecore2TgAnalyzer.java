@@ -25,6 +25,11 @@ public class Ecore2TgAnalyzer {
 	 */
 	private Resource metamodelResource;
 
+	/**
+	 * Map that saves for the EdgeClasses EReferences which overwrite which
+	 */
+	private HashMap<EReference, ArrayList<EReference>> ereferenceWithOverwritten = new HashMap<EReference, ArrayList<EReference>>();
+
 	// -------------------------------------------------------------------
 	// --- Output---------------------------------------------------------
 	// -------------------------------------------------------------------
@@ -35,6 +40,8 @@ public class Ecore2TgAnalyzer {
 	 * */
 	private ArrayList<EClass> edgeclasses = new ArrayList<EClass>();
 
+	// --- result of getEReferences
+
 	/**
 	 * Needed for the transformation from EClasses to EdgeClasses, Containment
 	 * EReferences that are not part of the Edge should not become transformed,
@@ -42,11 +49,6 @@ public class Ecore2TgAnalyzer {
 	 * EClasses to EdgeClasses and later again, during the model transformation.
 	 * */
 	private HashSet<EReference> badEReferences = new HashSet<EReference>();
-
-	/**
-	 * Map that saves for the EdgeClasses EReferences which overwrite which
-	 */
-	private HashMap<EReference, ArrayList<EReference>> ereferenceWithOverwritten = new HashMap<EReference, ArrayList<EReference>>();
 
 	/**
 	 * Remembers for an EdgeClass the EReferences that connect it to its alpha
@@ -81,26 +83,16 @@ public class Ecore2TgAnalyzer {
 		return this.badEReferences;
 	}
 
+	public HashMap<EClass, ArrayList<EReference>> getEreferencesOfEdgeClasses() {
+		return this.ereferencesOfEdgeClasses;
+	}
+
+	public HashMap<EClass, boolean[]> getEreferencesOfEdgeClassesresult() {
+		return this.ereferencesOfEdgeClassesresult;
+	}
+
 	public HashMap<EReference, ArrayList<EReference>> getEReferences2OverwrittenEReferencesMap() {
 		return this.ereferenceWithOverwritten;
-	}
-
-	public ArrayList<EReference> getEReferencesOfEdgeClass(EClass key) {
-		if (!this.ereferencesOfEdgeClasses.containsKey(key)) {
-			ArrayList<EReference> resultlist = new ArrayList<EReference>();
-			this.getEdgesEReferences(key, resultlist);
-			return resultlist;
-		}
-		return this.ereferencesOfEdgeClasses.get(key);
-	}
-
-	public boolean[] getResultofEReferencesForEdgeClass(EClass key) {
-		if (!this.ereferencesOfEdgeClassesresult.containsKey(key)) {
-			boolean[] res = this.getEdgesEReferences(key,
-					new ArrayList<EReference>());
-			return res;
-		}
-		return this.ereferencesOfEdgeClassesresult.get(key);
 	}
 
 	// -------------------------------------------------------------------
@@ -120,6 +112,12 @@ public class Ecore2TgAnalyzer {
 	// --------------------------------------------------------------------------
 	// -------EdgeClasses search
 	// --------------------------------------------------------------------------
+
+	public void searchForEdgeClasses(TransformParams params,
+			HashMap<EReference, ArrayList<EReference>> overwritten) {
+		this.ereferenceWithOverwritten = overwritten;
+		this.searchForEdgeClasses(params);
+	}
 
 	/**
 	 * Looks for EClasses that seems to be EdgeClasses
@@ -579,7 +577,10 @@ public class Ecore2TgAnalyzer {
 
 		// Get EReferences to test
 		ArrayList<EReference> resultlist = new ArrayList<EReference>();
-		this.getEdgesEReferences(candidate, resultlist);
+		getEdgesEReferences(this.metamodelResource, candidate,
+				this.ereferenceWithOverwritten, resultlist,
+				this.badEReferences, this.ereferencesOfEdgeClasses,
+				this.ereferencesOfEdgeClassesresult);
 		EReference erefFromEdgeToEClass1 = resultlist.get(0);
 		EReference erefFromEClass1ToEdge = resultlist.get(1);
 		EReference erefFromEdgeToEClass2 = resultlist.get(2);
@@ -603,7 +604,10 @@ public class Ecore2TgAnalyzer {
 		// Iterate over all parents
 		for (EClass parent : candidate.getEAllSuperTypes()) {
 			resultlist.clear();
-			this.getEdgesEReferences(parent, resultlist);
+			getEdgesEReferences(this.metamodelResource, parent,
+					this.ereferenceWithOverwritten, resultlist,
+					this.badEReferences, this.ereferencesOfEdgeClasses,
+					this.ereferencesOfEdgeClassesresult);
 			EReference erefParentFromEdgeToEClass1 = resultlist.get(0);
 			EReference erefParentFromEClass1ToEdge = resultlist.get(1);
 			EReference erefParentFromEdgeToEClass2 = resultlist.get(2);
@@ -740,7 +744,10 @@ public class Ecore2TgAnalyzer {
 			ArrayList<EClass> candidates, ArrayList<EClass> edgeclasses) {
 		// Get EReferences to test
 		ArrayList<EReference> resultlist = new ArrayList<EReference>();
-		this.getEdgesEReferences(candidate, resultlist);
+		getEdgesEReferences(this.metamodelResource, candidate,
+				this.ereferenceWithOverwritten, resultlist,
+				this.badEReferences, this.ereferencesOfEdgeClasses,
+				this.ereferencesOfEdgeClassesresult);
 		EReference erefFromEdgeToEClass1 = resultlist.get(0);
 		EReference erefFromEClass1ToEdge = resultlist.get(1);
 		EReference erefFromEdgeToEClass2 = resultlist.get(2);
@@ -783,23 +790,30 @@ public class Ecore2TgAnalyzer {
 	 * @return if the two EReferences pairs are inherited from a super type of
 	 *         candidate
 	 * */
-	private boolean[] getEdgesEReferences(EClass candidate,
-			ArrayList<EReference> resultlist) {
-
-		if (this.ereferencesOfEdgeClasses.get(candidate) != null) {
-			resultlist.addAll(this.ereferencesOfEdgeClasses.get(candidate));
-			return this.ereferencesOfEdgeClassesresult.get(candidate);
+	public static boolean[] getEdgesEReferences(
+			Resource metamodel,
+			EClass candidate,
+			HashMap<EReference, ArrayList<EReference>> ereferenceWithOverwritten,
+			ArrayList<EReference> resultlist,
+			HashSet<EReference> badEReferences,
+			HashMap<EClass, ArrayList<EReference>> ereferencesOfEdgeClasses,
+			HashMap<EClass, boolean[]> ereferencesOfEdgeClassesresult) {
+		if (ereferencesOfEdgeClasses.get(candidate) != null) {
+			resultlist.addAll(ereferencesOfEdgeClasses.get(candidate));
+			return ereferencesOfEdgeClassesresult.get(candidate);
 		}
 		boolean[] x = { false, false };
 		if (candidate.getESuperTypes().size() == 0) {
-			this.getEdgesEReferencesForMostSupertype(candidate, resultlist);
+			getEdgesEReferencesForMostSupertype(metamodel, candidate,
+					resultlist, badEReferences);
 		} else {
-			x = this.getEdgesEReferencesForSubtypes(candidate, resultlist);
+			x = getEdgesEReferencesForSubtypes(metamodel, candidate,
+					resultlist, badEReferences, ereferenceWithOverwritten);
 		}
 		ArrayList<EReference> templist = new ArrayList<EReference>();
 		templist.addAll(resultlist);
-		this.ereferencesOfEdgeClasses.put(candidate, templist);
-		this.ereferencesOfEdgeClassesresult.put(candidate, x);
+		ereferencesOfEdgeClasses.put(candidate, templist);
+		ereferencesOfEdgeClassesresult.put(candidate, x);
 		return x;
 	}
 
@@ -813,8 +827,9 @@ public class Ecore2TgAnalyzer {
 	 * @param resultlist
 	 *            empty list to put the results in
 	 * */
-	private void getEdgesEReferencesForMostSupertype(EClass candidate,
-			ArrayList<EReference> resultlist) {
+	private static void getEdgesEReferencesForMostSupertype(
+			Resource metamodelResource, EClass candidate,
+			ArrayList<EReference> resultlist, HashSet<EReference> badEReferences) {
 
 		EReference toEnd1 = null;
 		EReference fromEnd1 = null;
@@ -838,8 +853,8 @@ public class Ecore2TgAnalyzer {
 		ownRefs.removeAll(toDelete);
 
 		ArrayList<EReference> foreignRefs = new ArrayList<EReference>();
-		Ecore2TgAnalyzer.getEReferences_that_point_on_EClass(
-				this.metamodelResource, candidate, foreignRefs);
+		Ecore2TgAnalyzer.getEReferences_that_point_on_EClass(metamodelResource,
+				candidate, foreignRefs);
 
 		// There are two different Classes plus the container - super
 		if (ownRefs.size() == 3) {
@@ -971,8 +986,9 @@ public class Ecore2TgAnalyzer {
 		resultlist.add(fromEnd1);
 		resultlist.add(toEnd2);
 		resultlist.add(fromEnd2);
-		this.badEReferences.add(fromCont);
-		this.badEReferences.add(toCont);
+
+		badEReferences.add(fromCont);
+		badEReferences.add(toCont);
 
 		// Remember Containment EReferences to EdgeClasses to get the original
 		// Ecore Metamodel back, during a following Tg2Ecore transform
@@ -995,8 +1011,11 @@ public class Ecore2TgAnalyzer {
 	 * @return if the two EReferences pairs are inherited from a super type of
 	 *         candidate
 	 * */
-	private boolean[] getEdgesEReferencesForSubtypes(EClass candidate,
-			ArrayList<EReference> resultlist) {
+	private static boolean[] getEdgesEReferencesForSubtypes(
+			Resource metamodelResource, EClass candidate,
+			ArrayList<EReference> resultlist,
+			HashSet<EReference> badEReferences,
+			HashMap<EReference, ArrayList<EReference>> ereferenceWithOverwritten) {
 
 		ArrayList<EReference> ownRefs = new ArrayList<EReference>();
 		ArrayList<EReference> pointingRefs = new ArrayList<EReference>();
@@ -1011,19 +1030,19 @@ public class Ecore2TgAnalyzer {
 				ownRefs.remove(ed);
 			}
 		}
-		Ecore2TgAnalyzer.getEReferences_that_point_on_EClass(
-				this.metamodelResource, candidate, pointingRefs);
+		Ecore2TgAnalyzer.getEReferences_that_point_on_EClass(metamodelResource,
+				candidate, pointingRefs);
 		for (EClass parent : candidate.getEAllSuperTypes()) {
 			Ecore2TgAnalyzer.getEReferences_that_point_on_EClass(
-					this.metamodelResource, parent, pointingRefs);
+					metamodelResource, parent, pointingRefs);
 		}
 
-		ownRefs.removeAll(this.badEReferences);
-		pointingRefs.removeAll(this.badEReferences);
+		ownRefs.removeAll(badEReferences);
+		pointingRefs.removeAll(badEReferences);
 
 		ArrayList<EClass> endpoints = new ArrayList<EClass>();
 		ArrayList<EReference> refsOfEndpoints = new ArrayList<EReference>();
-		this.getEndpoints(candidate, ownRefs, pointingRefs, endpoints,
+		getEndpoints(candidate, ownRefs, pointingRefs, endpoints,
 				refsOfEndpoints);
 
 		EClass end1 = null;
@@ -1097,17 +1116,16 @@ public class Ecore2TgAnalyzer {
 			else {
 				ownRefs.remove(toEnd1);
 				pointingRefs.remove(fromEnd1);
-				if (this.ereferenceWithOverwritten.get(toEnd1) != null) {
-					ownRefs.removeAll(this.ereferenceWithOverwritten
-							.get(toEnd1));
+				if (ereferenceWithOverwritten.get(toEnd1) != null) {
+					ownRefs.removeAll(ereferenceWithOverwritten.get(toEnd1));
 				}
-				if (this.ereferenceWithOverwritten.get(fromEnd1) != null) {
-					pointingRefs.removeAll(this.ereferenceWithOverwritten
+				if (ereferenceWithOverwritten.get(fromEnd1) != null) {
+					pointingRefs.removeAll(ereferenceWithOverwritten
 							.get(fromEnd1));
 				}
 				ArrayList<EReference> result = new ArrayList<EReference>();
-				this.findSecondEndpoint(candidate, end1, toEnd1, fromEnd1,
-						ownRefs, pointingRefs, result);
+				findSecondEndpoint(candidate, end1, toEnd1, fromEnd1, ownRefs,
+						pointingRefs, result, ereferenceWithOverwritten);
 				toEnd2 = result.get(0);
 				fromEnd2 = result.get(1);
 				if (toEnd2 != null) {
@@ -1170,8 +1188,8 @@ public class Ecore2TgAnalyzer {
 		subtypes[0] = true;
 		subtypes[1] = true;
 		pointingRefs.clear();
-		Ecore2TgAnalyzer.getEReferences_that_point_on_EClass(
-				this.metamodelResource, candidate, pointingRefs);
+		Ecore2TgAnalyzer.getEReferences_that_point_on_EClass(metamodelResource,
+				candidate, pointingRefs);
 		if (candidate.getEReferences().contains(toEnd1)
 				|| pointingRefs.contains(fromEnd1)) {
 			subtypes[0] = false;
@@ -1204,9 +1222,9 @@ public class Ecore2TgAnalyzer {
 	 * @param refsOfEndpoints
 	 *            references that lead to the resulting end points
 	 * */
-	private void getEndpoints(EClass candidate, ArrayList<EReference> ownRefs,
-			ArrayList<EReference> pointingRefs, ArrayList<EClass> endpoints,
-			ArrayList<EReference> refsOfEndpoints) {
+	private static void getEndpoints(EClass candidate,
+			ArrayList<EReference> ownRefs, ArrayList<EReference> pointingRefs,
+			ArrayList<EClass> endpoints, ArrayList<EReference> refsOfEndpoints) {
 
 		for (EReference er : ownRefs) {
 			EClass c = er.getEReferenceType();
@@ -1289,10 +1307,11 @@ public class Ecore2TgAnalyzer {
 	 *            list of EReferences pointing on candidate
 	 * @param endpi
 	 * */
-	private void findSecondEndpoint(EClass candidate, EClass end1,
+	private static void findSecondEndpoint(EClass candidate, EClass end1,
 			EReference toEnd1, EReference fromEnd1,
 			ArrayList<EReference> ownRefs, ArrayList<EReference> pointingRefs,
-			ArrayList<EReference> result) {
+			ArrayList<EReference> result,
+			HashMap<EReference, ArrayList<EReference>> ereferenceWithOverwritten) {
 
 		ArrayList<EClass> endpoints = new ArrayList<EClass>();
 		ArrayList<EReference> refsOfEndpoints = new ArrayList<EReference>();
@@ -1300,7 +1319,7 @@ public class Ecore2TgAnalyzer {
 		EReference toEnd2 = null;
 		EReference fromEnd2 = null;
 
-		this.getEndpoints(candidate, ownRefs, pointingRefs, endpoints,
+		getEndpoints(candidate, ownRefs, pointingRefs, endpoints,
 				refsOfEndpoints);
 		// The last time only one endpoint was found -
 		// this time it should be the same
@@ -1345,20 +1364,22 @@ public class Ecore2TgAnalyzer {
 					// If the already found one and the new found one
 					// point to the same direction, search further
 					pointingRefs.remove(fromProb2);
-					if (this.ereferenceWithOverwritten.get(fromProb2) != null) {
-						pointingRefs.removeAll(this.ereferenceWithOverwritten
+					if (ereferenceWithOverwritten.get(fromProb2) != null) {
+						pointingRefs.removeAll(ereferenceWithOverwritten
 								.get(fromProb2));
 					}
-					this.findSecondEndpoint(candidate, end1, toEnd1, fromEnd1,
-							ownRefs, pointingRefs, result);
+					findSecondEndpoint(candidate, end1, toEnd1, fromEnd1,
+							ownRefs, pointingRefs, result,
+							ereferenceWithOverwritten);
 				} else if ((fromProb2 == null) && (fromEnd1 == null)) {
 					ownRefs.remove(toProb2);
-					if (this.ereferenceWithOverwritten.get(toProb2) != null) {
-						ownRefs.removeAll(this.ereferenceWithOverwritten
+					if (ereferenceWithOverwritten.get(toProb2) != null) {
+						ownRefs.removeAll(ereferenceWithOverwritten
 								.get(toProb2));
 					}
-					this.findSecondEndpoint(candidate, end1, toEnd1, fromEnd1,
-							ownRefs, pointingRefs, result);
+					findSecondEndpoint(candidate, end1, toEnd1, fromEnd1,
+							ownRefs, pointingRefs, result,
+							ereferenceWithOverwritten);
 				} else if (((toProb2 != null) && (toEnd1 != null) && toProb2
 						.getName().equals(toEnd1.getName()))
 						|| ((fromProb2 != null) && (fromEnd1 != null) && fromProb2
@@ -1366,16 +1387,17 @@ public class Ecore2TgAnalyzer {
 					// Names are equal
 					ownRefs.remove(toProb2);
 					ownRefs.remove(fromProb2);
-					if (this.ereferenceWithOverwritten.get(toProb2) != null) {
-						ownRefs.removeAll(this.ereferenceWithOverwritten
+					if (ereferenceWithOverwritten.get(toProb2) != null) {
+						ownRefs.removeAll(ereferenceWithOverwritten
 								.get(toProb2));
 					}
-					if (this.ereferenceWithOverwritten.get(fromProb2) != null) {
-						pointingRefs.removeAll(this.ereferenceWithOverwritten
+					if (ereferenceWithOverwritten.get(fromProb2) != null) {
+						pointingRefs.removeAll(ereferenceWithOverwritten
 								.get(fromProb2));
 					}
-					this.findSecondEndpoint(candidate, end1, toEnd1, fromEnd1,
-							ownRefs, pointingRefs, result);
+					findSecondEndpoint(candidate, end1, toEnd1, fromEnd1,
+							ownRefs, pointingRefs, result,
+							ereferenceWithOverwritten);
 				}
 				// Default case, it's ok to take prob2 as endpoint 2
 				else {
@@ -1412,7 +1434,7 @@ public class Ecore2TgAnalyzer {
 				else {
 					toEnd2 = toProb2;
 					fromEnd2 = fromProb2;
-					if (!((this.ereferenceWithOverwritten.get(fromEnd1) != null) && this.ereferenceWithOverwritten
+					if (!((ereferenceWithOverwritten.get(fromEnd1) != null) && ereferenceWithOverwritten
 							.get(fromEnd1).contains(refFromProb2ToTc))) {
 						System.out
 								.println("Warning: EdgeClass "
@@ -1440,7 +1462,7 @@ public class Ecore2TgAnalyzer {
 				else {
 					toEnd2 = toProb2;
 					fromEnd2 = fromProb2;
-					if (!((this.ereferenceWithOverwritten.get(toEnd1) != null) && this.ereferenceWithOverwritten
+					if (!((ereferenceWithOverwritten.get(toEnd1) != null) && ereferenceWithOverwritten
 							.get(toEnd1).contains(refFromTcToProb2))) {
 						System.out
 								.println("Warning: EdgeClass "
