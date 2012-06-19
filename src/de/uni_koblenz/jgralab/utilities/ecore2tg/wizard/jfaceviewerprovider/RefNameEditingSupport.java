@@ -5,10 +5,10 @@ import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TextCellEditor;
 
-public class RefNameEditingSupport extends EditingSupport{
+public class RefNameEditingSupport extends EditingSupport {
 
 	private TextCellEditor cellEditor;
-	
+
 	public RefNameEditingSupport(TableViewer viewer) {
 		super(viewer);
 		this.cellEditor = new TextCellEditor(viewer.getTable());
@@ -26,16 +26,16 @@ public class RefNameEditingSupport extends EditingSupport{
 
 	@Override
 	protected Object getValue(Object element) {
-		if(element instanceof RefInfoStructure){
-			return ((RefInfoStructure)element).edgeClassName;
+		if (element instanceof RefInfoStructure) {
+			return ((RefInfoStructure) element).edgeClassName;
 		}
 		return null;
 	}
 
 	@Override
 	protected void setValue(Object element, Object value) {
-		if(element instanceof RefInfoStructure){
-			((RefInfoStructure)element).edgeClassName = (String) value;
+		if (element instanceof RefInfoStructure) {
+			((RefInfoStructure) element).edgeClassName = (String) value;
 		}
 		this.getViewer().refresh();
 	}

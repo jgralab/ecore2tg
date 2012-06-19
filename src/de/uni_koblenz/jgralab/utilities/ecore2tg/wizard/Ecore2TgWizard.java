@@ -1,6 +1,7 @@
 package de.uni_koblenz.jgralab.utilities.ecore2tg.wizard;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
@@ -18,7 +19,6 @@ import de.uni_koblenz.jgralab.Graph;
 import de.uni_koblenz.jgralab.GraphIOException;
 import de.uni_koblenz.jgralab.schema.Schema;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg;
-import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg.TransformParams;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefInfoStructure;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefPackageEditingSupport;
@@ -53,9 +53,12 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 	 */
 	private Ecore2TgOptionReferencesWizardPage referenceOptionsPage;
 
+	protected Ecore2TgConfiguration configuration;
+
 	public Ecore2TgWizard() {
 		super();
 		this.setNeedsProgressMonitor(true);
+		this.configuration = new Ecore2TgConfiguration();
 	}
 
 	@Override
@@ -80,11 +83,22 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 				// no second page if default options should be used
 				return null;
 			}
+			if (this.filePage.getConfigFilePath() != null
+					&& !this.filePage.getConfigFilePath().equals("")) {
+				this.configuration = Ecore2TgConfiguration
+						.loadConfigurationFromFile(this.filePage
+								.getConfigFilePath());
+			}
 			this.fillEClassesListWidget();
+			this.generalOptionsPage.enterConfiguration(this.configuration);
 		}
 		// Second page: fill table of third page before showing
 		else if (page instanceof Ecore2TgOptionWizardPage) {
+			this.generalOptionsPage.saveConfiguration(this.configuration);
 			this.fillRefTable();
+			this.referenceOptionsPage.enterConfiguration(this.configuration);
+		} else if (page instanceof Ecore2TgOptionReferencesWizardPage) {
+			this.referenceOptionsPage.saveConfigurations(this.configuration);
 		}
 
 		return super.getNextPage(page);
@@ -103,16 +117,15 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 	@Override
 	public boolean performFinish() {
 
-		Ecore2Tg ecore2tg = new Ecore2Tg(this.filePage.getEcoreSchemaResource());
+		this.referenceOptionsPage.saveConfigurations(this.configuration);
 
-		if (this.filePage.getConfigFilePath() != null
-				&& !this.filePage.getConfigFilePath().equals("")) {
-			ecore2tg.fillWithConfigurationsFromFile(this.filePage
-					.getConfigFilePath());
-		}
+		Ecore2Tg ecore2tg = new Ecore2Tg(
+				this.filePage.getEcoreSchemaResource(), this.configuration);
 
-		if (!this.filePage.useDefaultOptions()) {
-			this.enterOptions(ecore2tg);
+		HashMap<String, String> map = this.configuration
+				.getNamesOfEdgeClassesMap();
+		for (String s : map.keySet()) {
+			System.err.println("DEBUG " + s + " " + map.get(s));
 		}
 
 		ecore2tg.transform(this.filePage.getQualifiedSchemaName());
@@ -139,88 +152,12 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 	}
 
 	/**
-	 * Get the options from the pages and set them for the given
-	 * {@link Ecore2Tg} transformation
-	 * 
-	 * @param ecore2tg
-	 *            the transformation object
-	 */
-	private void enterOptions(Ecore2Tg ecore2tg) {
-		// Option: GraphClass from ?
-		if (this.generalOptionsPage.getButtonSelectGraphClassFromEClasses()) {
-			ecore2tg.setAsGraphClass(this.generalOptionsPage
-					.getListWidgetEClasses().getSelection()[0]);
-		} else if (this.generalOptionsPage
-				.getButtonCreateNewGraphClassWithName()) {
-			ecore2tg.setGraphclassName(this.generalOptionsPage
-					.getTextGraphClassName().getText());
-		}
-
-		// Option: convert big numbers
-		ecore2tg.setConvertBigNumbers(this.generalOptionsPage
-				.getButtonConvertBigs());
-
-		// Option: search for EdgeClasses
-		if (this.generalOptionsPage.getSearchForEdgeClasses()) {
-			ecore2tg.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
-		} else {
-			ecore2tg.setTransformationOption(TransformParams.JUST_LIKE_ECORE);
-		}
-
-		// Option: name, package, direction of References
-		RefInfoStructure[] infos = (RefInfoStructure[]) this.referenceOptionsPage
-				.getReferenceTableViewer().getInput();
-		if (infos != null) {
-			for (int i = 0; i < infos.length; i++) {
-				RefInfoStructure refstruc = infos[i];
-				String referencename = this
-						.getQualifiedReferenceName(refstruc.reference);
-				if (refstruc.packageName != null
-						&& !refstruc.packageName.equals("")) {
-					ecore2tg.getDefinedPackagesOfEdgeClassesMap().put(
-							referencename, refstruc.packageName);
-				}
-
-				if (refstruc.direction) {
-					ecore2tg.getDirectionMap().put(referencename, Ecore2TgConfiguration.TO);
-				} else {
-					ecore2tg.getDirectionMap()
-							.put(referencename, Ecore2TgConfiguration.FROM);
-				}
-
-				if (refstruc.edgeClassName != null
-						&& !refstruc.edgeClassName.equals("")) {
-					ecore2tg.getNamesOfEdgeClassesMap().put(referencename,
-							refstruc.edgeClassName);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Returns the qualified name of a given EReference
-	 * 
-	 * @param ref
-	 *            the EReference
-	 * @return the qualified name of the given EReference
-	 */
-	private String getQualifiedReferenceName(EReference ref) {
-		String name = ref.getEContainingClass().getName() + "." + ref.getName();
-		EPackage pack = ref.getEContainingClass().getEPackage();
-		while (pack != null) {
-			name = pack.getName() + "." + name;
-			pack = pack.getESuperPackage();
-		}
-		return name;
-	}
-
-	/**
 	 * Fills the table on page three that allows the definition of name, package
 	 * and direction of the EdgeClasses resulting from an EReference or a pair
 	 * of EReferences
 	 */
 	private void fillRefTable() {
-
+		System.err.println("DEBUG do the filling and setting");
 		ArrayList<String> packageNames = new ArrayList<String>();
 		packageNames.add("");
 		ArrayList<EReference> refSet = new ArrayList<EReference>();
@@ -290,6 +227,7 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 		}
 		this.generalOptionsPage.getListWidgetEClasses().setItems(
 				eclassList.toArray(new String[] {}));
+		this.generalOptionsPage.getListWidgetEClasses().setSelection(0);
 
 		String schemaName = this.filePage.getQualifiedSchemaName();
 		String gcname = schemaName.substring(schemaName.lastIndexOf(".") + 1);

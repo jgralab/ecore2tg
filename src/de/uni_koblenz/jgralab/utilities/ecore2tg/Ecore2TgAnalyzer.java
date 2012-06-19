@@ -38,7 +38,7 @@ public class Ecore2TgAnalyzer {
 	 * List of all EClasses that become EdgeClasses sorted in a way, so that
 	 * every superclass has an index smaller than all there subclasses
 	 * */
-	private ArrayList<EClass> edgeclasses = new ArrayList<EClass>();
+	private ArrayList<EClass> edgeclasses;
 
 	// --- result of getEReferences
 
@@ -48,18 +48,17 @@ public class Ecore2TgAnalyzer {
 	 * they are ignored. The HashSet is needed during the Transformation from
 	 * EClasses to EdgeClasses and later again, during the model transformation.
 	 * */
-	private HashSet<EReference> badEReferences = new HashSet<EReference>();
-
+	private HashSet<EReference> badEReferences;
 	/**
 	 * Remembers for an EdgeClass the EReferences that connect it to its alpha
 	 * and omega
 	 */
-	private HashMap<EClass, ArrayList<EReference>> ereferencesOfEdgeClasses = new HashMap<EClass, ArrayList<EReference>>();
+	private HashMap<EClass, ArrayList<EReference>> ereferencesOfEdgeClasses;
 
 	/**
 	 * Remembers for an EdgeClass whether alpha or omega is a subtype of another
 	 */
-	private HashMap<EClass, boolean[]> ereferencesOfEdgeClassesresult = new HashMap<EClass, boolean[]>();
+	private HashMap<EClass, boolean[]> ereferencesOfEdgeClassesresult;
 
 	// -------------------------------------------------------------------
 	// --- Getter
@@ -127,6 +126,15 @@ public class Ecore2TgAnalyzer {
 	 *            EdgeClasses or just print to the console
 	 * */
 	public void searchForEdgeClasses(TransformParams params) {
+		this.ereferenceWithOverwritten = new HashMap<EReference, ArrayList<EReference>>();
+		this.doSearch(params);
+	}
+
+	private void doSearch(TransformParams params) {
+		this.badEReferences = new HashSet<EReference>();
+		this.edgeclasses = new ArrayList<EClass>();
+		this.ereferencesOfEdgeClassesresult = new HashMap<EClass, boolean[]>();
+		this.ereferencesOfEdgeClasses = new HashMap<EClass, ArrayList<EReference>>();
 
 		// First find candidates, that are EClasses who have
 		// 2 EReferences with the multiplicity of 1 or 3 EReferences,

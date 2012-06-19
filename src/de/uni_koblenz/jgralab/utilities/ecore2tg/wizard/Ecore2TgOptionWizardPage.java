@@ -1,5 +1,6 @@
 package de.uni_koblenz.jgralab.utilities.ecore2tg.wizard;
 
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
@@ -13,6 +14,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Text;
+
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.TransformParams;
 
 /**
  * Wizard page to enter optional information for the Ecore2Tg transformation. It
@@ -182,4 +186,51 @@ public class Ecore2TgOptionWizardPage extends WizardPage {
 			return this.listWidgetEClasses.getSelectionIndex() > -1;
 		}
 	}
+
+	protected void enterConfiguration(Ecore2TgConfiguration conf) {
+		if (conf.getAsGraphClass() != null
+				&& !conf.getAsGraphClass().equals("")) {
+			this.buttonSelectGraphClassFromEClasses.setSelection(true);
+			this.buttonCreateNewGraphClassWithName.setSelection(false);
+			for (int i = 0; i < this.listWidgetEClasses.getItemCount(); i++) {
+				String s = this.listWidgetEClasses.getItems()[i];
+				if (conf.getAsGraphClass().equals(s)) {
+					this.listWidgetEClasses.select(i);
+					break;
+				}
+			}
+		} else if (conf.getGraphclassName() != null
+				&& !conf.getGraphclassName().equals("")) {
+			this.buttonCreateNewGraphClassWithName.setSelection(true);
+			this.buttonSelectGraphClassFromEClasses.setSelection(false);
+			this.textGraphClassName.setText(conf.getGraphclassName());
+		}
+
+		this.buttonConvertBigs.setSelection(conf.isConvertBigNumbers());
+
+		this.buttonSearchForEdgeClasses.setSelection(!conf
+				.getTransformationOption().equals(
+						TransformParams.JUST_LIKE_ECORE));
+	}
+
+	protected void saveConfiguration(Ecore2TgConfiguration conf) {
+		if (this.buttonSelectGraphClassFromEClasses.getSelection()) {
+			conf.setAsGraphClass(this.listWidgetEClasses.getSelection()[0]);
+		} else {
+			conf.setGraphclassName(this.textGraphClassName.getText());
+		}
+
+		conf.setConvertBigNumbers(this.buttonConvertBigs.getSelection());
+
+		if (this.buttonSearchForEdgeClasses.getSelection()) {
+			conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
+		}
+	}
+
+	@Override
+	public IWizardPage getPreviousPage() {
+		this.saveConfiguration(((Ecore2TgWizard) this.getWizard()).configuration);
+		return super.getPreviousPage();
+	}
+
 }

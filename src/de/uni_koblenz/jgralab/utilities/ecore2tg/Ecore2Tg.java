@@ -681,7 +681,7 @@ public class Ecore2Tg {
 	// --------------------------------------------------------------------------
 
 	/**
-	 * Constructor Loads the Ecore file and initializes the needed maps.
+	 * Constructor Loads the Ecore file
 	 * 
 	 * @param pathToEcoreFile
 	 *            path to the ".ecore" File that should become transformed
@@ -690,10 +690,18 @@ public class Ecore2Tg {
 		// Load the Ecore metamodel
 		this.metamodelResource = loadMetaModelFromEcoreFile(pathToEcoreFile);
 		this.configuration = new Ecore2TgConfiguration();
+		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResource);
 	}
 
 	public Ecore2Tg(Resource ecoreSchema) {
 		this.metamodelResource = ecoreSchema;
+		this.configuration = new Ecore2TgConfiguration();
+		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResource);
+	}
+
+	public Ecore2Tg(Ecore2TgAnalyzer anal) {
+		this.metamodelResource = anal.getMetamodelResource();
+		this.analyzer = anal;
 		this.configuration = new Ecore2TgConfiguration();
 	}
 
@@ -701,10 +709,18 @@ public class Ecore2Tg {
 		// Load the Ecore metamodel
 		this.metamodelResource = loadMetaModelFromEcoreFile(pathToEcoreFile);
 		this.configuration = conf;
+		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResource);
 	}
 
 	public Ecore2Tg(Resource ecoreSchema, Ecore2TgConfiguration conf) {
 		this.metamodelResource = ecoreSchema;
+		this.configuration = conf;
+		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResource);
+	}
+
+	public Ecore2Tg(Ecore2TgAnalyzer anal, Ecore2TgConfiguration conf) {
+		this.metamodelResource = anal.getMetamodelResource();
+		this.analyzer = anal;
 		this.configuration = conf;
 	}
 
@@ -728,30 +744,7 @@ public class Ecore2Tg {
 		this.schemagraph = GrumlSchema.instance().createSchemaGraph(
 				ImplementationType.STANDARD);
 
-		// Initializing core mappings
-		this.vertexclassmap = new HashMap<EClass, VertexClass>();
-		this.vertexclassmaprevers = new HashMap<VertexClass, EClass>();
-		this.packagemap = new HashMap<EPackage, Package>();
-		this.enumdomains = new HashMap<String, EnumDomain>();
-		this.edgeclassmap = new HashMap<EClass, EdgeClass>();
-		this.edgeclassmaprevers = new HashMap<EdgeClass, EClass>();
-		this.ereference2edgeclass_map = new HashMap<EReference, EdgeClass>();
-		this.eclass2recorddomain_map = new HashMap<EClass, RecordDomain>();
-
-		// Initializing maps and sets for the algorithms
-		this.transformedEReferences = new HashSet<EReference>();
-		this.badEReferences = new HashSet<EReference>();
-		this.badEAttributes = new HashSet<EAttribute>();
-		this.edgeclasses = new ArrayList<EClass>();
-		this.ereferencesOfEdgeClasses = new HashMap<EClass, ArrayList<EReference>>();
-		this.ereferencesOfEdgeClassesresult = new HashMap<EClass, boolean[]>();
-		this.definingDirectionEReferences = new HashSet<EReference>();
-		this.ereferencesEdgeClass2start = new HashSet<EReference>();
-		this.ereferencesEdgeClass2target = new HashSet<EReference>();
-		this.ereferenceWithOverwritten = new HashMap<EReference, ArrayList<EReference>>();
-		this.fromERefererences = new HashSet<EReference>();
-		this.toEReferences = new HashSet<EReference>();
-		this.recordDomainEReferences = new HashSet<EReference>();
+		this.initializeMaps();
 
 		// Start
 		EPackage rootPackage = (EPackage) this.metamodelResource.getContents()
@@ -834,8 +827,6 @@ public class Ecore2Tg {
 		this.graphclass.add_comment(gc);
 		schema.add_graphClass(this.graphclass);
 
-		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResource);
-
 		// Examine user input:
 		this.examineUsersEdgeClassList();
 		this.examineUsersDirectionMap();
@@ -844,16 +835,21 @@ public class Ecore2Tg {
 
 		// Does the user want the program to search for EdgeClasses?
 		if (this.getConfiguration().getTransformationOption() != TransformParams.JUST_LIKE_ECORE) {
-			this.analyzer.searchForEdgeClasses(this.getConfiguration()
-					.getTransformationOption());
-			if (this.getConfiguration().getTransformationOption() == TransformParams.AUTOMATIC_TRANSFORMATION) {
-				this.badEReferences.addAll(this.analyzer
-						.getIgnoredEReferences());
-				this.ereferencesOfEdgeClasses.putAll(this.analyzer
-						.getEreferencesOfEdgeClasses());
-				this.ereferencesOfEdgeClassesresult.putAll(this.analyzer
-						.getEreferencesOfEdgeClassesresult());
-				this.edgeclasses.addAll(this.analyzer.getFoundEdgeClasses());
+			// If they are not already searched
+			if (this.analyzer.getFoundEdgeClasses() == null
+					|| !this.ereferenceWithOverwritten.isEmpty()) {
+				this.analyzer.searchForEdgeClasses(this.getConfiguration()
+						.getTransformationOption());
+				if (this.getConfiguration().getTransformationOption() == TransformParams.AUTOMATIC_TRANSFORMATION) {
+					this.badEReferences.addAll(this.analyzer
+							.getIgnoredEReferences());
+					this.ereferencesOfEdgeClasses.putAll(this.analyzer
+							.getEreferencesOfEdgeClasses());
+					this.ereferencesOfEdgeClassesresult.putAll(this.analyzer
+							.getEreferencesOfEdgeClassesresult());
+					this.edgeclasses
+							.addAll(this.analyzer.getFoundEdgeClasses());
+				}
 			}
 
 		}
@@ -952,6 +948,33 @@ public class Ecore2Tg {
 		long endtime = System.currentTimeMillis();
 		System.out.println("Transformation finished. It took "
 				+ (endtime - starttime) + " milliseconds.");
+	}
+
+	private void initializeMaps() {
+		// Initializing core mappings
+		this.vertexclassmap = new HashMap<EClass, VertexClass>();
+		this.vertexclassmaprevers = new HashMap<VertexClass, EClass>();
+		this.packagemap = new HashMap<EPackage, Package>();
+		this.enumdomains = new HashMap<String, EnumDomain>();
+		this.edgeclassmap = new HashMap<EClass, EdgeClass>();
+		this.edgeclassmaprevers = new HashMap<EdgeClass, EClass>();
+		this.ereference2edgeclass_map = new HashMap<EReference, EdgeClass>();
+		this.eclass2recorddomain_map = new HashMap<EClass, RecordDomain>();
+
+		// Initializing maps and sets for the algorithms
+		this.transformedEReferences = new HashSet<EReference>();
+		this.badEReferences = new HashSet<EReference>();
+		this.badEAttributes = new HashSet<EAttribute>();
+		this.edgeclasses = new ArrayList<EClass>();
+		this.ereferencesOfEdgeClasses = new HashMap<EClass, ArrayList<EReference>>();
+		this.ereferencesOfEdgeClassesresult = new HashMap<EClass, boolean[]>();
+		this.definingDirectionEReferences = new HashSet<EReference>();
+		this.ereferencesEdgeClass2start = new HashSet<EReference>();
+		this.ereferencesEdgeClass2target = new HashSet<EReference>();
+		this.ereferenceWithOverwritten = new HashMap<EReference, ArrayList<EReference>>();
+		this.fromERefererences = new HashSet<EReference>();
+		this.toEReferences = new HashSet<EReference>();
+		this.recordDomainEReferences = new HashSet<EReference>();
 	}
 
 	// -------------------------------------------------------------------------
@@ -1761,13 +1784,17 @@ public class Ecore2Tg {
 					EReference toCont = resultlist.get(4);
 					if (fromCont != null) {
 						Comment com = this.schemagraph.createComment();
+						VertexClass containerVC = this.vertexclassmap
+								.get(fromCont.getEContainingClass());
+						String contName;
+						if (containerVC != null) {
+							contName = containerVC.get_qualifiedName();
+						} else {
+							contName = this.graphclass.get_qualifiedName();
+						}
 						com.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 								+ EAnnotationKeys.CONTAINMENT_EXISTS
-								+ fromCont.getName()
-								+ " "
-								+ this.vertexclassmap.get(
-										fromCont.getEContainingClass())
-										.get_qualifiedName() + " TO");
+								+ fromCont.getName() + " " + contName + " TO");
 						edgeclass.add_comment(com);
 					}
 					if (toCont != null) {

@@ -5,6 +5,7 @@ import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -12,7 +13,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgAnalyzer;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefDirectionEditingSupport;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefInfoStructure;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefNameEditingSupport;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefTableLabelProvider;
 
@@ -117,6 +121,123 @@ public class Ecore2TgOptionReferencesWizardPage extends WizardPage {
 	 */
 	public TableViewerColumn getPackageColumn() {
 		return this.packageColumn;
+	}
+
+	@Override
+	public IWizardPage getPreviousPage() {
+		this.saveConfigurations(((Ecore2TgWizard) this.getWizard()).configuration);
+		return super.getPreviousPage();
+	}
+
+	protected void enterConfiguration(Ecore2TgConfiguration conf) {
+		RefInfoStructure[] refArray = (RefInfoStructure[]) this.referenceTableViewer
+				.getInput();
+		for (RefInfoStructure s : refArray) {
+			String refname = Ecore2TgAnalyzer
+					.getQualifiedReferenceName(s.reference);
+
+			// Direction
+			if (conf.getDirectionMap().containsKey(refname)) {
+				int i = conf.getDirectionMap().get(refname);
+				if (i == Ecore2TgConfiguration.TO) {
+					s.direction = true;
+				} else {
+					s.direction = false;
+				}
+			}
+
+			// Package
+			if (conf.getDefinedPackagesOfEdgeClassesMap().containsKey(refname)) {
+				s.packageName = conf.getDefinedPackagesOfEdgeClassesMap().get(
+						refname);
+			}
+
+			// Name
+			if (conf.getNamesOfEdgeClassesMap().containsKey(refname)) {
+				s.edgeClassName = conf.getNamesOfEdgeClassesMap().get(refname);
+			}
+
+			// OPPOSITE if exists
+			if (s.reference.getEOpposite() != null) {
+				String opname = Ecore2TgAnalyzer
+						.getQualifiedReferenceName(s.reference.getEOpposite());
+
+				// Direction
+				if (conf.getDirectionMap().containsKey(opname)) {
+					int i = conf.getDirectionMap().get(opname);
+					if (i == Ecore2TgConfiguration.TO) {
+						s.direction = false;
+					} else {
+						s.direction = true;
+					}
+				}
+
+				// Package
+				if (conf.getDefinedPackagesOfEdgeClassesMap().containsKey(
+						opname)) {
+					s.packageName = conf.getDefinedPackagesOfEdgeClassesMap()
+							.get(opname);
+				}
+
+				// Name
+				if (conf.getNamesOfEdgeClassesMap().containsKey(opname)) {
+					s.edgeClassName = conf.getNamesOfEdgeClassesMap().get(
+							opname);
+				}
+
+			}
+
+		}
+		this.referenceTableViewer.refresh();
+	}
+
+	protected void saveConfigurations(Ecore2TgConfiguration conf) {
+		RefInfoStructure[] refArray = (RefInfoStructure[]) this.referenceTableViewer
+				.getInput();
+		for (RefInfoStructure s : refArray) {
+			String refname = Ecore2TgAnalyzer
+					.getQualifiedReferenceName(s.reference);
+
+			String opname = null;
+			if (s.reference.getEOpposite() != null) {
+				opname = Ecore2TgAnalyzer.getQualifiedReferenceName(s.reference
+						.getEOpposite());
+			}
+
+			String dirref = refname;
+			// Direction
+			if (s.direction) {
+				conf.getDirectionMap().put(refname, Ecore2TgConfiguration.TO);
+				if (opname != null) {
+					conf.getDirectionMap().remove(opname);
+				}
+			} else {
+				if (opname != null) {
+					conf.getDirectionMap()
+							.put(opname, Ecore2TgConfiguration.TO);
+					conf.getDirectionMap().remove(refname);
+					dirref = opname;
+				} else {
+					conf.getDirectionMap().put(refname,
+							Ecore2TgConfiguration.FROM);
+				}
+			}
+
+			// Package
+			if (s.packageName != null && !s.packageName.equals("")) {
+				conf.getDefinedPackagesOfEdgeClassesMap().remove(refname);
+				conf.getDefinedPackagesOfEdgeClassesMap().remove(opname);
+				conf.getDefinedPackagesOfEdgeClassesMap().put(dirref,
+						s.packageName);
+			}
+
+			// Name
+			if (s.edgeClassName != null && !s.edgeClassName.equals("")) {
+				conf.getNamesOfEdgeClassesMap().remove(refname);
+				conf.getNamesOfEdgeClassesMap().remove(opname);
+				conf.getNamesOfEdgeClassesMap().put(dirref, s.edgeClassName);
+			}
+		}
 	}
 
 }
