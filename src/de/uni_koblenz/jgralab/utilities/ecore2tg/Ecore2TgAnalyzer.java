@@ -3,6 +3,7 @@ package de.uni_koblenz.jgralab.utilities.ecore2tg;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.TreeSet;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
@@ -1670,5 +1671,93 @@ public class Ecore2TgAnalyzer {
 				i++;
 			}
 		}
+	}
+
+	private HashMap<EReference, HashSet<EReference>> ref2set;
+
+	public HashMap<EReference, HashSet<EReference>> getEReferenceToOverwriteCandidatesMap(
+			Resource res) {
+		if (this.ref2set != null) {
+			return this.ref2set;
+		}
+		if (this.edgeclasses == null) {
+			this.searchForEdgeClasses(TransformParams.AUTOMATIC_TRANSFORMATION);
+		}
+		this.ref2set = new HashMap<EReference, HashSet<EReference>>();
+
+		TreeSet<EClass> hyrachyCandidates = new TreeSet<EClass>();
+
+		for (EClass ec : this.edgeclasses) {
+			if (!ec.getESuperTypes().isEmpty()) {
+				if (ec.getEReferences().size() == 1) {
+					hyrachyCandidates.add(ec);
+				}
+			}
+		}
+
+		for (EClass c : hyrachyCandidates) {
+			EReference keyref = c.getEReferences().get(0);
+			HashSet<EReference> coll = new HashSet<EReference>();
+			if (this.collectForKeyRef(c, keyref, coll)) {
+				this.ref2set.put(keyref, coll);
+			}
+		}
+
+		return this.ref2set;
+	}
+
+	private boolean collectForKeyRef(EClass c, EReference keyref,
+			HashSet<EReference> coll) {
+		boolean isambig = false;
+		// Iterate over superclasses
+		for (EClass sup : c.getESuperTypes()) {
+			// If there is more than one EReferences that is the top
+			if (sup.getEReferences().size() > 1) {
+				// Determine whether the EReferences end at different classes
+				HashSet<EClass> ends = new HashSet<EClass>();
+				for (EReference ref : sup.getEReferences()) {
+					ends.add(ref.getEReferenceType());
+				}
+
+				if (ends.size() > 1) {
+					// if the single EReference is in the same hyrachy than both
+					// EReferences of the supertype, one must be chosen, nothing
+					// is clear
+					if (keyref
+							.getEReferenceType()
+							.getEAllSuperTypes()
+							.contains(
+									this.ereferencesOfEdgeClasses.get(sup).get(
+											0))
+							&& keyref
+									.getEReferenceType()
+									.getEAllSuperTypes()
+									.contains(
+											this.ereferencesOfEdgeClasses.get(
+													sup).get(1))) {
+						coll.add(this.ereferencesOfEdgeClasses.get(sup).get(0));
+						coll.add(this.ereferencesOfEdgeClasses.get(sup).get(1));
+					}
+					// if the single EReference is not in a hyrachy with both,
+					// this EReference has a clear super, so everything is fine
+					else {
+						isambig = false;
+					}
+				} else {
+					coll.add(this.ereferencesOfEdgeClasses.get(sup).get(0));
+					coll.add(this.ereferencesOfEdgeClasses.get(sup).get(1));
+				}
+				continue;
+			}
+			// if there is only one EReference we have to look further above
+			else {
+				// add 0 or 1
+				coll.addAll(sup.getEReferences());
+				// recursive call
+				isambig |= this.collectForKeyRef(sup, keyref, coll);
+			}
+
+		}
+		return isambig;
 	}
 }
