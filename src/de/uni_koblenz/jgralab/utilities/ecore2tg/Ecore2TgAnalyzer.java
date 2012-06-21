@@ -1675,8 +1675,7 @@ public class Ecore2TgAnalyzer {
 
 	private HashMap<EReference, HashSet<EReference>> ref2set;
 
-	public HashMap<EReference, HashSet<EReference>> getEReferenceToOverwriteCandidatesMap(
-			Resource res) {
+	public HashMap<EReference, HashSet<EReference>> getEReferenceToOverwriteCandidatesMap() {
 		if (this.ref2set != null) {
 			return this.ref2set;
 		}

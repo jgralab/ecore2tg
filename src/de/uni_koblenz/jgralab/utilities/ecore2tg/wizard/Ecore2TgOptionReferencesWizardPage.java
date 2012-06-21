@@ -1,5 +1,12 @@
 package de.uni_koblenz.jgralab.utilities.ecore2tg.wizard;
 
+import java.util.ArrayList;
+
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.TableLayout;
@@ -18,6 +25,7 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefDirectionEditingSupport;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefInfoStructure;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefNameEditingSupport;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefPackageEditingSupport;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefTableLabelProvider;
 
 /**
@@ -28,7 +36,8 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefT
  * @author kheckelmann
  * 
  */
-public class Ecore2TgOptionReferencesWizardPage extends WizardPage {
+public class Ecore2TgOptionReferencesWizardPage extends WizardPage implements
+		ConfigurationProvider {
 
 	private static final String pageName = "Ecore2Tg - Reference Options";
 	private static final String title = "Ecore2Tg - Reference Options";
@@ -108,28 +117,14 @@ public class Ecore2TgOptionReferencesWizardPage extends WizardPage {
 		this.referenceTableViewer.setLabelProvider(new RefTableLabelProvider());
 	}
 
-	/**
-	 * @return the TableViewer for the EReference table
-	 */
-	public TableViewer getReferenceTableViewer() {
-		return this.referenceTableViewer;
-	}
-
-	/**
-	 * @return the TableViewerColumn of the the package column to fill with the
-	 *         available packages
-	 */
-	public TableViewerColumn getPackageColumn() {
-		return this.packageColumn;
-	}
-
 	@Override
 	public IWizardPage getPreviousPage() {
-		this.saveConfigurations(((Ecore2TgWizard) this.getWizard()).configuration);
+		this.saveConfiguration(((Ecore2TgWizard) this.getWizard()).configuration);
 		return super.getPreviousPage();
 	}
 
-	protected void enterConfiguration(Ecore2TgConfiguration conf) {
+	@Override
+	public void enterConfiguration(Ecore2TgConfiguration conf) {
 		RefInfoStructure[] refArray = (RefInfoStructure[]) this.referenceTableViewer
 				.getInput();
 		for (RefInfoStructure s : refArray) {
@@ -191,7 +186,8 @@ public class Ecore2TgOptionReferencesWizardPage extends WizardPage {
 		this.referenceTableViewer.refresh();
 	}
 
-	protected void saveConfigurations(Ecore2TgConfiguration conf) {
+	@Override
+	public void saveConfiguration(Ecore2TgConfiguration conf) {
 		RefInfoStructure[] refArray = (RefInfoStructure[]) this.referenceTableViewer
 				.getInput();
 		for (RefInfoStructure s : refArray) {
@@ -240,4 +236,51 @@ public class Ecore2TgOptionReferencesWizardPage extends WizardPage {
 		}
 	}
 
+	/**
+	 * Fills the table on page three that allows the definition of name, package
+	 * and direction of the EdgeClasses resulting from an EReference or a pair
+	 * of EReferences
+	 */
+	public void fillRefTable(Resource r) {
+		ArrayList<String> packageNames = new ArrayList<String>();
+		packageNames.add("");
+		ArrayList<EReference> refSet = new ArrayList<EReference>();
+		TreeIterator<EObject> iter = r.getAllContents();
+
+		while (iter.hasNext()) {
+			EObject ob = iter.next();
+			if (ob instanceof EPackage) {
+				EPackage pack = (EPackage) ob;
+				String name = pack.getName();
+				pack = pack.getESuperPackage();
+				while (pack != null) {
+					name = pack.getName() + "." + name;
+					pack = pack.getESuperPackage();
+				}
+				packageNames.add(name);
+			} else if (ob instanceof EReference) {
+				EReference ref = (EReference) ob;
+				if (ref.getEOpposite() == null) {
+					refSet.add(ref);
+				} else if (!refSet.contains(ref.getEOpposite())) {
+					if (ref.getName().compareTo(ref.getEOpposite().getName()) < 0) {
+						refSet.add(ref);
+					} else {
+						refSet.add(ref.getEOpposite());
+					}
+				}
+			}
+
+		}
+		this.packageColumn.setEditingSupport(new RefPackageEditingSupport(
+				this.referenceTableViewer, packageNames
+						.toArray(new String[] {})));
+
+		RefInfoStructure[] refInfoArray = new RefInfoStructure[refSet.size()];
+		for (int i = 0; i < refInfoArray.length; i++) {
+			refInfoArray[i] = new RefInfoStructure(refSet.get(i));
+		}
+
+		this.referenceTableViewer.setInput(refInfoArray);
+	}
 }

@@ -1,5 +1,12 @@
 package de.uni_koblenz.jgralab.utilities.ecore2tg.wizard;
 
+import java.util.ArrayList;
+
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -27,7 +34,8 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.Transform
  * @author kheckelmann
  * 
  */
-public class Ecore2TgOptionWizardPage extends WizardPage {
+public class Ecore2TgOptionWizardPage extends WizardPage implements
+		ConfigurationProvider {
 
 	private static final String pageName = "Ecore2TgOptions";
 	private static final String title = "Ecore2Tg - General Options";
@@ -187,7 +195,8 @@ public class Ecore2TgOptionWizardPage extends WizardPage {
 		}
 	}
 
-	protected void enterConfiguration(Ecore2TgConfiguration conf) {
+	@Override
+	public void enterConfiguration(Ecore2TgConfiguration conf) {
 		if (conf.getAsGraphClass() != null
 				&& !conf.getAsGraphClass().equals("")) {
 			this.buttonSelectGraphClassFromEClasses.setSelection(true);
@@ -213,7 +222,8 @@ public class Ecore2TgOptionWizardPage extends WizardPage {
 						TransformParams.JUST_LIKE_ECORE));
 	}
 
-	protected void saveConfiguration(Ecore2TgConfiguration conf) {
+	@Override
+	public void saveConfiguration(Ecore2TgConfiguration conf) {
 		if (this.buttonSelectGraphClassFromEClasses.getSelection()) {
 			conf.setAsGraphClass(this.listWidgetEClasses.getSelection()[0]);
 		} else {
@@ -231,6 +241,37 @@ public class Ecore2TgOptionWizardPage extends WizardPage {
 	public IWizardPage getPreviousPage() {
 		this.saveConfiguration(((Ecore2TgWizard) this.getWizard()).configuration);
 		return super.getPreviousPage();
+	}
+
+	/**
+	 * Fills the dropdown list on page two that allows the selection of an
+	 * EClass as GraphClass
+	 */
+	public void fillEClassesListWidget(Resource r, Ecore2TgConfiguration conf) {
+		ArrayList<String> eclassList = new ArrayList<String>();
+		TreeIterator<EObject> it = r.getAllContents();
+		while (it.hasNext()) {
+			EObject o = it.next();
+			if (o instanceof EClass) {
+				EClass eclass = (EClass) o;
+				String name = eclass.getName();
+				EPackage pack = eclass.getEPackage();
+				while (pack != null) {
+					name = pack.getName() + "." + name;
+					pack = pack.getESuperPackage();
+				}
+				eclassList.add(name);
+			}
+		}
+		this.getListWidgetEClasses().setItems(
+				eclassList.toArray(new String[] {}));
+		this.getListWidgetEClasses().setSelection(0);
+
+		String schemaName = conf.getSchemaName();
+		String gcname = schemaName.substring(schemaName.lastIndexOf(".") + 1);
+		gcname += "Graph";
+		this.getTextGraphClassName().setText(gcname);
+
 	}
 
 }
