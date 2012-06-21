@@ -1,8 +1,10 @@
 package de.uni_koblenz.jgralab.utilities.ecore2tg.wizard;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
@@ -241,7 +243,7 @@ public class Ecore2TgOptionReferencesWizardPage extends WizardPage implements
 	 * and direction of the EdgeClasses resulting from an EReference or a pair
 	 * of EReferences
 	 */
-	public void fillRefTable(Resource r) {
+	public void fillRefTable(Resource r, Collection<EClass> edgeClasses) {
 		ArrayList<String> packageNames = new ArrayList<String>();
 		packageNames.add("");
 		ArrayList<EReference> refSet = new ArrayList<EReference>();
@@ -260,13 +262,17 @@ public class Ecore2TgOptionReferencesWizardPage extends WizardPage implements
 				packageNames.add(name);
 			} else if (ob instanceof EReference) {
 				EReference ref = (EReference) ob;
-				if (ref.getEOpposite() == null) {
-					refSet.add(ref);
-				} else if (!refSet.contains(ref.getEOpposite())) {
-					if (ref.getName().compareTo(ref.getEOpposite().getName()) < 0) {
+				if (!(edgeClasses.contains(ref.getEContainingClass()) || edgeClasses
+						.contains(ref.getEReferenceType()))) {
+					if (ref.getEOpposite() == null) {
 						refSet.add(ref);
-					} else {
-						refSet.add(ref.getEOpposite());
+					} else if (!refSet.contains(ref.getEOpposite())) {
+						if (ref.getName().compareTo(
+								ref.getEOpposite().getName()) < 0) {
+							refSet.add(ref);
+						} else {
+							refSet.add(ref.getEOpposite());
+						}
 					}
 				}
 			}

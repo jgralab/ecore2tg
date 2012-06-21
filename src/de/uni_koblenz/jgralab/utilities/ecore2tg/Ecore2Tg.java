@@ -988,7 +988,8 @@ public class Ecore2Tg {
 	 * */
 	private void examineUsersEdgeClassList() {
 		for (String name : this.getConfiguration().getEdgeClassesList()) {
-			EClass eclass = this.getEClassByName(name);
+			EClass eclass = Ecore2TgAnalyzer.getEClassByName(name,
+					this.metamodelResource);
 			if (eclass == null) {
 				System.err.println("Invalid user input: Can not declare "
 						+ name
@@ -1012,7 +1013,8 @@ public class Ecore2Tg {
 	 * */
 	private void examineUsersDirectionMap() {
 		for (String name : this.configuration.getDirectionMap().keySet()) {
-			EReference ref = this.getEReferenceByName(name);
+			EReference ref = Ecore2TgAnalyzer.getEReferenceByName(name,
+					this.metamodelResource);
 			if (ref != null) {
 				if (this.configuration.getDirectionMap().get(name) == Ecore2TgConfiguration.FROM) {
 					this.fromERefererences.add(ref);
@@ -1041,9 +1043,11 @@ public class Ecore2Tg {
 	private void examineUsersOverwrittenEReferenceList() {
 		for (String word : this.configuration
 				.getPairsOfOverwritingEReferences().keySet()) {
-			EReference keyref = this.getEReferenceByName(word);
-			EReference valref = this.getEReferenceByName(this.configuration
-					.getPairsOfOverwritingEReferences().get(word));
+			EReference keyref = Ecore2TgAnalyzer.getEReferenceByName(word,
+					this.metamodelResource);
+			EReference valref = Ecore2TgAnalyzer.getEReferenceByName(
+					this.configuration.getPairsOfOverwritingEReferences().get(
+							word), this.metamodelResource);
 			if ((keyref == null) || (valref == null)) {
 				System.err
 						.println("Invalid user input: "
@@ -1094,8 +1098,10 @@ public class Ecore2Tg {
 	private void examineUserNamesAndPackages() {
 		for (String key : this.configuration.getNamesOfEdgeClassesMap()
 				.keySet()) {
-			if ((this.getEReferenceByName(key) == null)
-					&& (this.getEClassByName(key) == null)) {
+			if ((Ecore2TgAnalyzer.getEReferenceByName(key,
+					this.metamodelResource) == null)
+					&& (Ecore2TgAnalyzer.getEClassByName(key,
+							this.metamodelResource) == null)) {
 				System.err.println("Invalid user input: "
 						+ key
 						+ " does not exist. Name "
@@ -1105,7 +1111,8 @@ public class Ecore2Tg {
 		}
 		for (String key : this.configuration
 				.getDefinedPackagesOfEdgeClassesMap().keySet()) {
-			if (this.getEReferenceByName(key) == null) {
+			if (Ecore2TgAnalyzer.getEReferenceByName(key,
+					this.metamodelResource) == null) {
 				System.err.println("Invalid user input: EReference "
 						+ key
 						+ " does not exist. Package "
@@ -3003,87 +3010,6 @@ public class Ecore2Tg {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Search in a Resource for an EClass with the given qualified name
-	 * 
-	 * @param qualname
-	 *            Qualified name of the EClass to search for
-	 * @return the EClass with the given qualified name or null if there is no
-	 *         one
-	 * */
-	private EClass getEClassByName(String qualname) {
-
-		for (EObject ob : this.metamodelResource.getContents()) {
-			EPackage p = (EPackage) ob;
-			EClass ec = this.getEClassByName(qualname, p, p.getName());
-			if (ec != null) {
-				return ec;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Search in an EPackage for an EClass with the given qualified name
-	 * 
-	 * @param qualname
-	 *            Qualified name of the EClass to search for
-	 * @param pack
-	 *            EPackage to search in
-	 * @param packqualname
-	 *            Qualified name of the EPackage to determine the qualified name
-	 *            of an EClass
-	 * @return the EClass with the given qualified name or null if there is no
-	 *         one
-	 * */
-	private EClass getEClassByName(String qualname, EPackage pack,
-			String packqualname) {
-		// Look for EClassifiers
-		for (EClassifier candidate : pack.getEClassifiers()) {
-			if ((candidate instanceof EClass)
-					&& qualname.equalsIgnoreCase(packqualname + "."
-							+ candidate.getName())) {
-				return (EClass) candidate;
-			}
-		}
-		// Search in subpackages
-		for (EPackage child : pack.getESubpackages()) {
-			EClass temp = this.getEClassByName(qualname, child, packqualname
-					+ "." + child.getName());
-			if (temp != null) {
-				return temp;
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Searchs for the EReference with the qualified name
-	 * 
-	 * @param qualName
-	 *            qualified name of the EReference
-	 * @return the EReference with the qualified name or null if it does not
-	 *         exist
-	 * */
-	private EReference getEReferenceByName(String qualName) {
-		int pointbeforerefname = qualName.lastIndexOf(".");
-		String refname = qualName.substring(pointbeforerefname + 1);
-		String classname = qualName.substring(0, pointbeforerefname);
-		EClass ec = this.getEClassByName(classname);
-		if (ec == null) {
-			System.err.println("EClass " + classname + " does not exist.");
-			return null;
-		}
-		EReference keyref = null;
-		for (EReference eref : ec.getEReferences()) {
-			if (refname.equalsIgnoreCase(eref.getName())) {
-				keyref = eref;
-				break;
-			}
-		}
-		return keyref;
 	}
 
 	/**

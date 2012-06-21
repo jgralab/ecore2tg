@@ -1538,6 +1538,88 @@ public class Ecore2TgAnalyzer {
 	}
 
 	/**
+	 * Search in a Resource for an EClass with the given qualified name
+	 * 
+	 * @param qualname
+	 *            Qualified name of the EClass to search for
+	 * @return the EClass with the given qualified name or null if there is no
+	 *         one
+	 * */
+	public static EClass getEClassByName(String qualname,
+			Resource metamodelResource) {
+		for (EObject ob : metamodelResource.getContents()) {
+			EPackage p = (EPackage) ob;
+			EClass ec = getEClassByName(qualname, p, p.getName());
+			if (ec != null) {
+				return ec;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Search in an EPackage for an EClass with the given qualified name
+	 * 
+	 * @param qualname
+	 *            Qualified name of the EClass to search for
+	 * @param pack
+	 *            EPackage to search in
+	 * @param packqualname
+	 *            Qualified name of the EPackage to determine the qualified name
+	 *            of an EClass
+	 * @return the EClass with the given qualified name or null if there is no
+	 *         one
+	 * */
+	private static EClass getEClassByName(String qualname, EPackage pack,
+			String packqualname) {
+		// Look for EClassifiers
+		for (EClassifier candidate : pack.getEClassifiers()) {
+			if ((candidate instanceof EClass)
+					&& qualname.equalsIgnoreCase(packqualname + "."
+							+ candidate.getName())) {
+				return (EClass) candidate;
+			}
+		}
+		// Search in subpackages
+		for (EPackage child : pack.getESubpackages()) {
+			EClass temp = getEClassByName(qualname, child, packqualname + "."
+					+ child.getName());
+			if (temp != null) {
+				return temp;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Searchs for the EReference with the qualified name
+	 * 
+	 * @param qualName
+	 *            qualified name of the EReference
+	 * @return the EReference with the qualified name or null if it does not
+	 *         exist
+	 * */
+	public static EReference getEReferenceByName(String qualName,
+			Resource metamodelResource) {
+		int pointbeforerefname = qualName.lastIndexOf(".");
+		String refname = qualName.substring(pointbeforerefname + 1);
+		String classname = qualName.substring(0, pointbeforerefname);
+		EClass ec = getEClassByName(classname, metamodelResource);
+		if (ec == null) {
+			System.err.println("EClass " + classname + " does not exist.");
+			return null;
+		}
+		EReference keyref = null;
+		for (EReference eref : ec.getEReferences()) {
+			if (refname.equalsIgnoreCase(eref.getName())) {
+				keyref = eref;
+				break;
+			}
+		}
+		return keyref;
+	}
+
+	/**
 	 * Searches in the Resource for all EReferences that references the given
 	 * EClass
 	 * 
