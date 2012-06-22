@@ -24,7 +24,7 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.Transform
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.EcChooseEditingSupport;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.EcChooseLabelProvider;
 
-public class Ecore2TgOptionChooseECWizardPage extends WizardPage implements
+public class Ecore2TgWizardPage3ChooseECs extends WizardPage implements
 		ConfigurationProvider {
 
 	private static final String pageName = "Ecore2Tg - Conceptual EdgeClasses Options";
@@ -37,7 +37,7 @@ public class Ecore2TgOptionChooseECWizardPage extends WizardPage implements
 
 	private TableViewer problemTableViewer;
 
-	protected Ecore2TgOptionChooseECWizardPage() {
+	protected Ecore2TgWizardPage3ChooseECs() {
 		super(pageName);
 		this.setTitle(title);
 		this.setDescription(description);

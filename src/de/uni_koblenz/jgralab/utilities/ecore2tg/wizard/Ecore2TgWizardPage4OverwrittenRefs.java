@@ -22,7 +22,7 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.OverwrittenEReferencesColumnEditingSupport;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.OverwrittenEReferencesLabelProvider;
 
-public class Ecore2TgOptionOverwrittenRefWizardPage extends WizardPage
+public class Ecore2TgWizardPage4OverwrittenRefs extends WizardPage
 		implements ConfigurationProvider {
 
 	private static final String pageName = "Ecore2Tg - Overwriting Options";
@@ -34,7 +34,7 @@ public class Ecore2TgOptionOverwrittenRefWizardPage extends WizardPage
 	private TableViewer viewer;
 	private TableViewerColumn chooseRefColumn;
 
-	public Ecore2TgOptionOverwrittenRefWizardPage() {
+	public Ecore2TgWizardPage4OverwrittenRefs() {
 		super(pageName);
 		this.setTitle(title);
 		this.setDescription(description);

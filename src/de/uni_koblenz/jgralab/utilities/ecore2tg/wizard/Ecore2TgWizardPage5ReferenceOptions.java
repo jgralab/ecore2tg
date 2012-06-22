@@ -38,7 +38,7 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefT
  * @author kheckelmann
  * 
  */
-public class Ecore2TgOptionReferencesWizardPage extends WizardPage implements
+public class Ecore2TgWizardPage5ReferenceOptions extends WizardPage implements
 		ConfigurationProvider {
 
 	private static final String pageName = "Ecore2Tg - Reference Options";
@@ -51,7 +51,7 @@ public class Ecore2TgOptionReferencesWizardPage extends WizardPage implements
 	private TableViewer referenceTableViewer;
 	private TableViewerColumn packageColumn;
 
-	protected Ecore2TgOptionReferencesWizardPage() {
+	protected Ecore2TgWizardPage5ReferenceOptions() {
 		super(pageName);
 		this.setTitle(title);
 		this.setDescription(description);

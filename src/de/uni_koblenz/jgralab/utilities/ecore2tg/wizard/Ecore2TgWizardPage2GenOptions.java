@@ -34,7 +34,7 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.Transform
  * @author kheckelmann
  * 
  */
-public class Ecore2TgOptionWizardPage extends WizardPage implements
+public class Ecore2TgWizardPage2GenOptions extends WizardPage implements
 		ConfigurationProvider {
 
 	private static final String pageName = "Ecore2TgOptions";
@@ -51,7 +51,7 @@ public class Ecore2TgOptionWizardPage extends WizardPage implements
 	private Button buttonConvertBigs;
 	private Button buttonSearchForEdgeClasses;
 
-	protected Ecore2TgOptionWizardPage() {
+	protected Ecore2TgWizardPage2GenOptions() {
 		super(pageName);
 		this.setTitle(title);
 		this.setDescription(description);
@@ -169,8 +169,8 @@ public class Ecore2TgOptionWizardPage extends WizardPage implements
 		b.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				Ecore2TgOptionWizardPage.this
-						.setPageComplete(Ecore2TgOptionWizardPage.this
+				Ecore2TgWizardPage2GenOptions.this
+						.setPageComplete(Ecore2TgWizardPage2GenOptions.this
 								.isComplete());
 			}
 		});
@@ -180,8 +180,8 @@ public class Ecore2TgOptionWizardPage extends WizardPage implements
 		t.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				Ecore2TgOptionWizardPage.this
-						.setPageComplete(Ecore2TgOptionWizardPage.this
+				Ecore2TgWizardPage2GenOptions.this
+						.setPageComplete(Ecore2TgWizardPage2GenOptions.this
 								.isComplete());
 			}
 		});
