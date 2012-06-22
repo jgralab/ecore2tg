@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -66,6 +67,16 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 
 	private Ecore2TgAnalyzer anal;
 
+	private Resource metamodelResource;
+
+	public Resource getMetamodel() {
+		return this.metamodelResource;
+	}
+
+	public void setMetamodel(Resource m) {
+		this.metamodelResource = m;
+	}
+
 	public Ecore2TgWizard() {
 		super();
 		this.setNeedsProgressMonitor(true);
@@ -111,12 +122,17 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 		// Second page: fill table of third page before showing
 		else if (page instanceof Ecore2TgOptionWizardPage) {
 			this.generalOptionsPage.saveConfiguration(this.configuration);
+			this.anal = new Ecore2TgAnalyzer(
+					this.filePage.getEcoreSchemaResource());
+			this.anal
+					.searchForEdgeClasses(TransformParams.AUTOMATIC_TRANSFORMATION);
+			// If look for EdgeClasses, show result
 			if (this.generalOptionsPage.getSearchForEdgeClasses()) {
-				this.anal = new Ecore2TgAnalyzer(
-						this.filePage.getEcoreSchemaResource());
-				this.anal
-						.searchForEdgeClasses(TransformParams.AUTOMATIC_TRANSFORMATION);
-				if (this.anal.getFoundEdgeClasses().isEmpty()) {
+
+				if (this.anal.getFoundEdgeClasses().isEmpty()
+						&& this.anal
+								.getEdgeClassCandidatesWithUnclearEReferences()
+								.isEmpty()) {
 					this.referenceOptionsPage.fillRefTable(
 							this.filePage.getEcoreSchemaResource(),
 							this.anal.getFoundEdgeClasses());
@@ -125,10 +141,13 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 					return this.referenceOptionsPage;
 				} else {
 					this.chooseEcOptionsPage.fillTable(this.anal
-							.getFoundEdgeClasses());
+							.getFoundEdgeClasses(), this.anal
+							.getEdgeClassCandidatesWithUnclearEReferences());
 				}
-
-			} else {
+			}
+			// Don't look for EdgeClasses, show what is in config
+			else {
+				// If nothing is in config -> next page
 				if (this.configuration.getEdgeClassesList().isEmpty()) {
 					this.referenceOptionsPage.fillRefTable(this.filePage
 							.getEcoreSchemaResource(), this
@@ -138,8 +157,21 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 							.enterConfiguration(this.configuration);
 					return this.referenceOptionsPage;
 				} else {
-					this.chooseEcOptionsPage.fillTable2(this.configuration
-							.getEdgeClassesList());
+					ArrayList<EClass> savedEdgeClasses = this
+							.getEClassesByName(this.configuration
+									.getEdgeClassesList());
+					ArrayList<EClass> okECs = new ArrayList<EClass>();
+					ArrayList<EClass> prECs = new ArrayList<EClass>();
+					for (EClass ec : savedEdgeClasses) {
+						if (this.anal
+								.getEdgeClassCandidatesWithUnclearEReferences()
+								.contains(ec)) {
+							prECs.add(ec);
+						} else {
+							okECs.add(ec);
+						}
+					}
+					this.chooseEcOptionsPage.fillTable(okECs, prECs);
 				}
 			}
 			this.chooseEcOptionsPage.enterConfiguration(this.configuration);
@@ -147,7 +179,11 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 		// Third page
 		else if (page instanceof Ecore2TgOptionChooseECWizardPage) {
 			this.chooseEcOptionsPage.saveConfiguration(this.configuration);
-			if (this.anal.getEReferenceToOverwriteCandidatesMap().isEmpty()) {
+			if (this.anal.getEdgeClassCandidatesWithUnclearEReferences()
+					.isEmpty()
+					|| this.testConfigContainsunclear(this.anal
+							.getEdgeClassCandidatesWithUnclearEReferences(),
+							this.configuration)) {
 				if (this.configuration.getTransformationOption().equals(
 						TransformParams.AUTOMATIC_TRANSFORMATION)) {
 					this.referenceOptionsPage.fillRefTable(
@@ -163,6 +199,8 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 						.enterConfiguration(this.configuration);
 				return this.referenceOptionsPage;
 			}
+			this.chooseOverwrittenOptionsPage.fillListViewer(this.anal
+					.getEReferenceToOverwriteCandidatesMap());
 			this.chooseOverwrittenOptionsPage
 					.enterConfiguration(this.configuration);
 		}
@@ -189,6 +227,19 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 		}
 
 		return super.getNextPage(page);
+	}
+
+	private boolean testConfigContainsunclear(Collection<EClass> col,
+			Ecore2TgConfiguration configuration) {
+		boolean found = false;
+		for (EClass ec : col) {
+			if (configuration.getEdgeClassesList().contains(
+					Ecore2TgAnalyzer.getQualifiedEClassName(ec))) {
+				found = true;
+			}
+		}
+
+		return !found;
 	}
 
 	@Override

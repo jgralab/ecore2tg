@@ -35,6 +35,8 @@ public class Ecore2TgOptionChooseECWizardPage extends WizardPage implements
 
 	private TableViewer tableViewer;
 
+	private TableViewer problemTableViewer;
+
 	protected Ecore2TgOptionChooseECWizardPage() {
 		super(pageName);
 		this.setTitle(title);
@@ -49,13 +51,14 @@ public class Ecore2TgOptionChooseECWizardPage extends WizardPage implements
 		this.container.setLayout(layout);
 		layout.numColumns = 1;
 
-		this.createEdgeClassTableViewer();
+		this.tableViewer = this.createEdgeClassTableViewer();
+		this.problemTableViewer = this.createEdgeClassTableViewer();
 
 		this.setControl(this.container);
 		this.setPageComplete(true);
 	}
 
-	public void createEdgeClassTableViewer() {
+	private TableViewer createEdgeClassTableViewer() {
 		TableLayout tableLayout = new TableLayout();
 		tableLayout.addColumnData(new ColumnWeightData(1));
 		tableLayout.addColumnData(new ColumnWeightData(8));
@@ -66,66 +69,78 @@ public class Ecore2TgOptionChooseECWizardPage extends WizardPage implements
 		ecTable.setHeaderVisible(false);
 		ecTable.setLayout(tableLayout);
 
-		this.tableViewer = new TableViewer(ecTable);
-		this.tableViewer.getControl().setLayoutData(
+		TableViewer tableV = new TableViewer(ecTable);
+		tableV.getControl().setLayoutData(
 				new GridData(SWT.FILL, SWT.FILL, true, true));
 
-		TableViewerColumn ecSelectionColumn = new TableViewerColumn(
-				this.tableViewer, SWT.NONE);
+		TableViewerColumn ecSelectionColumn = new TableViewerColumn(tableV,
+				SWT.NONE);
 		ecSelectionColumn.getColumn().setText("Selection");
-		ecSelectionColumn.setEditingSupport(new EcChooseEditingSupport(
-				this.tableViewer));
+		ecSelectionColumn.setEditingSupport(new EcChooseEditingSupport(tableV));
 
-		TableViewerColumn ecNameColumn = new TableViewerColumn(
-				this.tableViewer, SWT.NONE);
+		TableViewerColumn ecNameColumn = new TableViewerColumn(tableV, SWT.NONE);
 		ecNameColumn.getColumn().setText("Name");
 
-		this.tableViewer.setContentProvider(new ArrayContentProvider());
-		this.tableViewer.setLabelProvider(new EcChooseLabelProvider());
+		tableV.setContentProvider(new ArrayContentProvider());
+		tableV.setLabelProvider(new EcChooseLabelProvider());
+		return tableV;
 	}
 
-	public void fillTable(Collection<EClass> edgeClasses) {
+	public void fillTable(Collection<EClass> edgeClasses,
+			Collection<EClass> candWoRef) {
 		HashMap<String, Boolean> map = new HashMap<String, Boolean>();
 		for (EClass ec : edgeClasses) {
 			map.put(Ecore2TgAnalyzer.getQualifiedEClassName(ec), true);
 		}
-		this.tableViewer.setInput(map.entrySet().toArray(new Entry<?, ?>[0]));
-	}
-
-	public void fillTable2(Collection<String> edgeClasses) {
-		HashMap<String, Boolean> map = new HashMap<String, Boolean>();
-		for (String ec : edgeClasses) {
-			map.put(ec, true);
+		HashMap<String, Boolean> map2 = new HashMap<String, Boolean>();
+		for (EClass ec : candWoRef) {
+			map2.put(Ecore2TgAnalyzer.getQualifiedEClassName(ec), false);
 		}
-		this.tableViewer.setInput(map.entrySet().toArray(new Entry<?, ?>[0]));
+		if (!map.isEmpty()) {
+			this.tableViewer.setInput(map.entrySet()
+					.toArray(new Entry<?, ?>[0]));
+		}
+		if (!map2.isEmpty()) {
+			this.problemTableViewer.setInput(map2.entrySet().toArray(
+					new Entry<?, ?>[0]));
+		}
 	}
 
 	@Override
 	public void enterConfiguration(Ecore2TgConfiguration conf) {
-
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void saveConfiguration(Ecore2TgConfiguration conf) {
 		Entry<?, ?>[] array = (Entry<?, ?>[]) this.tableViewer.getInput();
-		boolean all = true;
-		HashSet<String> names = new HashSet<String>();
-		for (Entry<?, ?> e : array) {
-			if (!(Boolean) e.getValue()) {
-				all = false;
+		if (array != null) {
+			boolean all = true;
+			HashSet<String> names = new HashSet<String>();
+			for (Entry<?, ?> e : array) {
+				if (!(Boolean) e.getValue()) {
+					all = false;
+				} else {
+					names.add(e.getKey().toString());
+				}
+			}
+			if (all) {
+				if (!conf.getEdgeClassesList().containsAll(names)) {
+					conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
+				}
 			} else {
-				names.add(e.getKey().toString());
+				conf.getEdgeClassesList().addAll(names);
+				conf.setTransformationOption(TransformParams.JUST_LIKE_ECORE);
 			}
 		}
-		if (all) {
-			if (!conf.getEdgeClassesList().containsAll(names)) {
-				conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
+
+		array = (Entry<?, ?>[]) this.problemTableViewer.getInput();
+		if (array != null) {
+			for (Entry<?, ?> e : array) {
+				if ((Boolean) e.getValue()) {
+					conf.getEdgeClassesList().add(e.getKey().toString());
+				}
 			}
-		} else {
-			conf.getEdgeClassesList().addAll(names);
-			conf.setTransformationOption(TransformParams.JUST_LIKE_ECORE);
 		}
 	}
 

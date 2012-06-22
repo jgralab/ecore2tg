@@ -1,9 +1,9 @@
 package de.uni_koblenz.jgralab.utilities.ecore2tg;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.TreeSet;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
@@ -61,6 +61,8 @@ public class Ecore2TgAnalyzer {
 	 */
 	private HashMap<EClass, boolean[]> ereferencesOfEdgeClassesresult;
 
+	private HashSet<EClass> unclearEReferences;
+
 	// -------------------------------------------------------------------
 	// --- Getter
 	// -------------------------------------------------------------------
@@ -93,6 +95,10 @@ public class Ecore2TgAnalyzer {
 
 	public HashMap<EReference, ArrayList<EReference>> getEReferences2OverwrittenEReferencesMap() {
 		return this.ereferenceWithOverwritten;
+	}
+
+	public HashSet<EClass> getEdgeClassCandidatesWithUnclearEReferences() {
+		return this.unclearEReferences;
 	}
 
 	// -------------------------------------------------------------------
@@ -132,6 +138,7 @@ public class Ecore2TgAnalyzer {
 	}
 
 	private void doSearch(TransformParams params) {
+		this.unclearEReferences = new HashSet<EClass>();
 		this.badEReferences = new HashSet<EReference>();
 		this.edgeclasses = new ArrayList<EClass>();
 		this.ereferencesOfEdgeClassesresult = new HashMap<EClass, boolean[]>();
@@ -269,6 +276,16 @@ public class Ecore2TgAnalyzer {
 			}
 		}
 		sortEClasses(this.edgeclasses);
+
+		HashSet<EClass> temp = new HashSet<EClass>();
+		for (EClass ec : this.unclearEReferences) {
+			temp.addAll(ec.getEAllSuperTypes());
+		}
+		this.unclearEReferences.addAll(temp);
+		Collection<EClass> c = getSubclassesOfEClasses(this.metamodelResource,
+				this.unclearEReferences);
+		this.unclearEReferences.addAll(c);
+
 	}
 
 	/**
@@ -672,6 +689,7 @@ public class Ecore2TgAnalyzer {
 								.println("The EClass "
 										+ getQualifiedEClassName(candidate)
 										+ " is probably an EdgeClass, but it is not possible to determine which EReference overwrites the parents one.");
+						this.unclearEReferences.add(candidate);
 						return false;
 					}
 				}
@@ -1679,7 +1697,7 @@ public class Ecore2TgAnalyzer {
 	 * @return list with all subclasses of the given EClasses
 	 * */
 	public static ArrayList<EClass> getSubclassesOfEClasses(
-			Resource metamodelResource, ArrayList<EClass> parents) {
+			Resource metamodelResource, Collection<EClass> parents) {
 		ArrayList<EClass> childs = new ArrayList<EClass>();
 		for (EObject ob : metamodelResource.getContents()) {
 			findSubclassesOfEClasses((EPackage) ob, parents, childs);
@@ -1700,7 +1718,7 @@ public class Ecore2TgAnalyzer {
 	 *            List where the results are put in
 	 * */
 	private static void findSubclassesOfEClasses(EPackage pack,
-			ArrayList<EClass> parents, ArrayList<EClass> childs) {
+			Collection<EClass> parents, ArrayList<EClass> childs) {
 		for (EClassifier classi : pack.getEClassifiers()) {
 			// if it is an EClass and
 			if (classi instanceof EClass) {
@@ -1761,14 +1779,14 @@ public class Ecore2TgAnalyzer {
 		if (this.ref2set != null) {
 			return this.ref2set;
 		}
-		if (this.edgeclasses == null) {
+		if (this.unclearEReferences == null) {
 			this.searchForEdgeClasses(TransformParams.AUTOMATIC_TRANSFORMATION);
 		}
 		this.ref2set = new HashMap<EReference, HashSet<EReference>>();
 
-		TreeSet<EClass> hyrachyCandidates = new TreeSet<EClass>();
+		HashSet<EClass> hyrachyCandidates = new HashSet<EClass>();
 
-		for (EClass ec : this.edgeclasses) {
+		for (EClass ec : this.unclearEReferences) {
 			if (!ec.getESuperTypes().isEmpty()) {
 				if (ec.getEReferences().size() == 1) {
 					hyrachyCandidates.add(ec);
@@ -1793,7 +1811,7 @@ public class Ecore2TgAnalyzer {
 		// Iterate over superclasses
 		for (EClass sup : c.getESuperTypes()) {
 			// If there is more than one EReferences that is the top
-			if (sup.getEReferences().size() > 1) {
+			if (sup.getEReferences().size() > 1) { // highest
 				// Determine whether the EReferences end at different classes
 				HashSet<EClass> ends = new HashSet<EClass>();
 				for (EReference ref : sup.getEReferences()) {
@@ -1804,29 +1822,40 @@ public class Ecore2TgAnalyzer {
 					// if the single EReference is in the same hyrachy than both
 					// EReferences of the supertype, one must be chosen, nothing
 					// is clear
-					if (keyref
-							.getEReferenceType()
-							.getEAllSuperTypes()
-							.contains(
-									this.ereferencesOfEdgeClasses.get(sup).get(
-											0))
-							&& keyref
-									.getEReferenceType()
-									.getEAllSuperTypes()
-									.contains(
-											this.ereferencesOfEdgeClasses.get(
-													sup).get(1))) {
-						coll.add(this.ereferencesOfEdgeClasses.get(sup).get(0));
-						coll.add(this.ereferencesOfEdgeClasses.get(sup).get(1));
+					int i = 0;
+					ArrayList<EReference> l = new ArrayList<EReference>();
+					for (EReference ref : sup.getEReferences()) {
+						if (keyref.getEReferenceType().getEAllSuperTypes()
+								.contains(ref.getEReferenceType())) {
+							i++;
+							l.add(ref);
+						}
 					}
-					// if the single EReference is not in a hyrachy with both,
-					// this EReference has a clear super, so everything is fine
+					if (i > 1) {
+						coll.addAll(l);
+						isambig = true;
+					}
+					// if the single EReference is not in a hyrachy with
+					// both,
+					// this EReference has a clear super, so everything is
+					// fine
 					else {
 						isambig = false;
 					}
+
 				} else {
-					coll.add(this.ereferencesOfEdgeClasses.get(sup).get(0));
-					coll.add(this.ereferencesOfEdgeClasses.get(sup).get(1));
+					if (sup.getEReferences().size() == 2) {
+						coll.addAll(sup.getEReferences());
+					}
+					// == 3
+					else {
+						for (EReference rf : sup.getEReferences()) {
+							if (!rf.isContainer()) {
+								coll.add(rf);
+							}
+						}
+					}
+					isambig = true;
 				}
 				continue;
 			}

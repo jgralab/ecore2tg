@@ -112,6 +112,8 @@ public class Ecore2TgFileWizardPage extends WizardPage {
 					Ecore2TgFileWizardPage.this.textEcoreFile.setText(path);
 					Ecore2TgFileWizardPage.this.ecoreSchema = Ecore2Tg
 							.loadMetaModelFromEcoreFile(path);
+					((Ecore2TgWizard) Ecore2TgFileWizardPage.this.getWizard())
+							.setMetamodel(Ecore2TgFileWizardPage.this.ecoreSchema);
 					if (Ecore2TgFileWizardPage.this.isComplete()) {
 						Ecore2TgFileWizardPage.this.setPageComplete(true);
 					}
