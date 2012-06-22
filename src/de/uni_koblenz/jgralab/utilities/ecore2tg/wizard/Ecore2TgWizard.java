@@ -124,8 +124,6 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 						.loadConfigurationFromFile(this.page1Files
 								.getConfigFilePath());
 			}
-			this.page2GenOptions.fillEClassesListWidget(this.metamodelResource,
-					this.configuration);
 			this.page2GenOptions.enterConfiguration(this.configuration);
 		}
 		// Second page: fill table of third page before showing

@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Text;
  * @author kheckelmann
  * 
  */
-public class Tg2EcoreOptionWizardPage extends WizardPage {
+public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 
 	private static final String pageName = "Tg2EcoreOptions";
 	private static final String title = "Tg2Ecore - General Options";
@@ -37,7 +37,7 @@ public class Tg2EcoreOptionWizardPage extends WizardPage {
 	private Text textRootPackageNsPrefix;
 	private Text textRootPackageNsURI;
 
-	protected Tg2EcoreOptionWizardPage() {
+	protected Tg2EcoreWizardPage2GenOptions() {
 		super(pageName);
 		this.setTitle(title);
 		this.setDescription(description);
@@ -88,12 +88,12 @@ public class Tg2EcoreOptionWizardPage extends WizardPage {
 			public void widgetSelected(SelectionEvent e) {
 				Button b = (Button) e.widget;
 				if (b.getSelection()) {
-					Tg2EcoreOptionWizardPage.this.buttonMakeGC2Root
+					Tg2EcoreWizardPage2GenOptions.this.buttonMakeGC2Root
 							.setEnabled(true);
 				} else {
-					Tg2EcoreOptionWizardPage.this.buttonMakeGC2Root
+					Tg2EcoreWizardPage2GenOptions.this.buttonMakeGC2Root
 							.setSelection(false);
-					Tg2EcoreOptionWizardPage.this.buttonMakeGC2Root
+					Tg2EcoreWizardPage2GenOptions.this.buttonMakeGC2Root
 							.setEnabled(false);
 				}
 			}

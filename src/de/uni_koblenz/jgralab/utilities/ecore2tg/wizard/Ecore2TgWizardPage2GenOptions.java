@@ -6,7 +6,6 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -141,26 +140,6 @@ public class Ecore2TgWizardPage2GenOptions extends WizardPage implements
 		this.buttonSearchForEdgeClasses.setSelection(true);
 	}
 
-	public Text getTextGraphClassName() {
-		return this.textGraphClassName;
-	}
-
-	public List getListWidgetEClasses() {
-		return this.listWidgetEClasses;
-	}
-
-	public boolean getButtonConvertBigs() {
-		return this.buttonConvertBigs.getSelection();
-	}
-
-	public boolean getButtonSelectGraphClassFromEClasses() {
-		return this.buttonSelectGraphClassFromEClasses.getSelection();
-	}
-
-	public boolean getButtonCreateNewGraphClassWithName() {
-		return this.buttonCreateNewGraphClassWithName.getSelection();
-	}
-
 	public boolean getSearchForEdgeClasses() {
 		return this.buttonSearchForEdgeClasses.getSelection();
 	}
@@ -197,6 +176,9 @@ public class Ecore2TgWizardPage2GenOptions extends WizardPage implements
 
 	@Override
 	public void enterConfiguration(Ecore2TgConfiguration conf) {
+		// fill Widget
+		this.fillEClassesListWidget(conf);
+		// adapt selection
 		if (conf.getAsGraphClass() != null
 				&& !conf.getAsGraphClass().equals("")) {
 			this.buttonSelectGraphClassFromEClasses.setSelection(true);
@@ -247,9 +229,10 @@ public class Ecore2TgWizardPage2GenOptions extends WizardPage implements
 	 * Fills the dropdown list on page two that allows the selection of an
 	 * EClass as GraphClass
 	 */
-	public void fillEClassesListWidget(Resource r, Ecore2TgConfiguration conf) {
+	private void fillEClassesListWidget(Ecore2TgConfiguration conf) {
 		ArrayList<String> eclassList = new ArrayList<String>();
-		TreeIterator<EObject> it = r.getAllContents();
+		TreeIterator<EObject> it = ((Ecore2TgWizard) this.getWizard())
+				.getMetamodel().getAllContents();
 		while (it.hasNext()) {
 			EObject o = it.next();
 			if (o instanceof EClass) {
@@ -263,14 +246,13 @@ public class Ecore2TgWizardPage2GenOptions extends WizardPage implements
 				eclassList.add(name);
 			}
 		}
-		this.getListWidgetEClasses().setItems(
-				eclassList.toArray(new String[] {}));
-		this.getListWidgetEClasses().setSelection(0);
+		this.listWidgetEClasses.setItems(eclassList.toArray(new String[] {}));
+		this.listWidgetEClasses.setSelection(0);
 
 		String schemaName = conf.getSchemaName();
 		String gcname = schemaName.substring(schemaName.lastIndexOf(".") + 1);
 		gcname += "Graph";
-		this.getTextGraphClassName().setText(gcname);
+		this.textGraphClassName.setText(gcname);
 
 	}
 

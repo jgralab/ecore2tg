@@ -23,7 +23,7 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.EcTa
  * @author kheckelmann
  * 
  */
-public class Tg2EcoreOptionEdgeClassesWizardPage extends WizardPage {
+public class Tg2EcoreWizardPage3ECOptions extends WizardPage {
 
 	private static final String pageName = "Tg2EcoreECOptions";
 	private static final String title = "Tg2Ecore - EdgeClass Options";
@@ -33,7 +33,7 @@ public class Tg2EcoreOptionEdgeClassesWizardPage extends WizardPage {
 
 	private TableViewer ecTableViewer;
 
-	protected Tg2EcoreOptionEdgeClassesWizardPage() {
+	protected Tg2EcoreWizardPage3ECOptions() {
 		super(pageName);
 		this.setTitle(title);
 		this.setDescription(description);

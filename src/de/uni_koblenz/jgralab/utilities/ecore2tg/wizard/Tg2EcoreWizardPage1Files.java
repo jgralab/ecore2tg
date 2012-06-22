@@ -32,7 +32,7 @@ import de.uni_koblenz.jgralab.schema.Schema;
  * @author kheckelmann
  * 
  */
-public class Tg2EcoreFileWizardPage extends WizardPage {
+public class Tg2EcoreWizardPage1Files extends WizardPage {
 
 	private static final String pageName = "Tg2EcoreFileChoose";
 	private static final String title = "Tg2Ecore";
@@ -50,7 +50,7 @@ public class Tg2EcoreFileWizardPage extends WizardPage {
 
 	private Schema tgSchema;
 
-	protected Tg2EcoreFileWizardPage() {
+	protected Tg2EcoreWizardPage1Files() {
 		super(pageName);
 		this.setTitle(title);
 		this.setDescription(description);
@@ -108,20 +108,20 @@ public class Tg2EcoreFileWizardPage extends WizardPage {
 				String path = fileDialog.open();
 
 				if (path != null) {
-					Tg2EcoreFileWizardPage.this.textTgFile.setText(path);
+					Tg2EcoreWizardPage1Files.this.textTgFile.setText(path);
 					try {
-						Tg2EcoreFileWizardPage.this.tgSchema = GraphIO
+						Tg2EcoreWizardPage1Files.this.tgSchema = GraphIO
 								.loadSchemaFromFile(path);
-						if (Tg2EcoreFileWizardPage.this.isComplete()) {
-							Tg2EcoreFileWizardPage.this.setPageComplete(true);
+						if (Tg2EcoreWizardPage1Files.this.isComplete()) {
+							Tg2EcoreWizardPage1Files.this.setPageComplete(true);
 						}
 					} catch (GraphIOException e1) {
-						Tg2EcoreFileWizardPage.this.textTgFile.setText("");
-						Tg2EcoreFileWizardPage.this.setPageComplete(false);
+						Tg2EcoreWizardPage1Files.this.textTgFile.setText("");
+						Tg2EcoreWizardPage1Files.this.setPageComplete(false);
 						e1.printStackTrace();
 					}
 				} else {
-					Tg2EcoreFileWizardPage.this.setPageComplete(false);
+					Tg2EcoreWizardPage1Files.this.setPageComplete(false);
 				}
 			}
 		});
@@ -157,13 +157,13 @@ public class Tg2EcoreFileWizardPage extends WizardPage {
 				String path = fileDialog.open();
 
 				if (path != null) {
-					Tg2EcoreFileWizardPage.this.textEcoreFile.setText(path);
-					if (!Tg2EcoreFileWizardPage.this.textTgFile.getText()
+					Tg2EcoreWizardPage1Files.this.textEcoreFile.setText(path);
+					if (!Tg2EcoreWizardPage1Files.this.textTgFile.getText()
 							.isEmpty()) {
-						Tg2EcoreFileWizardPage.this.setPageComplete(true);
+						Tg2EcoreWizardPage1Files.this.setPageComplete(true);
 					}
 				} else {
-					Tg2EcoreFileWizardPage.this.setPageComplete(false);
+					Tg2EcoreWizardPage1Files.this.setPageComplete(false);
 				}
 
 			}
@@ -197,7 +197,7 @@ public class Tg2EcoreFileWizardPage extends WizardPage {
 				String path = fileDialog.open();
 
 				if (path != null) {
-					Tg2EcoreFileWizardPage.this.textXMIFile.setText(path);
+					Tg2EcoreWizardPage1Files.this.textXMIFile.setText(path);
 				}
 
 			}
@@ -215,18 +215,18 @@ public class Tg2EcoreFileWizardPage extends WizardPage {
 			public void widgetSelected(SelectionEvent e) {
 				Button b = (Button) e.widget;
 				if (b.getSelection()) {
-					Tg2EcoreFileWizardPage.this.buttonUseConfigFileCheck
+					Tg2EcoreWizardPage1Files.this.buttonUseConfigFileCheck
 							.setEnabled(false);
-					Tg2EcoreFileWizardPage.this.buttonBack2Ecore
+					Tg2EcoreWizardPage1Files.this.buttonBack2Ecore
 							.setEnabled(false);
 				} else {
-					Tg2EcoreFileWizardPage.this.buttonUseConfigFileCheck
+					Tg2EcoreWizardPage1Files.this.buttonUseConfigFileCheck
 							.setEnabled(true);
-					Tg2EcoreFileWizardPage.this.buttonBack2Ecore
+					Tg2EcoreWizardPage1Files.this.buttonBack2Ecore
 							.setEnabled(true);
 				}
-				Tg2EcoreFileWizardPage.this
-						.setPageComplete(Tg2EcoreFileWizardPage.this
+				Tg2EcoreWizardPage1Files.this
+						.setPageComplete(Tg2EcoreWizardPage1Files.this
 								.isPageComplete());
 			}
 		});
@@ -248,18 +248,18 @@ public class Tg2EcoreFileWizardPage extends WizardPage {
 					public void widgetSelected(SelectionEvent e) {
 						Button b = (Button) e.widget;
 						if (b.getSelection()) {
-							Tg2EcoreFileWizardPage.this.buttonDefaultOptions
+							Tg2EcoreWizardPage1Files.this.buttonDefaultOptions
 									.setEnabled(false);
-							Tg2EcoreFileWizardPage.this.buttonBack2Ecore
+							Tg2EcoreWizardPage1Files.this.buttonBack2Ecore
 									.setEnabled(false);
 						} else {
-							Tg2EcoreFileWizardPage.this.buttonDefaultOptions
+							Tg2EcoreWizardPage1Files.this.buttonDefaultOptions
 									.setEnabled(true);
-							Tg2EcoreFileWizardPage.this.buttonBack2Ecore
+							Tg2EcoreWizardPage1Files.this.buttonBack2Ecore
 									.setEnabled(true);
 						}
-						Tg2EcoreFileWizardPage.this
-								.setPageComplete(Tg2EcoreFileWizardPage.this
+						Tg2EcoreWizardPage1Files.this
+								.setPageComplete(Tg2EcoreWizardPage1Files.this
 										.isComplete());
 					}
 				});
@@ -289,11 +289,11 @@ public class Tg2EcoreFileWizardPage extends WizardPage {
 						String path = fileDialog.open();
 
 						if (path != null) {
-							Tg2EcoreFileWizardPage.this.textConfigFile
+							Tg2EcoreWizardPage1Files.this.textConfigFile
 									.setText(path);
 						}
-						Tg2EcoreFileWizardPage.this
-								.setPageComplete(Tg2EcoreFileWizardPage.this
+						Tg2EcoreWizardPage1Files.this
+								.setPageComplete(Tg2EcoreWizardPage1Files.this
 										.isComplete());
 					}
 				});
@@ -321,12 +321,12 @@ public class Tg2EcoreFileWizardPage extends WizardPage {
 					enable = true;
 				}
 
-				Tg2EcoreFileWizardPage.this.buttonDefaultOptions
+				Tg2EcoreWizardPage1Files.this.buttonDefaultOptions
 						.setEnabled(enable);
-				Tg2EcoreFileWizardPage.this.buttonUseConfigFileCheck
+				Tg2EcoreWizardPage1Files.this.buttonUseConfigFileCheck
 						.setEnabled(enable);
-				Tg2EcoreFileWizardPage.this
-						.setPageComplete(Tg2EcoreFileWizardPage.this
+				Tg2EcoreWizardPage1Files.this
+						.setPageComplete(Tg2EcoreWizardPage1Files.this
 								.isPageComplete());
 			}
 
@@ -389,10 +389,10 @@ public class Tg2EcoreFileWizardPage extends WizardPage {
 		return new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				if (Tg2EcoreFileWizardPage.this.isComplete()) {
-					Tg2EcoreFileWizardPage.this.setPageComplete(true);
+				if (Tg2EcoreWizardPage1Files.this.isComplete()) {
+					Tg2EcoreWizardPage1Files.this.setPageComplete(true);
 				} else {
-					Tg2EcoreFileWizardPage.this.setPageComplete(false);
+					Tg2EcoreWizardPage1Files.this.setPageComplete(false);
 				}
 			}
 		};
