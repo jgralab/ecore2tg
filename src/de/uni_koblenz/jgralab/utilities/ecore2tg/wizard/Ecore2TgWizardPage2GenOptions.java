@@ -216,6 +216,8 @@ public class Ecore2TgWizardPage2GenOptions extends WizardPage implements
 
 		if (this.buttonSearchForEdgeClasses.getSelection()) {
 			conf.setTransformationOption(TransformParams.AUTOMATIC_TRANSFORMATION);
+		} else {
+			conf.setTransformationOption(TransformParams.JUST_LIKE_ECORE);
 		}
 	}
 

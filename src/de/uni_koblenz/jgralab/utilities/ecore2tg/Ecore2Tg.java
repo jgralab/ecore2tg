@@ -840,16 +840,15 @@ public class Ecore2Tg {
 					|| !this.ereferenceWithOverwritten.isEmpty()) {
 				this.analyzer.searchForEdgeClasses(this.getConfiguration()
 						.getTransformationOption());
-				if (this.getConfiguration().getTransformationOption() == TransformParams.AUTOMATIC_TRANSFORMATION) {
-					this.badEReferences.addAll(this.analyzer
-							.getIgnoredEReferences());
-					this.ereferencesOfEdgeClasses.putAll(this.analyzer
-							.getEreferencesOfEdgeClasses());
-					this.ereferencesOfEdgeClassesresult.putAll(this.analyzer
-							.getEreferencesOfEdgeClassesresult());
-					this.edgeclasses
-							.addAll(this.analyzer.getFoundEdgeClasses());
-				}
+			}
+			if (this.getConfiguration().getTransformationOption() == TransformParams.AUTOMATIC_TRANSFORMATION) {
+				this.badEReferences.addAll(this.analyzer
+						.getIgnoredEReferences());
+				this.ereferencesOfEdgeClasses.putAll(this.analyzer
+						.getEreferencesOfEdgeClasses());
+				this.ereferencesOfEdgeClassesresult.putAll(this.analyzer
+						.getEreferencesOfEdgeClassesresult());
+				this.edgeclasses.addAll(this.analyzer.getFoundEdgeClasses());
 			}
 
 		}

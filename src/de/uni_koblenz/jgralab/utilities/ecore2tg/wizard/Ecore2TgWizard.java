@@ -61,6 +61,11 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 	private Ecore2TgWizardPage5ReferenceOptions page5ReferenceOptions;
 
 	/**
+	 * Optional page to save the configuration
+	 */
+	private Ecore2TgWizardPage6SaveOptions page6SaveOptions;
+
+	/**
 	 * Configuration to fill
 	 */
 	protected Ecore2TgConfiguration configuration;
@@ -103,11 +108,13 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 		this.page3ChooseECs = new Ecore2TgWizardPage3ChooseECs();
 		this.page4OverwrittenRefs = new Ecore2TgWizardPage4OverwrittenRefs();
 		this.page5ReferenceOptions = new Ecore2TgWizardPage5ReferenceOptions();
+		this.page6SaveOptions = new Ecore2TgWizardPage6SaveOptions();
 		this.addPage(this.page1Files);
 		this.addPage(this.page2GenOptions);
 		this.addPage(this.page3ChooseECs);
 		this.addPage(this.page4OverwrittenRefs);
 		this.addPage(this.page5ReferenceOptions);
+		this.addPage(this.page6SaveOptions);
 	}
 
 	@Override
@@ -123,6 +130,8 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 				this.configuration = Ecore2TgConfiguration
 						.loadConfigurationFromFile(this.page1Files
 								.getConfigFilePath());
+				this.page6SaveOptions.setFileNameText(this.page1Files
+						.getConfigFilePath());
 			}
 			this.page2GenOptions.enterConfiguration(this.configuration);
 		}
@@ -263,7 +272,6 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 
 	@Override
 	public boolean performFinish() {
-
 		this.page5ReferenceOptions.saveConfiguration(this.configuration);
 
 		Ecore2Tg ecore2tg = new Ecore2Tg(this.anal, this.configuration);

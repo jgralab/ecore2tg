@@ -16,6 +16,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgAnalyzer;
@@ -51,7 +52,11 @@ public class Ecore2TgWizardPage3ChooseECs extends WizardPage implements
 		this.container.setLayout(layout);
 		layout.numColumns = 1;
 
+		Label eclabel = new Label(this.container, SWT.NONE);
+		eclabel.setText("Savely found conceptual EdgeClasses:");
 		this.tableViewer = this.createEdgeClassTableViewer();
+		Label meclabel = new Label(this.container, SWT.NONE);
+		meclabel.setText("Possible EdgeClasses (Overwriting EReferences have to be defined):");
 		this.problemTableViewer = this.createEdgeClassTableViewer();
 
 		this.setControl(this.container);
