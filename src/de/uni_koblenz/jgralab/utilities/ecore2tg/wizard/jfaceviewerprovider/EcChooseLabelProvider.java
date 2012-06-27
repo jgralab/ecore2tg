@@ -2,10 +2,12 @@ package de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider;
 
 import java.util.Map.Entry;
 
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgAnalyzer;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.plugin.Activator;
 
 public class EcChooseLabelProvider extends LabelProvider implements
@@ -35,7 +37,9 @@ public class EcChooseLabelProvider extends LabelProvider implements
 	public String getColumnText(Object element, int columnIndex) {
 		if (element instanceof Entry<?, ?>) {
 			if (columnIndex == 1) {
-				return ((Entry<?, ?>) element).getKey().toString();
+				return Ecore2TgAnalyzer
+						.getQualifiedEClassName((EClass) ((Entry<?, ?>) element)
+								.getKey());
 			}
 		}
 		return null;

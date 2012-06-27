@@ -93,13 +93,13 @@ public class Ecore2TgWizardPage3ChooseECs extends WizardPage implements
 
 	public void fillTable(Collection<EClass> edgeClasses,
 			Collection<EClass> candWoRef) {
-		HashMap<String, Boolean> map = new HashMap<String, Boolean>();
+		HashMap<EClass, Boolean> map = new HashMap<EClass, Boolean>();
 		for (EClass ec : edgeClasses) {
-			map.put(Ecore2TgAnalyzer.getQualifiedEClassName(ec), true);
+			map.put(ec, true);
 		}
-		HashMap<String, Boolean> map2 = new HashMap<String, Boolean>();
+		HashMap<EClass, Boolean> map2 = new HashMap<EClass, Boolean>();
 		for (EClass ec : candWoRef) {
-			map2.put(Ecore2TgAnalyzer.getQualifiedEClassName(ec), false);
+			map2.put(ec, false);
 		}
 		if (!map.isEmpty()) {
 			this.tableViewer.setInput(map.entrySet()
@@ -126,7 +126,8 @@ public class Ecore2TgWizardPage3ChooseECs extends WizardPage implements
 				if (!(Boolean) e.getValue()) {
 					all = false;
 				} else {
-					names.add(e.getKey().toString());
+					names.add(Ecore2TgAnalyzer
+							.getQualifiedEClassName((EClass) e.getKey()));
 				}
 			}
 			if (all) {
@@ -143,7 +144,9 @@ public class Ecore2TgWizardPage3ChooseECs extends WizardPage implements
 		if (array != null) {
 			for (Entry<?, ?> e : array) {
 				if ((Boolean) e.getValue()) {
-					conf.getEdgeClassesList().add(e.getKey().toString());
+					conf.getEdgeClassesList().add(
+							Ecore2TgAnalyzer.getQualifiedEClassName((EClass) e
+									.getKey()));
 				}
 			}
 		}
