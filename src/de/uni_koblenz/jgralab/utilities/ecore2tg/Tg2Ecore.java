@@ -38,9 +38,6 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.XMIResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
-import org.riediger.plist.PList;
-import org.riediger.plist.PListDict;
-import org.riediger.plist.PListException;
 
 import de.uni_koblenz.ist.utilities.option_handler.OptionHandler;
 import de.uni_koblenz.jgralab.AttributedElement;
@@ -79,6 +76,7 @@ import de.uni_koblenz.jgralab.grumlschema.structure.NamedElement;
 import de.uni_koblenz.jgralab.grumlschema.structure.Package;
 import de.uni_koblenz.jgralab.grumlschema.structure.VertexClass;
 import de.uni_koblenz.jgralab.schema.Schema;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2EcoreConfiguration.EdgeDirection;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.Schema2SchemaGraph;
 
 public class Tg2Ecore {
@@ -251,26 +249,33 @@ public class Tg2Ecore {
 		SchemaGraph sg = s2sg.convert2SchemaGraph(schema);
 
 		// Instanciate Tg2Ecore
-		Tg2Ecore tg2ecore = new Tg2Ecore(sg);
+		Tg2EcoreConfiguration config = new Tg2EcoreConfiguration();
 
-		tg2ecore.setOption_backToEcore(cli.hasOption(OPTION_BACK2ECORE));
-		tg2ecore.setOption_oneroleToUni(cli.hasOption(OPTION_ONEROLE2UNI));
-		tg2ecore.setOption_transformGraphClass(cli
+		String cfilename = cli.getOptionValue(OPTION_FILENAME_CONFIG);
+		if (cfilename != null) {
+			config = Tg2EcoreConfiguration
+					.fillWithConfigurationsFromFile(cfilename);
+		}
+		Tg2Ecore tg2ecore = new Tg2Ecore(sg, config);
+
+		config.setOption_backToEcore(cli.hasOption(OPTION_BACK2ECORE));
+		config.setOption_oneroleToUni(cli.hasOption(OPTION_ONEROLE2UNI));
+		config.setOption_transformGraphClass(cli
 				.hasOption(OPTION_TRANSFORMGRAPHCLASS));
-		tg2ecore.setOption_makeGraphClassToRootElement(cli
+		config.setOption_makeGraphClassToRootElement(cli
 				.hasOption(OPTION_MAKEGRAPHCLASS2ROOT));
 
 		String rn = cli.getOptionValue(OPTION_ROOTPACKAGENAME);
 		if (rn != null) {
-			tg2ecore.setOption_rootpackageName(rn);
+			config.setOption_rootpackageName(rn);
 		}
 		String nsPrefix = cli.getOptionValue(OPTION_NSPREFIX);
 		if (nsPrefix != null) {
-			tg2ecore.setOption_nsPrefix(nsPrefix);
+			config.setOption_nsPrefix(nsPrefix);
 		}
 		String nsURI = cli.getOptionValue(OPTION_NSURI);
 		if (nsURI != null) {
-			tg2ecore.setOption_nsURI(nsURI);
+			config.setOption_nsURI(nsURI);
 		}
 
 		String[] rolenames = cli.getOptionValues(OPTION_DEFINEROLENAME);
@@ -278,17 +283,12 @@ public class Tg2Ecore {
 			for (String en : rolenames) {
 				String[] ar = en.split(" ");
 				assert ar.length == 3;
-				EdgeDirection dir = EdgeDirection.From;
+				Tg2EcoreConfiguration.EdgeDirection dir = Tg2EcoreConfiguration.EdgeDirection.From;
 				if (ar[1].equalsIgnoreCase("To")) {
 					dir = EdgeDirection.To;
 				}
-				tg2ecore.addOption_definerolenames(ar[0], dir, ar[2]);
+				config.addOption_definerolenames(ar[0], dir, ar[2]);
 			}
-		}
-
-		String cfilename = cli.getOptionValue(OPTION_FILENAME_CONFIG);
-		if (cfilename != null) {
-			tg2ecore.fillWithConfigurationsFromFile(cfilename);
 		}
 
 		// Start the transformation:
@@ -317,287 +317,10 @@ public class Tg2Ecore {
 		}
 	}
 
-	// #########################################################
-	// ##### User defined Options ##############################
-	// #########################################################
+	private Tg2EcoreConfiguration config;
 
-	/**
-	 * Option to declare a back transformation. If true, comments set from
-	 * Ecore2Tg are searched and considered.
-	 */
-	private boolean option_backToEcore = true;
-
-	/**
-	 * Option to declare that Edges without Inheritance, without Attributes and
-	 * with only one role name are transformed to an one directional EReference.
-	 */
-	private boolean option_oneroleToUni = false;
-
-	/**
-	 * Option to declare whether the GraphClass should become transformed to an
-	 * EClass. Does not has an effect if option_backToEcore is set.
-	 */
-	private boolean option_transformGraphClass = true;
-
-	/**
-	 * Option to declare whether the GraphClass should become the root element
-	 * of the resulting metamodel. Doesn't work, if the
-	 * option_transformGraphClass is not set.
-	 */
-	private boolean option_makeGraphClassToRootElement = false;
-
-	/**
-	 * Option to set the name of the resulting rootpackage, if no name is set
-	 * "rootpackage" is chosen.
-	 */
-	private String option_rootpackageName;
-
-	/**
-	 * Option to set the nsPrefix of the rootpackage, if no nsPrefix is set, the
-	 * name of the GraphClass is chosen.
-	 */
-	private String option_nsPrefix;
-
-	/**
-	 * Option to set the nsURI of the rootpackage, if no nsURI is set, the
-	 * default value is "http://"+nsPrefix+"/1.0/".
-	 */
-	private String option_nsURI;
-
-	/**
-	 * Option to set the two additional rolenames for an conceptual EdgeClass in
-	 * Ecore. Maps the name of the EdgeClass and EdgeDirection to the additional
-	 * rolename.
-	 */
-	private final HashMap<String, HashMap<EdgeDirection, String>> option_definerolenames;
-
-	/**
-	 * Enumeration that saves the edge direction, From or To
-	 */
-	public enum EdgeDirection {
-		To, From;
-	}
-
-	// -----------------------------------------------------------
-
-	/**
-	 * @return if the transformation is a back transformation for Ecore2Tg
-	 */
-	public boolean isOption_backToEcore() {
-		return this.option_backToEcore;
-	}
-
-	/**
-	 * Transforms the schema to the metamodel considering comments set from
-	 * Ecore2Tg if set. The default value is <code>false</code>. If the option
-	 * is set, other options doesn't work, cause they become overwritten by the
-	 * comments.
-	 * 
-	 * @param option_backToEcore
-	 *            if the transformation is a back transformation
-	 */
-	public void setOption_backToEcore(boolean option_backToEcore) {
-		this.option_backToEcore = option_backToEcore;
-	}
-
-	/**
-	 * @return if the transformation should transform edges with only one
-	 *         rolename to unidirectional EReferences
-	 */
-	public boolean isOption_oneroleToUni() {
-		return this.option_oneroleToUni;
-	}
-
-	/**
-	 * Transforms edges with only one role name to unidirectional EReferences if
-	 * set. The default value is <code>false</code>
-	 * 
-	 * @param option_oneroleToUni
-	 *            if edges with only one role name should become transformed to
-	 *            unidirectional EReferences
-	 */
-	public void setOption_oneroleToUni(boolean option_oneroleToUni) {
-		this.option_oneroleToUni = option_oneroleToUni;
-	}
-
-	/**
-	 * @return if the GraphClass should become transformed
-	 */
-	public boolean isOption_transformGraphClass() {
-		return this.option_transformGraphClass;
-	}
-
-	/**
-	 * Transforms the GraphClass into an EClass if set. Otherwise, the
-	 * GraphClass is ignored. The default value is <code>true</code>.
-	 * 
-	 * @param option_transformGraphClass
-	 *            if the GraphClass should become transformed
-	 */
-	public void setOption_transformGraphClass(boolean option_transformGraphClass) {
-		this.option_transformGraphClass = option_transformGraphClass;
-	}
-
-	/**
-	 * @return if the GraphClass should become the root element
-	 */
-	public boolean isOption_makeGraphClassToRootElement() {
-		return this.option_makeGraphClassToRootElement;
-	}
-
-	/**
-	 * Transforms the GraphClass to the root element of the metamodel. Does only
-	 * work if option_transformGraphClass is set.
-	 * 
-	 * @param mg
-	 *            if the GraphClass should become the root element
-	 */
-	public void setOption_makeGraphClassToRootElement(boolean mg) {
-		this.option_makeGraphClassToRootElement = mg;
-	}
-
-	/**
-	 * @return the name of the rootpackage of the resulting metamodel
-	 */
-	public String getOption_rootpackageName() {
-		return this.option_rootpackageName;
-	}
-
-	/**
-	 * Sets the name of the rootpackage of the resulting metamodel. If no name
-	 * is set "rootpackage" is chosen.
-	 * 
-	 * @param rootpackageName
-	 *            the rootpackage name of the resulting metamodel
-	 */
-	public void setOption_rootpackageName(String rootpackageName) {
-		this.option_rootpackageName = rootpackageName;
-	}
-
-	/**
-	 * @return the nsPrefix of the resulting metamodels rootpackage
-	 */
-	public String getOption_nsPrefix() {
-		return this.option_nsPrefix;
-	}
-
-	/**
-	 * Sets the nsPrefix of the resulting metamodels rootpackage. If no nsPrefix
-	 * is set, the GraphClass's name is chosen.
-	 * 
-	 * @param nsPrefix
-	 *            the nsPrefix of the resulting metamodels rootpackage
-	 */
-	public void setOption_nsPrefix(String nsPrefix) {
-		this.option_nsPrefix = nsPrefix;
-	}
-
-	/**
-	 * @return the nsURI of the resulting metamodels rootpackage
-	 */
-	public String getOption_nsURI() {
-		return this.option_nsURI;
-	}
-
-	/**
-	 * Sets the nsURI of the resulting metamodels rootpackage. If no nsURI is
-	 * set, the default value is "http://"+nsPrefix+"/1.0/".
-	 * 
-	 * @param nsURI
-	 *            the nsURI of the resulting metamodels rootpackage
-	 */
-	public void setOption_nsURI(String nsURI) {
-		this.option_nsURI = nsURI;
-	}
-
-	/**
-	 * Defines an additional rolename for the Ecore metamodel. It is possible to
-	 * define one additional rolename for the from direction and one for the for
-	 * direction.
-	 * 
-	 * @param edgename
-	 *            Name of the EdgeClass to define the rolename for
-	 * @param direction
-	 *            Direction of the rolename
-	 * @param rolename
-	 *            the rolename to set
-	 */
-	public void addOption_definerolenames(String edgename,
-			EdgeDirection direction, String rolename) {
-
-		if (this.option_definerolenames.containsKey(edgename)) {
-			this.option_definerolenames.get(edgename).put(direction, rolename);
-		} else {
-			HashMap<EdgeDirection, String> entry = new HashMap<EdgeDirection, String>();
-			entry.put(direction, rolename);
-			this.option_definerolenames.put(edgename, entry);
-		}
-	}
-
-	/**
-	 * Loads the given configuration files and set the options
-	 * 
-	 * @param uri
-	 *            of the configuration file
-	 */
-	public void fillWithConfigurationsFromFile(String uri) {
-		PList x = new PList();
-		try {
-			x.loadFrom(uri);
-		} catch (PListException e) {
-			System.err
-					.println("Error while loading the configuration file with uri "
-							+ uri);
-			e.printStackTrace();
-			return;
-		}
-		PListDict ds = x.getDict();
-
-		if (ds.containsKey("ecore_backtransformation")) {
-			this.setOption_backToEcore(ds
-					.getBoolean("ecore_backtransformation"));
-		}
-		if (ds.containsKey("transform_one_role_to_uni")) {
-			this.setOption_oneroleToUni(ds
-					.getBoolean("transform_one_role_to_uni"));
-		}
-		if (ds.containsKey("transform_graphclass")) {
-			this.setOption_transformGraphClass(ds
-					.getBoolean("transform_graphclass"));
-		}
-		if (ds.containsKey("maek_graphclass_to_rootelement")) {
-			this.setOption_makeGraphClassToRootElement(ds
-					.getBoolean("maek_graphclass_to_rootelement"));
-		}
-		if (ds.containsKey("rootpackage_name")) {
-			this.setOption_rootpackageName(ds.getString("rootpackage_name"));
-		}
-		if (ds.containsKey("ns_prefix")) {
-			this.setOption_nsPrefix(ds.getString("ns_prefix"));
-		}
-		if (ds.containsKey("ns_uri")) {
-			this.setOption_nsURI(ds.getString("ns_uri"));
-		}
-		if (ds.containsKey("define_rolenames")) {
-			List<String> rns = ds.getArray("define_rolenames");
-			for (String entry : rns) {
-				String[] content = entry.split(", ");
-				assert content.length == 3;
-				EdgeDirection dir;
-				if (content[1].equals("TO")) {
-					dir = EdgeDirection.To;
-				} else if (content[1].equals("FROM")) {
-					dir = EdgeDirection.From;
-				} else {
-					System.err
-							.println("Invalid direction for defined rolenames. "
-									+ entry
-									+ " is not a valid entry. It will become ignored.");
-					continue;
-				}
-				this.addOption_definerolenames(content[0], dir, content[2]);
-			}
-		}
+	public Tg2EcoreConfiguration getConfiguration() {
+		return this.config;
 	}
 
 	// #########################################################
@@ -721,7 +444,12 @@ public class Tg2Ecore {
 	 * */
 	public Tg2Ecore(SchemaGraph s) {
 		this.schemagraph = s;
-		this.option_definerolenames = new HashMap<String, HashMap<EdgeDirection, String>>();
+		this.config = new Tg2EcoreConfiguration();
+	}
+
+	public Tg2Ecore(SchemaGraph s, Tg2EcoreConfiguration c) {
+		this.schemagraph = s;
+		this.config = c;
 	}
 
 	/**
@@ -764,7 +492,7 @@ public class Tg2Ecore {
 		// If it is a back transformation, the defaultPackage was wrapped around
 		// the old rootpackage during Ecore2Tg. Because of that the new
 		// rootpackage is deleted and the old rootpackage takes its place.
-		if (this.option_backToEcore
+		if (this.config.isOption_backToEcore()
 				&& (this.rootpackage.getESubpackages().size() == 1)
 				&& (this.rootpackage.getEClassifiers().size() == 0)) {
 			EPackage oldEpack = this.rootpackage;
@@ -812,25 +540,28 @@ public class Tg2Ecore {
 	 */
 	private void determineEPackageProperties() {
 		// Determine nsPrefix, nsURI and name of the rootpackage
-		if ((this.option_nsPrefix == null) || this.option_nsPrefix.equals("")) {
-			this.option_nsPrefix = ((String) this.schemagraph
+		if ((this.config.getOption_nsPrefix() == null)
+				|| this.config.getOption_nsPrefix().equals("")) {
+			this.config.setOption_nsPrefix(((String) this.schemagraph
 					.getFirstDefinesGraphClass().getOmega()
-					.getAttribute("qualifiedName")).toLowerCase();
+					.getAttribute("qualifiedName")).toLowerCase());
 		}
-		if ((this.option_nsURI == null) || this.option_nsURI.equals("")) {
-			this.option_nsURI = "http://" + this.option_nsPrefix + "/1.0/";
-		}
-
-		if ((this.option_rootpackageName == null)
-				|| this.option_rootpackageName.equals("")) {
-			this.option_rootpackageName = "rootpackage";
+		if ((this.config.getOption_nsURI() == null)
+				|| this.config.getOption_nsURI().equals("")) {
+			this.config.setOption_nsURI("http://"
+					+ this.config.getOption_nsPrefix() + "/1.0/");
 		}
 
-		this.rootpackage.setNsPrefix(this.option_nsPrefix);
-		this.rootpackage.setNsURI(this.option_nsURI);
-		this.rootpackage.setName(this.option_rootpackageName);
+		if ((this.config.getOption_rootpackageName() == null)
+				|| this.config.getOption_rootpackageName().equals("")) {
+			this.config.setOption_rootpackageName("rootpackage");
+		}
 
-		if (this.option_backToEcore) {
+		this.rootpackage.setNsPrefix(this.config.getOption_nsPrefix());
+		this.rootpackage.setNsURI(this.config.getOption_nsURI());
+		this.rootpackage.setName(this.config.getOption_rootpackageName());
+
+		if (this.config.isOption_backToEcore()) {
 			Iterator<? extends Comment> ic = this.schemagraph
 					.getGraphClassVertices().iterator().next().get_comment()
 					.iterator();
@@ -856,31 +587,32 @@ public class Tg2Ecore {
 		EAnnotation ean = EcoreFactory.eINSTANCE.createEAnnotation();
 		ean.setSource(EAnnotationKeys.SOURCE_CONFIG);
 		ean.getDetails().put("Option backtransformation",
-				this.option_backToEcore + "");
+				this.config.isOption_backToEcore() + "");
 		ean.getDetails()
 				.put("Option transform Edges with only one rolename to unidirectional references",
-						this.option_oneroleToUni + "");
+						this.config.isOption_oneroleToUni() + "");
 		ean.getDetails().put("Option transform GraphClass:",
-				this.option_transformGraphClass + "");
+				this.config.isOption_transformGraphClass() + "");
 		ean.getDetails().put("Option make GraphClass to root element",
-				this.option_makeGraphClassToRootElement + "");
-		if (!this.option_rootpackageName.equals("rootpackage")) {
+				this.config.isOption_makeGraphClassToRootElement() + "");
+		if (!this.config.getOption_rootpackageName().equals("rootpackage")) {
 			ean.getDetails().put("Option name of rootpackage",
-					this.option_rootpackageName);
+					this.config.getOption_rootpackageName());
 		}
-		ean.getDetails().put("Option nsPrefix", this.option_nsPrefix);
-		ean.getDetails().put("Option nsURI", this.option_nsURI);
-		for (String key : this.option_definerolenames.keySet()) {
-			for (EdgeDirection ekey : this.option_definerolenames.get(key)
-					.keySet()) {
+		ean.getDetails().put("Option nsPrefix",
+				this.config.getOption_nsPrefix());
+		ean.getDetails().put("Option nsURI", this.config.getOption_nsURI());
+		for (String key : this.config.getOption_definerolenames().keySet()) {
+			for (EdgeDirection ekey : this.config.getOption_definerolenames()
+					.get(key).keySet()) {
 				ean.getDetails().put(
 						"Option define missing rolenames",
 						key
 								+ " "
 								+ ekey
 								+ " "
-								+ this.option_definerolenames.get(key)
-										.get(ekey));
+								+ this.config.getOption_definerolenames()
+										.get(key).get(ekey));
 			}
 		}
 		return ean;
@@ -971,7 +703,7 @@ public class Tg2Ecore {
 		EPackage pack = this.packagemap.get(p);
 		boolean found = false;
 		// Look for comments, if it is a back transformation
-		if (this.option_backToEcore) {
+		if (this.config.isOption_backToEcore()) {
 			for (Comment c : p.get_comment()) {
 				if (c.get_text().startsWith(
 						EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
@@ -1027,13 +759,14 @@ public class Tg2Ecore {
 		// If the not transform GraphClass Option is set and it is no back
 		// transformation, then return - if the option_backToEcore is set
 		// transformation of the GraphClass depends on the generated comments
-		if (!this.option_transformGraphClass && !this.option_backToEcore) {
+		if (!this.config.isOption_transformGraphClass()
+				&& !this.config.isOption_backToEcore()) {
 			return;
 		}
 
 		// Look for comments
 		boolean returncausecomment = false;
-		if (this.option_backToEcore) {
+		if (this.config.isOption_backToEcore()) {
 			for (Comment com : graphClass.get_comment()) {
 				// Check if GraphClass is generated
 				if (com.get_text().equals(
@@ -1085,7 +818,7 @@ public class Tg2Ecore {
 
 		this.transformCommentsToEAnnotationForGraphClass(graphClass, gc_eclass);
 
-		if (this.option_makeGraphClassToRootElement) {
+		if (this.config.isOption_makeGraphClassToRootElement()) {
 			this.addContainmentsToGraphClass(this.rootpackage, gc_eclass);
 		}
 		this.rootpackage.getEClassifiers().add(gc_eclass);
@@ -1190,7 +923,7 @@ public class Tg2Ecore {
 			// unidirectional EReferences
 			boolean badFrom = false;
 			boolean badTo = false;
-			if (this.option_backToEcore) {
+			if (this.config.isOption_backToEcore()) {
 				for (Comment c : ec.get_comment()) {
 					if (c.get_text().equals(
 							EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
@@ -1206,7 +939,7 @@ public class Tg2Ecore {
 			}
 			// Check whether Incidences without role_names should become
 			// transformed
-			else if (this.option_oneroleToUni) {
+			else if (this.config.isOption_oneroleToUni()) {
 				if ((frominc.get_roleName() == null)
 						|| frominc.get_roleName().equals("")) {
 					badFrom = true;
@@ -1672,13 +1405,14 @@ public class Tg2Ecore {
 
 		// Initalizing EReference to_start
 		if (to_start_ref.getName() == null) {
-			if (this.option_definerolenames.containsKey(edgeclass
-					.get_qualifiedName())
-					&& this.option_definerolenames.get(
-							edgeclass.get_qualifiedName()).containsKey(
-							EdgeDirection.From)) {
-				to_start_ref.setName(this.option_definerolenames.get(
-						edgeclass.get_qualifiedName()).get(EdgeDirection.From));
+			if (this.config.getOption_definerolenames().containsKey(
+					edgeclass.get_qualifiedName())
+					&& this.config.getOption_definerolenames()
+							.get(edgeclass.get_qualifiedName())
+							.containsKey(EdgeDirection.From)) {
+				to_start_ref.setName(this.config.getOption_definerolenames()
+						.get(edgeclass.get_qualifiedName())
+						.get(EdgeDirection.From));
 			} else {
 				to_start_ref.setName("startOf" + eclass.getName());
 			}
@@ -1688,13 +1422,14 @@ public class Tg2Ecore {
 
 		// Initializing EReference from_start
 		if (from_start_ref.getName() == null) {
-			if (this.option_definerolenames.containsKey(edgeclass
-					.get_qualifiedName())
-					&& this.option_definerolenames.get(
-							edgeclass.get_qualifiedName()).containsKey(
-							EdgeDirection.To)) {
-				from_start_ref.setName(this.option_definerolenames.get(
-						edgeclass.get_qualifiedName()).get(EdgeDirection.To));
+			if (this.config.getOption_definerolenames().containsKey(
+					edgeclass.get_qualifiedName())
+					&& this.config.getOption_definerolenames()
+							.get(edgeclass.get_qualifiedName())
+							.containsKey(EdgeDirection.To)) {
+				from_start_ref.setName(this.config.getOption_definerolenames()
+						.get(edgeclass.get_qualifiedName())
+						.get(EdgeDirection.To));
 			} else {
 				from_start_ref.setName("outgoing" + eclass.getName());
 			}
@@ -1705,13 +1440,14 @@ public class Tg2Ecore {
 
 		// Initializing EReference to_target
 		if (to_target_ref.getName() == null) {
-			if (this.option_definerolenames.containsKey(edgeclass
-					.get_qualifiedName())
-					&& this.option_definerolenames.get(
-							edgeclass.get_qualifiedName()).containsKey(
-							EdgeDirection.To)) {
-				to_target_ref.setName(this.option_definerolenames.get(
-						edgeclass.get_qualifiedName()).get(EdgeDirection.To));
+			if (this.config.getOption_definerolenames().containsKey(
+					edgeclass.get_qualifiedName())
+					&& this.config.getOption_definerolenames()
+							.get(edgeclass.get_qualifiedName())
+							.containsKey(EdgeDirection.To)) {
+				to_target_ref.setName(this.config.getOption_definerolenames()
+						.get(edgeclass.get_qualifiedName())
+						.get(EdgeDirection.To));
 			} else {
 				to_target_ref.setName("targetOf" + eclass.getName());
 			}
@@ -1721,13 +1457,14 @@ public class Tg2Ecore {
 
 		// Initializing EReference from_target
 		if (from_target_ref.getName() == null) {
-			if (this.option_definerolenames.containsKey(edgeclass
-					.get_qualifiedName())
-					&& this.option_definerolenames.get(
-							edgeclass.get_qualifiedName()).containsKey(
-							EdgeDirection.From)) {
-				from_target_ref.setName(this.option_definerolenames.get(
-						edgeclass.get_qualifiedName()).get(EdgeDirection.From));
+			if (this.config.getOption_definerolenames().containsKey(
+					edgeclass.get_qualifiedName())
+					&& this.config.getOption_definerolenames()
+							.get(edgeclass.get_qualifiedName())
+							.containsKey(EdgeDirection.From)) {
+				from_target_ref.setName(this.config.getOption_definerolenames()
+						.get(edgeclass.get_qualifiedName())
+						.get(EdgeDirection.From));
 			} else {
 				from_target_ref.setName("incoming" + eclass.getName());
 			}
@@ -1854,7 +1591,7 @@ public class Tg2Ecore {
 		boolean generate_to_end = false;
 		boolean generate_from_start = false;
 		boolean generate_to_start = false;
-		if (this.option_backToEcore) {
+		if (this.config.isOption_backToEcore()) {
 			// if option_backToEcore is chosen, check on Comments to
 			// determine which EReferences are generated ones
 			// and shouldn't rest because of that
@@ -1955,7 +1692,7 @@ public class Tg2Ecore {
 					}
 				}
 			}
-		} else if (this.option_oneroleToUni) {
+		} else if (this.config.isOption_oneroleToUni()) {
 			if ((from.get_roleName() == null) || from.get_roleName().equals("")) {
 				generate_from_start = true;
 			} else if ((to.get_roleName() == null)
@@ -1982,7 +1719,7 @@ public class Tg2Ecore {
 		boolean isBig = false;
 		// Check on BigInteger or BigDecimal - that's not nice, but I don't see
 		// a better way than doing it here
-		if (this.option_backToEcore) {
+		if (this.config.isOption_backToEcore()) {
 			if ((dom instanceof LongDomain)
 					|| ((dom instanceof CollectionDomain) && (((CollectionDomain) dom)
 							.get_basedomain() instanceof LongDomain))) {
@@ -2503,7 +2240,7 @@ public class Tg2Ecore {
 		this.transformAttributeValues(this.currentGraph,
 				this.schemagraph.getFirstGraphClass(), eob);
 
-		if (this.option_makeGraphClassToRootElement) {
+		if (this.config.isOption_makeGraphClassToRootElement()) {
 			// Iterate over all elements in model to put them to root
 			for (EObject element : this.model) {
 				EClass part = element.eClass();
@@ -2961,7 +2698,7 @@ public class Tg2Ecore {
 		}
 		URI uri = URI.createFileURI(path);
 		Resource res = resset.createResource(uri);
-		if (this.option_makeGraphClassToRootElement) {
+		if (this.config.isOption_makeGraphClassToRootElement()) {
 			res.getContents().add(eobs.get(eobs.size() - 1));
 		}
 

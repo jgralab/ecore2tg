@@ -14,8 +14,8 @@ import de.uni_koblenz.jgralab.codegenerator.CodeGeneratorConfiguration;
 import de.uni_koblenz.jgralab.grumlschema.SchemaGraph;
 import de.uni_koblenz.jgralab.schema.Schema;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg;
-import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2Ecore;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.TransformParams;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2Ecore;
 import de.uni_koblenz.jgralab.utilities.rsa.Rsa2Tg;
 import de.uni_koblenz.jgralab.utilities.tg2dot.Tg2Dot;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.Schema2SchemaGraph;
@@ -41,7 +41,7 @@ public class Tg2EcoreMainTest {
 		Tg2Dot.convertGraph(g, modelfile + ".dot", false);
 
 		Tg2Ecore tg2ec = new Tg2Ecore(sg);
-		tg2ec.setOption_backToEcore(true);
+		tg2ec.getConfiguration().setOption_backToEcore(true);
 		tg2ec.transform();
 
 		EPackage epack = tg2ec.getTransformedMetamodel();
@@ -70,7 +70,7 @@ public class Tg2EcoreMainTest {
 		Tg2Dot.convertGraph(g, modelfile + ".dot", false);
 
 		Tg2Ecore tg2ec = new Tg2Ecore(sg);
-		tg2ec.setOption_backToEcore(true);
+		tg2ec.getConfiguration().setOption_backToEcore(true);
 		tg2ec.transform();
 
 		EPackage epack = tg2ec.getTransformedMetamodel();
@@ -130,7 +130,7 @@ public class Tg2EcoreMainTest {
 		Schema2SchemaGraph s2sg = new Schema2SchemaGraph();
 		SchemaGraph sg = s2sg.convert2SchemaGraph(schema);
 		Tg2Ecore tg2ec = new Tg2Ecore(sg);
-		tg2ec.setOption_backToEcore(true);
+		tg2ec.getConfiguration().setOption_backToEcore(true);
 		tg2ec.transform();
 		tg2ec.saveEcoreMetamodel(tg2ec.getTransformedMetamodel(),
 		// "tests/ComplexNodeAndWay/ComplexWayAndNode_back.ecore");
@@ -153,15 +153,16 @@ public class Tg2EcoreMainTest {
 	public static void main(String[] args) {
 		try {
 
-			String[] a = { "tests/tastest/target_model.tg",
-					"tests/tastest/StateMachine_back.ecore",
-					"tests/tastest/trans_model" };
-			Tg2Ecore.main(a);
+			/*
+			 * String[] a = { "tests/tastest/target_model.tg",
+			 * "tests/tastest/StateMachine_back.ecore",
+			 * "tests/tastest/trans_model" }; Tg2Ecore.main(a);
+			 */
 
 			// modeltest();
 			// greqlTest();
 			// Ecore2TgMainTest.main_UniversityCourses(false);
-			jamoppTest("tests/jamoppTest/java", "tests/jamoppTest/Test");
+			// jamoppTest("tests/jamoppTest/java", "tests/jamoppTest/Test");
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

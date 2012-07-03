@@ -14,6 +14,7 @@ import de.uni_koblenz.jgralab.schema.Schema;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.TransformParams;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2Ecore;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2EcoreConfiguration;
 import de.uni_koblenz.jgralab.utilities.tg2dot.Tg2Dot;
 import de.uni_koblenz.jgralab.utilities.tg2dot.dot.GraphVizOutputFormat;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.Schema2SchemaGraph;
@@ -68,8 +69,10 @@ public class RoundtripTest {
 		Schema2SchemaGraph s2sg = new Schema2SchemaGraph();
 		SchemaGraph sg = s2sg.convert2SchemaGraph(schema);
 
-		Tg2Ecore tg2ec = new Tg2Ecore(sg);
-		tg2ec.fillWithConfigurationsFromFile(config_filename);
+		Tg2EcoreConfiguration config = Tg2EcoreConfiguration
+				.fillWithConfigurationsFromFile(config_filename);
+		Tg2Ecore tg2ec = new Tg2Ecore(sg, config);
+
 		tg2ec.transform();
 		tg2ec.saveEcoreMetamodel(tg2ec.getTransformedMetamodel(),
 				metamodel_filename);
@@ -95,7 +98,7 @@ public class RoundtripTest {
 				graph_back_filename);
 
 		Graph gr = ec2tg.transformModel(new String[] { model_filename + "."
-				+ tg2ec.getOption_rootpackageName() });
+				+ config.getOption_rootpackageName() });
 		GraphIO.saveGraphToFile(gr, graph_back_filename, null);
 
 		System.out.println();
@@ -146,7 +149,7 @@ public class RoundtripTest {
 		SchemaGraph schemagraph = s2sg.convert2SchemaGraph(schema);
 
 		Tg2Ecore tg2ec = new Tg2Ecore(schemagraph);
-		tg2ec.setOption_backToEcore(true);
+		tg2ec.getConfiguration().setOption_backToEcore(true);
 		tg2ec.transform();
 		tg2ec.saveEcoreMetamodel(tg2ec.getTransformedMetamodel(),
 				metamodel_back_filename);
