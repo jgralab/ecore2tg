@@ -70,7 +70,7 @@ public class RoundtripTest {
 		SchemaGraph sg = s2sg.convert2SchemaGraph(schema);
 
 		Tg2EcoreConfiguration config = Tg2EcoreConfiguration
-				.fillWithConfigurationsFromFile(config_filename);
+				.loadConfigurationFromFile(config_filename);
 		Tg2Ecore tg2ec = new Tg2Ecore(sg, config);
 
 		tg2ec.transform();

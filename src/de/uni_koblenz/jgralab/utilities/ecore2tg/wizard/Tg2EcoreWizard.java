@@ -89,7 +89,7 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 			if (this.page1Files.getConfigFilePath() != null
 					&& !this.page1Files.getConfigFilePath().equals("")) {
 				this.config = Tg2EcoreConfiguration
-						.fillWithConfigurationsFromFile(this.page1Files
+						.loadConfigurationFromFile(this.page1Files
 								.getConfigFilePath());
 			}
 			this.page2GenOptions.enterConfiguration(this.config);

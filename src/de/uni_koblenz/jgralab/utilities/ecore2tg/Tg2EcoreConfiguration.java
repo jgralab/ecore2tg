@@ -1,5 +1,6 @@
 package de.uni_koblenz.jgralab.utilities.ecore2tg;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -236,14 +237,71 @@ public class Tg2EcoreConfiguration {
 		return Collections.unmodifiableMap(this.option_definerolenames);
 	}
 
+	public void saveToFile(String uri) {
+		PList x = new PList();
+		PListDict ds = x.getDict();
+
+		if (this.option_backToEcore) {
+			ds.put("ecore_backtransformation", true);
+		}
+
+		if (this.option_oneroleToUni) {
+			ds.put("transform_one_role_to_uni", true);
+		}
+
+		if (this.option_transformGraphClass) {
+			ds.put("transform_graphclass", true);
+		}
+
+		if (this.option_makeGraphClassToRootElement) {
+			ds.put("make_graphclass_to_rootelement", true);
+		}
+
+		if (this.option_rootpackageName != null
+				&& !this.option_rootpackageName.equals("")) {
+			ds.put("rootpackage_name", this.option_rootpackageName);
+		}
+
+		if (this.option_nsPrefix != null && !this.option_nsPrefix.equals("")) {
+			ds.put("ns_prefix", this.option_nsPrefix);
+		}
+
+		if (this.option_nsURI != null && !this.option_nsURI.equals("")) {
+			ds.put("ns_uri", this.option_nsURI);
+		}
+
+		if (!this.option_definerolenames.isEmpty()) {
+			ArrayList<String> list = new ArrayList<String>();
+			for (String s : this.option_definerolenames.keySet()) {
+				HashMap<EdgeDirection, String> map = this.option_definerolenames
+						.get(s);
+				if (map.get(EdgeDirection.To) != null) {
+					list.add(s + ",To," + map.get(EdgeDirection.To));
+				}
+				if (map.get(EdgeDirection.From) != null) {
+					list.add(s + ",From," + map.get(EdgeDirection.From));
+				}
+			}
+			ds.put("define_rolenames", list);
+		}
+
+		try {
+			x.storeTo(uri);
+		} catch (PListException e) {
+			System.err.println("Error while saving configuration to " + uri
+					+ ".");
+			e.printStackTrace();
+		}
+
+	}
+
 	/**
 	 * Loads the given configuration files and set the options
 	 * 
 	 * @param uri
 	 *            of the configuration file
 	 */
-	public static Tg2EcoreConfiguration fillWithConfigurationsFromFile(
-			String uri) {
+	public static Tg2EcoreConfiguration loadConfigurationFromFile(String uri) {
 		PList x = new PList();
 		try {
 			x.loadFrom(uri);
@@ -268,7 +326,7 @@ public class Tg2EcoreConfiguration {
 			config.setOption_transformGraphClass(ds
 					.getBoolean("transform_graphclass"));
 		}
-		if (ds.containsKey("maek_graphclass_to_rootelement")) {
+		if (ds.containsKey("make_graphclass_to_rootelement")) {
 			config.setOption_makeGraphClassToRootElement(ds
 					.getBoolean("maek_graphclass_to_rootelement"));
 		}

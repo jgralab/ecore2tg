@@ -254,7 +254,7 @@ public class Tg2Ecore {
 		String cfilename = cli.getOptionValue(OPTION_FILENAME_CONFIG);
 		if (cfilename != null) {
 			config = Tg2EcoreConfiguration
-					.fillWithConfigurationsFromFile(cfilename);
+					.loadConfigurationFromFile(cfilename);
 		}
 		Tg2Ecore tg2ecore = new Tg2Ecore(sg, config);
 
