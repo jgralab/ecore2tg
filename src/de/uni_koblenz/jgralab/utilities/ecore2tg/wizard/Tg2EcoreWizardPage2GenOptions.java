@@ -11,6 +11,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2EcoreConfiguration;
+
 /**
  * Wizard page to enter optional information for the Tg2Ecore transformation. It
  * allows to decide whether EdgeClasses with only one role name should become
@@ -144,47 +146,62 @@ public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 		this.textRootPackageNsURI.setText("");
 	}
 
-	/**
-	 * @return whether EdgeClasses with only one role name should be transformed
-	 *         to unidirectional EReferences
-	 */
-	public boolean getOneRoleToUni() {
-		return this.buttonOneRoleToUni.getSelection();
+	public void enterConfiguration(Tg2EcoreConfiguration conf) {
+		if (conf.isOption_oneroleToUni()) {
+			this.buttonOneRoleToUni.setSelection(true);
+		}
+
+		if (conf.isOption_transformGraphClass()) {
+			this.buttonTransformGC.setSelection(true);
+		}
+
+		if (conf.isOption_makeGraphClassToRootElement()) {
+			this.buttonMakeGC2Root.setSelection(true);
+		}
+
+		if (this.textRootPackageName.getText() != null
+				&& !this.textRootPackageName.getText().equals("")) {
+			conf.setOption_rootpackageName(this.textRootPackageName.getText());
+		}
+
+		if (this.textRootPackageNsPrefix.getText() != null
+				&& !this.textRootPackageNsPrefix.getText().equals("")) {
+			conf.setOption_nsPrefix(this.textRootPackageNsPrefix.getText());
+		}
+
+		if (this.textRootPackageNsURI.getText() != null
+				&& !this.textRootPackageNsURI.getText().equals("")) {
+			conf.setOption_nsURI(this.textRootPackageNsURI.getText());
+		}
+
 	}
 
-	/**
-	 * @return whether the GraphClass should be transformed to an EClass
-	 */
-	public boolean getTransformGC() {
-		return this.buttonTransformGC.getSelection();
-	}
+	public void saveConfiguration(Tg2EcoreConfiguration conf) {
+		// Option: Only one Rolename -> unidirectional references
+		conf.setOption_oneroleToUni(this.buttonOneRoleToUni.getSelection());
 
-	/**
-	 * @return whether the EClass resulting from the GraphClass should be made
-	 *         the root element of the resulting Ecore schema
-	 */
-	public boolean getMakeGCToRoot() {
-		return this.buttonMakeGC2Root.getSelection();
-	}
+		// Option: transform GraphClass
+		conf.setOption_transformGraphClass(this.buttonTransformGC
+				.getSelection());
+		// Option: make GraphClass to root
+		conf.setOption_makeGraphClassToRootElement(this.buttonMakeGC2Root
+				.getSelection());
 
-	/**
-	 * @return the defined name of the Ecore schemas root package
-	 */
-	public String getRootPackageName() {
-		return this.textRootPackageName.getText();
-	}
+		// Option: root package name
+		String rootName = this.textRootPackageName.getText();
+		if (rootName != null && !rootName.equals("")) {
+			conf.setOption_rootpackageName(rootName);
+		}
+		// Option: root package nsPrefix
+		String nsPrefix = this.textRootPackageNsPrefix.getText();
+		if (nsPrefix != null && !nsPrefix.equals("")) {
+			conf.setOption_nsPrefix(nsPrefix);
+		}
+		// Option: root package nsURI
+		String nsURI = this.textRootPackageNsURI.getText();
+		if (nsURI != null && !nsURI.equals("")) {
+			conf.setOption_nsURI(nsURI);
+		}
 
-	/**
-	 * @return the defined nsPrefix of the Ecore schemas root package
-	 */
-	public String getRootPackageNsPrefix() {
-		return this.textRootPackageNsPrefix.getText();
-	}
-
-	/**
-	 * @return the defined nsURI of the Ecore schemas root package
-	 */
-	public String getRootPackageNsURI() {
-		return this.textRootPackageNsURI.getText();
 	}
 }

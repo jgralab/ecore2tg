@@ -14,9 +14,9 @@ import de.uni_koblenz.jgralab.GraphIO;
 import de.uni_koblenz.jgralab.GraphIOException;
 import de.uni_koblenz.jgralab.ImplementationType;
 import de.uni_koblenz.jgralab.grumlschema.SchemaGraph;
-import de.uni_koblenz.jgralab.schema.EdgeClass;
+import de.uni_koblenz.jgralab.schema.Schema;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2Ecore;
-import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.EcInfoStructure;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2EcoreConfiguration;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.Schema2SchemaGraph;
 
 /**
@@ -53,6 +53,14 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 		this.setNeedsProgressMonitor(true);
 	}
 
+	private Tg2EcoreConfiguration config = new Tg2EcoreConfiguration();
+
+	private Schema schema;
+
+	public Schema getSchema() {
+		return this.schema;
+	}
+
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 	}
@@ -71,18 +79,28 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 	public IWizardPage getNextPage(IWizardPage page) {
 		// First page: check default options
 		if (page == this.page1Files) {
+			this.schema = this.page1Files.getOriginalSchema();
 			if (this.page1Files.useDefaultOptions()
 					|| this.page1Files.isBackToEcore()) {
 				// no second page if default options should be used or it is a
 				// back to Ecore transformation
 				return null;
 			}
+			if (this.page1Files.getConfigFilePath() != null
+					&& !this.page1Files.getConfigFilePath().equals("")) {
+				this.config = Tg2EcoreConfiguration
+						.fillWithConfigurationsFromFile(this.page1Files
+								.getConfigFilePath());
+			}
+			this.page2GenOptions.enterConfiguration(this.config);
 		}
 		// Second page: fill table of third page before showing
 		else if (page == this.page2GenOptions) {
-			this.fillEcTable();
+			this.page2GenOptions.saveConfiguration(this.config);
+			this.page3ECOptions.enterConfiguration(this.config);
+		} else if (page == this.page3ECOptions) {
+			this.page3ECOptions.saveConfiguration(this.config);
 		}
-
 		return super.getNextPage(page);
 	}
 
@@ -98,20 +116,17 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 
 	@Override
 	public boolean performFinish() {
+		this.page3ECOptions.saveConfiguration(this.config);
+
 		Schema2SchemaGraph s2sg = new Schema2SchemaGraph();
 		SchemaGraph schemaGraph = s2sg.convert2SchemaGraph(this.page1Files
 				.getOriginalSchema());
 
-		Tg2Ecore tg2ecore = new Tg2Ecore(schemaGraph);
-
-		if (this.page1Files.getConfigFilePath() != null
-				&& !this.page1Files.getConfigFilePath().equals("")) {
-			tg2ecore.fillWithConfigurationsFromFile(this.page1Files
-					.getConfigFilePath());
-		}
-
+		Tg2Ecore tg2ecore;
 		if (!this.page1Files.useDefaultOptions()) {
-			this.enterOptions(tg2ecore);
+			tg2ecore = new Tg2Ecore(schemaGraph, this.config);
+		} else {
+			tg2ecore = new Tg2Ecore(schemaGraph);
 		}
 
 		tg2ecore.transform();
@@ -141,78 +156,4 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 		return true;
 	}
 
-	/**
-	 * Get the options from the pages and set them for the given
-	 * {@link Tg2Ecore} transformation
-	 * 
-	 * @param tg2ecore
-	 *            the transformation object
-	 */
-	private void enterOptions(Tg2Ecore tg2ecore) {
-		// Option: Only one Rolename -> unidirectional references
-		tg2ecore.setOption_oneroleToUni(this.page2GenOptions.getOneRoleToUni());
-
-		// Option: transform GraphClass
-		tg2ecore.setOption_transformGraphClass(this.page2GenOptions
-				.getTransformGC());
-		// Option: make GraphClass to root
-		tg2ecore.setOption_makeGraphClassToRootElement(this.page2GenOptions
-				.getMakeGCToRoot());
-
-		// Option: root package name
-		String rootName = this.page2GenOptions.getRootPackageName();
-		if (rootName != null && !rootName.equals("")) {
-			tg2ecore.setOption_rootpackageName(rootName);
-		}
-		// Option: root package nsPrefix
-		String nsPrefix = this.page2GenOptions.getRootPackageNsPrefix();
-		if (nsPrefix != null && !nsPrefix.equals("")) {
-			tg2ecore.setOption_nsPrefix(nsPrefix);
-		}
-		// Option: root package nsURI
-		String nsURI = this.page2GenOptions.getRootPackageNsURI();
-		if (nsURI != null && !nsURI.equals("")) {
-			tg2ecore.setOption_nsURI(nsURI);
-		}
-
-		// Option: additional rolenames
-		EcInfoStructure[] infos = (EcInfoStructure[]) this.page3ECOptions
-				.getEdgeClassTableViewer().getInput();
-		if (infos == null) {
-			return;
-		}
-		for (int i = 0; i < infos.length; i++) {
-			if (infos[i].addToRoleName != null
-					&& !infos[i].addToRoleName.equals("")) {
-				tg2ecore.addOption_definerolenames(
-						infos[i].edgeClass.getQualifiedName(),
-						Tg2Ecore.EdgeDirection.To, infos[i].addToRoleName);
-			}
-			if (infos[i].addFromRoleName != null
-					&& !infos[i].addFromRoleName.equals("")) {
-				tg2ecore.addOption_definerolenames(
-						infos[i].edgeClass.getQualifiedName(),
-						Tg2Ecore.EdgeDirection.From, infos[i].addFromRoleName);
-			}
-
-		}
-	}
-
-	/**
-	 * Sets the input of the table on page three that allows the definition of
-	 * additional FROM and TO role names for the EdgeClasses that will be
-	 * transformed to EClasses
-	 */
-	private void fillEcTable() {
-		ArrayList<EcInfoStructure> ecInfos = new ArrayList<EcInfoStructure>();
-		for (EdgeClass ec : this.page1Files.getOriginalSchema().getGraphClass()
-				.getEdgeClasses()) {
-			if (ec.hasAttributes() || !ec.getAllSuperClasses().isEmpty()
-					|| !ec.getAllSubClasses().isEmpty()) {
-				ecInfos.add(new EcInfoStructure(ec));
-			}
-		}
-		this.page3ECOptions.getEdgeClassTableViewer().setInput(
-				ecInfos.toArray(new EcInfoStructure[] {}));
-	}
 }

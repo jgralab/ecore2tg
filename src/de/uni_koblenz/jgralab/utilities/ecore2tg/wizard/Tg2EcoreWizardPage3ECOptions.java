@@ -1,5 +1,8 @@
 package de.uni_koblenz.jgralab.utilities.ecore2tg.wizard;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.TableLayout;
@@ -12,6 +15,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 
+import de.uni_koblenz.jgralab.schema.EdgeClass;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2EcoreConfiguration;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2EcoreConfiguration.EdgeDirection;
+import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.EcInfoStructure;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.EcRolenameEditingSupport;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.EcTableLabelProvider;
 
@@ -99,6 +106,58 @@ public class Tg2EcoreWizardPage3ECOptions extends WizardPage {
 	 */
 	public TableViewer getEdgeClassTableViewer() {
 		return this.ecTableViewer;
+	}
+
+	/**
+	 * Sets the input of the table on page three that allows the definition of
+	 * additional FROM and TO role names for the EdgeClasses that will be
+	 * transformed to EClasses
+	 */
+	public void enterConfiguration(Tg2EcoreConfiguration conf) {
+		ArrayList<EcInfoStructure> ecInfos = new ArrayList<EcInfoStructure>();
+		Tg2EcoreWizard wiz = (Tg2EcoreWizard) this.getWizard();
+		for (EdgeClass ec : wiz.getSchema().getGraphClass().getEdgeClasses()) {
+			if (ec.hasAttributes() || !ec.getAllSuperClasses().isEmpty()
+					|| !ec.getAllSubClasses().isEmpty()) {
+				EcInfoStructure str = new EcInfoStructure(ec);
+				if (conf.getOption_definerolenames().containsKey(
+						ec.getQualifiedName())) {
+					HashMap<EdgeDirection, String> map = conf
+							.getOption_definerolenames().get(
+									ec.getQualifiedName());
+					str.addFromRoleName = map.get(EdgeDirection.From);
+					str.addToRoleName = map.get(EdgeDirection.To);
+				}
+				ecInfos.add(str);
+			}
+		}
+		this.ecTableViewer.setInput(ecInfos.toArray(new EcInfoStructure[] {}));
+	}
+
+	public void saveConfiguration(Tg2EcoreConfiguration conf) {
+		// Option: additional rolenames
+		EcInfoStructure[] infos = (EcInfoStructure[]) this
+				.getEdgeClassTableViewer().getInput();
+		if (infos == null) {
+			return;
+		}
+		for (int i = 0; i < infos.length; i++) {
+			if (infos[i].addToRoleName != null
+					&& !infos[i].addToRoleName.equals("")) {
+				conf.addOption_definerolenames(
+						infos[i].edgeClass.getQualifiedName(),
+						Tg2EcoreConfiguration.EdgeDirection.To,
+						infos[i].addToRoleName);
+			}
+			if (infos[i].addFromRoleName != null
+					&& !infos[i].addFromRoleName.equals("")) {
+				conf.addOption_definerolenames(
+						infos[i].edgeClass.getQualifiedName(),
+						Tg2EcoreConfiguration.EdgeDirection.From,
+						infos[i].addFromRoleName);
+			}
+
+		}
 	}
 
 }
