@@ -149,29 +149,37 @@ public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 	public void enterConfiguration(Tg2EcoreConfiguration conf) {
 		if (conf.isOption_oneroleToUni()) {
 			this.buttonOneRoleToUni.setSelection(true);
+		} else {
+			this.buttonOneRoleToUni.setSelection(false);
 		}
 
+		System.err.println("enter " + conf.isOption_transformGraphClass()
+				+ " to site");
 		if (conf.isOption_transformGraphClass()) {
 			this.buttonTransformGC.setSelection(true);
+		} else {
+			this.buttonTransformGC.setSelection(false);
 		}
 
 		if (conf.isOption_makeGraphClassToRootElement()) {
 			this.buttonMakeGC2Root.setSelection(true);
+		} else {
+			this.buttonMakeGC2Root.setSelection(false);
 		}
 
-		if (this.textRootPackageName.getText() != null
-				&& !this.textRootPackageName.getText().equals("")) {
-			conf.setOption_rootpackageName(this.textRootPackageName.getText());
+		if (conf.getOption_rootpackageName() != null
+				&& !conf.getOption_rootpackageName().equals("")) {
+			this.textRootPackageName.setText(conf.getOption_rootpackageName());
 		}
 
-		if (this.textRootPackageNsPrefix.getText() != null
-				&& !this.textRootPackageNsPrefix.getText().equals("")) {
-			conf.setOption_nsPrefix(this.textRootPackageNsPrefix.getText());
+		if (conf.getOption_nsPrefix() != null
+				&& !conf.getOption_nsPrefix().equals("")) {
+			this.textRootPackageNsPrefix.setText(conf.getOption_nsPrefix());
 		}
 
-		if (this.textRootPackageNsURI.getText() != null
-				&& !this.textRootPackageNsURI.getText().equals("")) {
-			conf.setOption_nsURI(this.textRootPackageNsURI.getText());
+		if (conf.getOption_nsURI() != null
+				&& !conf.getOption_nsURI().equals("")) {
+			this.textRootPackageNsURI.setText(conf.getOption_nsURI());
 		}
 
 	}

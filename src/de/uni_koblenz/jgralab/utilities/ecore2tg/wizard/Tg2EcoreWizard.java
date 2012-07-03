@@ -48,6 +48,13 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 	 */
 	private Tg2EcoreWizardPage3ECOptions page3ECOptions;
 
+	/**
+	 * Optional page to save the configuration
+	 */
+	private Tg2EcoreWizardPage4SaveOptions page4SaveOptions;
+
+	// ---------------------------------------------------------------------------
+
 	public Tg2EcoreWizard() {
 		super();
 		this.setNeedsProgressMonitor(true);
@@ -56,6 +63,10 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 	private Tg2EcoreConfiguration config = new Tg2EcoreConfiguration();
 
 	private Schema schema;
+
+	public Tg2EcoreConfiguration getConfiguration() {
+		return this.config;
+	}
 
 	public Schema getSchema() {
 		return this.schema;
@@ -70,9 +81,11 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 		this.page1Files = new Tg2EcoreWizardPage1Files();
 		this.page2GenOptions = new Tg2EcoreWizardPage2GenOptions();
 		this.page3ECOptions = new Tg2EcoreWizardPage3ECOptions();
+		this.page4SaveOptions = new Tg2EcoreWizardPage4SaveOptions();
 		this.addPage(this.page1Files);
 		this.addPage(this.page2GenOptions);
 		this.addPage(this.page3ECOptions);
+		this.addPage(this.page4SaveOptions);
 	}
 
 	@Override
@@ -91,6 +104,8 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 				this.config = Tg2EcoreConfiguration
 						.loadConfigurationFromFile(this.page1Files
 								.getConfigFilePath());
+				this.page4SaveOptions.setFileNameText(this.page1Files
+						.getConfigFilePath());
 			}
 			this.page2GenOptions.enterConfiguration(this.config);
 		}

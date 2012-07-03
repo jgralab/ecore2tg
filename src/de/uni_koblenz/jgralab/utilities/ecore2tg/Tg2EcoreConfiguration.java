@@ -20,7 +20,7 @@ public class Tg2EcoreConfiguration {
 	 * Option to declare a back transformation. If true, comments set from
 	 * Ecore2Tg are searched and considered.
 	 */
-	private boolean option_backToEcore = true;
+	private boolean option_backToEcore = false;
 
 	/**
 	 * Option to declare that Edges without Inheritance, without Attributes and
@@ -251,6 +251,8 @@ public class Tg2EcoreConfiguration {
 
 		if (this.option_transformGraphClass) {
 			ds.put("transform_graphclass", true);
+		} else {
+			ds.put("transform_graphclass", false);
 		}
 
 		if (this.option_makeGraphClassToRootElement) {
@@ -276,10 +278,10 @@ public class Tg2EcoreConfiguration {
 				HashMap<EdgeDirection, String> map = this.option_definerolenames
 						.get(s);
 				if (map.get(EdgeDirection.To) != null) {
-					list.add(s + ",To," + map.get(EdgeDirection.To));
+					list.add(s + ", TO, " + map.get(EdgeDirection.To));
 				}
 				if (map.get(EdgeDirection.From) != null) {
-					list.add(s + ",From," + map.get(EdgeDirection.From));
+					list.add(s + ", FROM, " + map.get(EdgeDirection.From));
 				}
 			}
 			ds.put("define_rolenames", list);
@@ -328,7 +330,7 @@ public class Tg2EcoreConfiguration {
 		}
 		if (ds.containsKey("make_graphclass_to_rootelement")) {
 			config.setOption_makeGraphClassToRootElement(ds
-					.getBoolean("maek_graphclass_to_rootelement"));
+					.getBoolean("make_graphclass_to_rootelement"));
 		}
 		if (ds.containsKey("rootpackage_name")) {
 			config.setOption_rootpackageName(ds.getString("rootpackage_name"));
