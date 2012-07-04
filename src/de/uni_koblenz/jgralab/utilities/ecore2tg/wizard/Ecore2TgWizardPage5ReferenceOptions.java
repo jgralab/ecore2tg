@@ -38,8 +38,7 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.RefT
  * @author kheckelmann
  * 
  */
-public class Ecore2TgWizardPage5ReferenceOptions extends WizardPage implements
-		ConfigurationProvider {
+public class Ecore2TgWizardPage5ReferenceOptions extends WizardPage {
 
 	private static final String pageName = "Ecore2Tg - Reference Options";
 	private static final String title = "Ecore2Tg - Reference Options";
@@ -80,10 +79,10 @@ public class Ecore2TgWizardPage5ReferenceOptions extends WizardPage implements
 	 */
 	private void createReferenceTableControls() {
 		TableLayout tableLayout = new TableLayout();
-		tableLayout.addColumnData(new ColumnWeightData(2));
+		tableLayout.addColumnData(new ColumnWeightData(6));
+		tableLayout.addColumnData(new ColumnWeightData(3));
 		tableLayout.addColumnData(new ColumnWeightData(1));
-		tableLayout.addColumnData(new ColumnWeightData(1));
-		tableLayout.addColumnData(new ColumnWeightData(1));
+		tableLayout.addColumnData(new ColumnWeightData(3));
 
 		Table referenceTable = new Table(this.container, SWT.BORDER
 				| SWT.FULL_SELECTION | SWT.V_SCROLL);
@@ -121,11 +120,18 @@ public class Ecore2TgWizardPage5ReferenceOptions extends WizardPage implements
 
 	@Override
 	public IWizardPage getPreviousPage() {
-		this.saveConfiguration(((Ecore2TgWizard) this.getWizard()).configuration);
+		this.saveConfiguration(((Ecore2TgWizard) this.getWizard())
+				.getConfiguration());
 		return super.getPreviousPage();
 	}
 
-	@Override
+	/**
+	 * Enters the configurations from the given Ecore2TgConfiguration into the
+	 * GUI
+	 * 
+	 * @param conf
+	 *            the Ecore2TgConfiguration of the transformation
+	 */
 	public void enterConfiguration(Ecore2TgConfiguration conf) {
 		RefInfoStructure[] refArray = (RefInfoStructure[]) this.referenceTableViewer
 				.getInput();
@@ -188,7 +194,13 @@ public class Ecore2TgWizardPage5ReferenceOptions extends WizardPage implements
 		this.referenceTableViewer.refresh();
 	}
 
-	@Override
+	/**
+	 * Save the information, the user has entered into the GUI to the
+	 * Ecore2TgConfiguration
+	 * 
+	 * @param conf
+	 *            the Ecore2TgConfiguration
+	 */
 	public void saveConfiguration(Ecore2TgConfiguration conf) {
 		RefInfoStructure[] refArray = (RefInfoStructure[]) this.referenceTableViewer
 				.getInput();

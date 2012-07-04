@@ -55,21 +55,22 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 
 	// ---------------------------------------------------------------------------
 
+	/**
+	 * Configuration for the Tg2Ecore transformation
+	 */
+	private Tg2EcoreConfiguration config = new Tg2EcoreConfiguration();
+
+	/**
+	 * TG schema to transform
+	 */
+	private Schema schema;
+
+	/**
+	 * Constructor
+	 */
 	public Tg2EcoreWizard() {
 		super();
 		this.setNeedsProgressMonitor(true);
-	}
-
-	private Tg2EcoreConfiguration config = new Tg2EcoreConfiguration();
-
-	private Schema schema;
-
-	public Tg2EcoreConfiguration getConfiguration() {
-		return this.config;
-	}
-
-	public Schema getSchema() {
-		return this.schema;
 	}
 
 	@Override
@@ -93,12 +94,13 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 		// First page: check default options
 		if (page == this.page1Files) {
 			this.schema = this.page1Files.getOriginalSchema();
+			// Default options? Back to Ecore?
 			if (this.page1Files.useDefaultOptions()
 					|| this.page1Files.isBackToEcore()) {
-				// no second page if default options should be used or it is a
-				// back to Ecore transformation
+				// no second page
 				return null;
 			}
+			// Config file?
 			if (this.page1Files.getConfigFilePath() != null
 					&& !this.page1Files.getConfigFilePath().equals("")) {
 				this.config = Tg2EcoreConfiguration
@@ -107,13 +109,16 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 				this.page4SaveOptions.setFileNameText(this.page1Files
 						.getConfigFilePath());
 			}
+
 			this.page2GenOptions.enterConfiguration(this.config);
 		}
 		// Second page: fill table of third page before showing
 		else if (page == this.page2GenOptions) {
 			this.page2GenOptions.saveConfiguration(this.config);
 			this.page3ECOptions.enterConfiguration(this.config);
-		} else if (page == this.page3ECOptions) {
+		}
+		// Third page
+		else if (page == this.page3ECOptions) {
 			this.page3ECOptions.saveConfiguration(this.config);
 		}
 		return super.getNextPage(page);
@@ -131,6 +136,7 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 
 	@Override
 	public boolean performFinish() {
+		this.page2GenOptions.saveConfiguration(this.config);
 		this.page3ECOptions.saveConfiguration(this.config);
 
 		Schema2SchemaGraph s2sg = new Schema2SchemaGraph();
@@ -138,10 +144,13 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 				.getOriginalSchema());
 
 		Tg2Ecore tg2ecore;
-		if (!this.page1Files.useDefaultOptions()) {
-			tg2ecore = new Tg2Ecore(schemaGraph, this.config);
-		} else {
+		if (this.page1Files.useDefaultOptions()) {
 			tg2ecore = new Tg2Ecore(schemaGraph);
+		} else if (this.page1Files.isBackToEcore()) {
+			tg2ecore = new Tg2Ecore(schemaGraph);
+			tg2ecore.getConfiguration().setOption_backToEcore(true);
+		} else {
+			tg2ecore = new Tg2Ecore(schemaGraph, this.config);
 		}
 
 		tg2ecore.transform();
@@ -171,4 +180,21 @@ public class Tg2EcoreWizard extends Wizard implements IImportWizard {
 		return true;
 	}
 
+	// ////////////////////////////////////////////////////////////////
+	// /// - getter and setter - //////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////
+
+	/**
+	 * @return the configuration object for the Tg2Ecore transformation
+	 */
+	public Tg2EcoreConfiguration getConfiguration() {
+		return this.config;
+	}
+
+	/**
+	 * @return the TG schema to transform
+	 */
+	public Schema getSchema() {
+		return this.schema;
+	}
 }

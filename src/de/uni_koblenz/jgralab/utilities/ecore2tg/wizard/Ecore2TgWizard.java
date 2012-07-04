@@ -65,10 +65,12 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 	 */
 	private Ecore2TgWizardPage6SaveOptions page6SaveOptions;
 
+	// -------------------------------------------------------------
+
 	/**
 	 * Configuration to fill
 	 */
-	protected Ecore2TgConfiguration configuration;
+	private Ecore2TgConfiguration configuration;
 
 	/**
 	 * Analyzer for the metamodel, used for EdgeClass search
@@ -79,14 +81,6 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 	 * Currently chosen metamodel
 	 */
 	private Resource metamodelResource;
-
-	public Resource getMetamodel() {
-		return this.metamodelResource;
-	}
-
-	public void setMetamodel(Resource m) {
-		this.metamodelResource = m;
-	}
 
 	/**
 	 * Constructor
@@ -133,11 +127,11 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 				this.page6SaveOptions.setFileNameText(this.page1Files
 						.getConfigFilePath());
 			}
-			this.page2GenOptions.enterConfiguration(this.configuration);
+			this.page2GenOptions.enterConfiguration(this.getConfiguration());
 		}
 		// Second page: fill table of third page before showing
 		else if (page instanceof Ecore2TgWizardPage2GenOptions) {
-			this.page2GenOptions.saveConfiguration(this.configuration);
+			this.page2GenOptions.saveConfiguration(this.getConfiguration());
 			this.anal = new Ecore2TgAnalyzer(this.metamodelResource);
 			this.anal
 					.searchForEdgeClasses(TransformParams.AUTOMATIC_TRANSFORMATION);
@@ -151,8 +145,8 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 					this.page5ReferenceOptions.fillRefTable(
 							this.metamodelResource,
 							this.anal.getFoundEdgeClasses());
-					this.page5ReferenceOptions
-							.enterConfiguration(this.configuration);
+					this.page5ReferenceOptions.enterConfiguration(this
+							.getConfiguration());
 					return this.page5ReferenceOptions;
 				} else {
 					this.page3ChooseECs.fillTable(this.anal
@@ -163,17 +157,16 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 			// Don't look for EdgeClasses, show what is in config
 			else {
 				// If nothing is in config -> next page
-				if (this.configuration.getEdgeClassesList().isEmpty()) {
+				if (this.getConfiguration().getEdgeClassesList().isEmpty()) {
 					this.page5ReferenceOptions.fillRefTable(
-							this.metamodelResource, this
-									.getEClassesByName(this.configuration
-											.getEdgeClassesList()));
-					this.page5ReferenceOptions
-							.enterConfiguration(this.configuration);
+							this.metamodelResource, this.getEClassesByName(this
+									.getConfiguration().getEdgeClassesList()));
+					this.page5ReferenceOptions.enterConfiguration(this
+							.getConfiguration());
 					return this.page5ReferenceOptions;
 				} else {
 					ArrayList<EClass> savedEdgeClasses = this
-							.getEClassesByName(this.configuration
+							.getEClassesByName(this.getConfiguration()
 									.getEdgeClassesList());
 					ArrayList<EClass> okECs = new ArrayList<EClass>();
 					ArrayList<EClass> prECs = new ArrayList<EClass>();
@@ -189,52 +182,54 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 					this.page3ChooseECs.fillTable(okECs, prECs);
 				}
 			}
-			this.page3ChooseECs.enterConfiguration(this.configuration);
 		}
 		// Third page
 		else if (page instanceof Ecore2TgWizardPage3ChooseECs) {
-			this.page3ChooseECs.saveConfiguration(this.configuration);
+			this.page3ChooseECs.saveConfiguration(this.getConfiguration());
 			if (this.anal.getEdgeClassCandidatesWithUnclearEReferences()
 					.isEmpty()
 					|| this.testConfigContainsunclear(this.anal
 							.getEdgeClassCandidatesWithUnclearEReferences(),
-							this.configuration)) {
-				if (this.configuration.getTransformationOption().equals(
-						TransformParams.AUTOMATIC_TRANSFORMATION)) {
+							this.getConfiguration())) {
+				if (this.getConfiguration().getTransformationOption()
+						.equals(TransformParams.AUTOMATIC_TRANSFORMATION)) {
 					this.page5ReferenceOptions.fillRefTable(
 							this.metamodelResource,
 							this.anal.getFoundEdgeClasses());
 				} else {
 					this.page5ReferenceOptions.fillRefTable(
-							this.metamodelResource, this
-									.getEClassesByName(this.configuration
-											.getEdgeClassesList()));
+							this.metamodelResource, this.getEClassesByName(this
+									.getConfiguration().getEdgeClassesList()));
 				}
-				this.page5ReferenceOptions
-						.enterConfiguration(this.configuration);
+				this.page5ReferenceOptions.enterConfiguration(this
+						.getConfiguration());
 				return this.page5ReferenceOptions;
 			}
 			this.page4OverwrittenRefs.fillListViewer(this.anal
 					.getEReferenceToOverwriteCandidatesMap());
-			this.page4OverwrittenRefs.enterConfiguration(this.configuration);
+			this.page4OverwrittenRefs.enterConfiguration(this
+					.getConfiguration());
 		}
 		// Fourth page
 		else if (page instanceof Ecore2TgWizardPage4OverwrittenRefs) {
-			this.page4OverwrittenRefs.saveConfiguration(this.configuration);
-			if (this.configuration.getTransformationOption().equals(
-					TransformParams.AUTOMATIC_TRANSFORMATION)) {
+			this.page4OverwrittenRefs
+					.saveConfiguration(this.getConfiguration());
+			if (this.getConfiguration().getTransformationOption()
+					.equals(TransformParams.AUTOMATIC_TRANSFORMATION)) {
 				this.page5ReferenceOptions.fillRefTable(this.metamodelResource,
 						this.anal.getFoundEdgeClasses());
 			} else {
 				this.page5ReferenceOptions.fillRefTable(this.metamodelResource,
-						this.getEClassesByName(this.configuration
+						this.getEClassesByName(this.getConfiguration()
 								.getEdgeClassesList()));
 			}
-			this.page5ReferenceOptions.enterConfiguration(this.configuration);
+			this.page5ReferenceOptions.enterConfiguration(this
+					.getConfiguration());
 		}
 		// Fifth page
 		else if (page instanceof Ecore2TgWizardPage5ReferenceOptions) {
-			this.page5ReferenceOptions.saveConfiguration(this.configuration);
+			this.page5ReferenceOptions.saveConfiguration(this
+					.getConfiguration());
 		}
 
 		return super.getNextPage(page);
@@ -272,9 +267,12 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 
 	@Override
 	public boolean performFinish() {
-		this.page5ReferenceOptions.saveConfiguration(this.configuration);
+		this.page2GenOptions.saveConfiguration(this.configuration);
+		this.page3ChooseECs.saveConfiguration(this.configuration);
+		this.page4OverwrittenRefs.saveConfiguration(this.configuration);
+		this.page5ReferenceOptions.saveConfiguration(this.getConfiguration());
 
-		Ecore2Tg ecore2tg = new Ecore2Tg(this.anal, this.configuration);
+		Ecore2Tg ecore2tg = new Ecore2Tg(this.anal, this.getConfiguration());
 		ecore2tg.transform(this.page1Files.getQualifiedSchemaName());
 
 		Schema schema = ecore2tg.getSchema();
@@ -299,6 +297,13 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 		return true;
 	}
 
+	/**
+	 * Finds all EClasses given by their qualified name
+	 * 
+	 * @param ecls
+	 *            the collection of qualified EClass names
+	 * @return the EClasses that have the given names
+	 */
 	private ArrayList<EClass> getEClassesByName(Collection<String> ecls) {
 		ArrayList<EClass> list = new ArrayList<EClass>(ecls.size());
 		for (String s : ecls) {
@@ -308,4 +313,31 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 		return list;
 	}
 
+	// ////////////////////////////////////////////////////////////////
+	// /// - getter and setter - //////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////
+
+	/**
+	 * @return the Ecore2TgConfiguration for the transformation
+	 */
+	protected Ecore2TgConfiguration getConfiguration() {
+		return this.configuration;
+	}
+
+	/**
+	 * @return the Ecore metamodel to transform
+	 */
+	public Resource getMetamodel() {
+		return this.metamodelResource;
+	}
+
+	/**
+	 * Sets the Ecore metamodel to transform
+	 * 
+	 * @param m
+	 *            the new Ecore metamodel
+	 */
+	public void setMetamodel(Resource m) {
+		this.metamodelResource = m;
+	}
 }

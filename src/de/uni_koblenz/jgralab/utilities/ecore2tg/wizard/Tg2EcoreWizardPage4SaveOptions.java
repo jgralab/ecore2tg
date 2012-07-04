@@ -14,6 +14,12 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
+/**
+ * Wizard page to save the entered configurations to a specified file
+ * 
+ * @author kheckelmann
+ * 
+ */
 public class Tg2EcoreWizardPage4SaveOptions extends WizardPage {
 
 	private static final String pageName = "Tg2Ecore - Save configuration";
@@ -44,6 +50,11 @@ public class Tg2EcoreWizardPage4SaveOptions extends WizardPage {
 		this.setPageComplete(true);
 	}
 
+	/**
+	 * Create a text field with a browse button and a save button to enter the
+	 * configuration file path and save the Tg2EcoreConfiguration to the
+	 * specified file
+	 */
 	private void createSaveConfigFileTextAndButton() {
 		this.fileNameText = new Text(this.container, SWT.BORDER);
 		this.fileNameText.setText("");
@@ -89,11 +100,13 @@ public class Tg2EcoreWizardPage4SaveOptions extends WizardPage {
 		});
 	}
 
+	/**
+	 * Set the default path for the configuration file
+	 * 
+	 * @param s
+	 *            the new path of the configuration file
+	 */
 	public void setFileNameText(String s) {
 		this.fileNameText.setText(s);
-	}
-
-	public String getFileNameText() {
-		return this.fileNameText.getText();
 	}
 }

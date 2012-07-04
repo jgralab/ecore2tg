@@ -11,6 +11,7 @@ import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -25,8 +26,7 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.Transform
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.EcChooseEditingSupport;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.EcChooseLabelProvider;
 
-public class Ecore2TgWizardPage3ChooseECs extends WizardPage implements
-		ConfigurationProvider {
+public class Ecore2TgWizardPage3ChooseECs extends WizardPage {
 
 	private static final String pageName = "Ecore2Tg - Conceptual EdgeClasses Options";
 	private static final String title = "Ecore2Tg - Conceptual EdgeClasses Options";
@@ -111,12 +111,6 @@ public class Ecore2TgWizardPage3ChooseECs extends WizardPage implements
 		}
 	}
 
-	@Override
-	public void enterConfiguration(Ecore2TgConfiguration conf) {
-
-	}
-
-	@Override
 	public void saveConfiguration(Ecore2TgConfiguration conf) {
 		Entry<?, ?>[] array = (Entry<?, ?>[]) this.tableViewer.getInput();
 		if (array != null) {
@@ -150,6 +144,13 @@ public class Ecore2TgWizardPage3ChooseECs extends WizardPage implements
 				}
 			}
 		}
+	}
+
+	@Override
+	public IWizardPage getPreviousPage() {
+		this.saveConfiguration(((Ecore2TgWizard) this.getWizard())
+				.getConfiguration());
+		return super.getPreviousPage();
 	}
 
 }

@@ -22,8 +22,7 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.OverwrittenEReferencesColumnEditingSupport;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.wizard.jfaceviewerprovider.OverwrittenEReferencesLabelProvider;
 
-public class Ecore2TgWizardPage4OverwrittenRefs extends WizardPage
-		implements ConfigurationProvider {
+public class Ecore2TgWizardPage4OverwrittenRefs extends WizardPage {
 
 	private static final String pageName = "Ecore2Tg - Overwriting Options";
 	private static final String title = "Ecore2Tg - Overwriting Options";
@@ -34,6 +33,14 @@ public class Ecore2TgWizardPage4OverwrittenRefs extends WizardPage
 	private TableViewer viewer;
 	private TableViewerColumn chooseRefColumn;
 
+	/**
+	 * HashMap mapping EReferences to EReferences they overwrite
+	 */
+	private HashMap<EReference, EReference> refmap;
+
+	/**
+	 * Constructor
+	 */
 	public Ecore2TgWizardPage4OverwrittenRefs() {
 		super(pageName);
 		this.setTitle(title);
@@ -79,8 +86,13 @@ public class Ecore2TgWizardPage4OverwrittenRefs extends WizardPage
 		this.viewer.setLabelProvider(new OverwrittenEReferencesLabelProvider());
 	}
 
-	private HashMap<EReference, EReference> refmap;
-
+	/**
+	 * Fills the list viewer with the calculated choices
+	 * 
+	 * @param rm
+	 *            HashMap mapping EReferences to a set of EReferences that are
+	 *            candidates to become overwritten by the key EReference
+	 */
 	public void fillListViewer(HashMap<EReference, HashSet<EReference>> rm) {
 		this.refmap = new HashMap<EReference, EReference>();
 		for (EReference e : rm.keySet()) {
@@ -94,7 +106,13 @@ public class Ecore2TgWizardPage4OverwrittenRefs extends WizardPage
 		this.viewer.refresh();
 	}
 
-	@Override
+	/**
+	 * Enters the configurations from the given Ecore2TgConfiguration into the
+	 * GUI
+	 * 
+	 * @param conf
+	 *            the Ecore2TgConfiguration of the transformation
+	 */
 	public void enterConfiguration(Ecore2TgConfiguration conf) {
 		for (String refName : conf.getPairsOfOverwritingEReferences().keySet()) {
 			this.refmap
@@ -109,14 +127,23 @@ public class Ecore2TgWizardPage4OverwrittenRefs extends WizardPage
 
 	}
 
-	@Override
+	/**
+	 * Save the information, the user has entered into the GUI to the
+	 * Ecore2TgConfiguration
+	 * 
+	 * @param conf
+	 *            the Ecore2TgConfiguration
+	 */
 	public void saveConfiguration(Ecore2TgConfiguration conf) {
-		for (EReference ref : this.refmap.keySet()) {
-			if (this.refmap.get(ref) != null) {
-				conf.getPairsOfOverwritingEReferences().put(
-						Ecore2TgAnalyzer.getQualifiedReferenceName(ref),
-						Ecore2TgAnalyzer.getQualifiedReferenceName(this.refmap
-								.get(ref)));
+		if (this.refmap != null) {
+			for (EReference ref : this.refmap.keySet()) {
+				if (this.refmap.get(ref) != null) {
+					conf.getPairsOfOverwritingEReferences().put(
+							Ecore2TgAnalyzer.getQualifiedReferenceName(ref),
+							Ecore2TgAnalyzer
+									.getQualifiedReferenceName(this.refmap
+											.get(ref)));
+				}
 			}
 		}
 	}

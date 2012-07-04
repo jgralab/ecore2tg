@@ -1,5 +1,6 @@
 package de.uni_koblenz.jgralab.utilities.ecore2tg.wizard;
 
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -146,37 +147,45 @@ public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 		this.textRootPackageNsURI.setText("");
 	}
 
+	/**
+	 * Enter the information from the Tg2EcoreConfiguration object into the GUI
+	 * 
+	 * @param conf
+	 *            the Tg2EcoreConfiguration object to enter
+	 */
 	public void enterConfiguration(Tg2EcoreConfiguration conf) {
+
+		// Option: Only one Rolename -> unidirectional references
 		if (conf.isOption_oneroleToUni()) {
 			this.buttonOneRoleToUni.setSelection(true);
 		} else {
 			this.buttonOneRoleToUni.setSelection(false);
 		}
 
-		System.err.println("enter " + conf.isOption_transformGraphClass()
-				+ " to site");
+		// Option: transform GraphClass
 		if (conf.isOption_transformGraphClass()) {
 			this.buttonTransformGC.setSelection(true);
 		} else {
 			this.buttonTransformGC.setSelection(false);
 		}
-
+		// Option: make GraphClass to root
 		if (conf.isOption_makeGraphClassToRootElement()) {
 			this.buttonMakeGC2Root.setSelection(true);
 		} else {
 			this.buttonMakeGC2Root.setSelection(false);
 		}
 
+		// Option: root package name
 		if (conf.getOption_rootpackageName() != null
 				&& !conf.getOption_rootpackageName().equals("")) {
 			this.textRootPackageName.setText(conf.getOption_rootpackageName());
 		}
-
+		// Option: root package nsPrefix
 		if (conf.getOption_nsPrefix() != null
 				&& !conf.getOption_nsPrefix().equals("")) {
 			this.textRootPackageNsPrefix.setText(conf.getOption_nsPrefix());
 		}
-
+		// Option: root package nsURI
 		if (conf.getOption_nsURI() != null
 				&& !conf.getOption_nsURI().equals("")) {
 			this.textRootPackageNsURI.setText(conf.getOption_nsURI());
@@ -184,7 +193,15 @@ public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 
 	}
 
+	/**
+	 * Save the entered configurations from the GUI to the Tg2EcoreConfiguration
+	 * object
+	 * 
+	 * @param conf
+	 *            the Tg2EcoreConfiguration object to save
+	 */
 	public void saveConfiguration(Tg2EcoreConfiguration conf) {
+
 		// Option: Only one Rolename -> unidirectional references
 		conf.setOption_oneroleToUni(this.buttonOneRoleToUni.getSelection());
 
@@ -211,5 +228,12 @@ public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 			conf.setOption_nsURI(nsURI);
 		}
 
+	}
+
+	@Override
+	public IWizardPage getPreviousPage() {
+		this.saveConfiguration(((Tg2EcoreWizard) this.getWizard())
+				.getConfiguration());
+		return super.getPreviousPage();
 	}
 }

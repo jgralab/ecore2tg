@@ -33,8 +33,7 @@ import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.Transform
  * @author kheckelmann
  * 
  */
-public class Ecore2TgWizardPage2GenOptions extends WizardPage implements
-		ConfigurationProvider {
+public class Ecore2TgWizardPage2GenOptions extends WizardPage {
 
 	private static final String pageName = "Ecore2TgOptions";
 	private static final String title = "Ecore2Tg - General Options";
@@ -174,7 +173,6 @@ public class Ecore2TgWizardPage2GenOptions extends WizardPage implements
 		}
 	}
 
-	@Override
 	public void enterConfiguration(Ecore2TgConfiguration conf) {
 		// fill Widget
 		this.fillEClassesListWidget(conf);
@@ -204,7 +202,6 @@ public class Ecore2TgWizardPage2GenOptions extends WizardPage implements
 						TransformParams.JUST_LIKE_ECORE));
 	}
 
-	@Override
 	public void saveConfiguration(Ecore2TgConfiguration conf) {
 		if (this.buttonSelectGraphClassFromEClasses.getSelection()) {
 			conf.setAsGraphClass(this.listWidgetEClasses.getSelection()[0]);
@@ -223,7 +220,7 @@ public class Ecore2TgWizardPage2GenOptions extends WizardPage implements
 
 	@Override
 	public IWizardPage getPreviousPage() {
-		this.saveConfiguration(((Ecore2TgWizard) this.getWizard()).configuration);
+		this.saveConfiguration(((Ecore2TgWizard) this.getWizard()).getConfiguration());
 		return super.getPreviousPage();
 	}
 

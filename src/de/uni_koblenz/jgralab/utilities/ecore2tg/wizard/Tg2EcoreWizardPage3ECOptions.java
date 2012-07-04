@@ -8,6 +8,7 @@ import org.eclipse.jface.viewers.ColumnWeightData;
 import org.eclipse.jface.viewers.TableLayout;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -111,7 +112,10 @@ public class Tg2EcoreWizardPage3ECOptions extends WizardPage {
 	/**
 	 * Sets the input of the table on page three that allows the definition of
 	 * additional FROM and TO role names for the EdgeClasses that will be
-	 * transformed to EClasses
+	 * transformed to EClasses, enters the configuration
+	 * 
+	 * @param conf
+	 *            the Tg2EcoreConfiguration object to enter
 	 */
 	public void enterConfiguration(Tg2EcoreConfiguration conf) {
 		ArrayList<EcInfoStructure> ecInfos = new ArrayList<EcInfoStructure>();
@@ -134,6 +138,12 @@ public class Tg2EcoreWizardPage3ECOptions extends WizardPage {
 		this.ecTableViewer.setInput(ecInfos.toArray(new EcInfoStructure[] {}));
 	}
 
+	/**
+	 * Saves the configuration to the configuration object
+	 * 
+	 * @param conf
+	 *            the Tg2EcoreConfiguration object to save
+	 */
 	public void saveConfiguration(Tg2EcoreConfiguration conf) {
 		// Option: additional rolenames
 		EcInfoStructure[] infos = (EcInfoStructure[]) this
@@ -160,4 +170,10 @@ public class Tg2EcoreWizardPage3ECOptions extends WizardPage {
 		}
 	}
 
+	@Override
+	public IWizardPage getPreviousPage() {
+		this.saveConfiguration(((Tg2EcoreWizard) this.getWizard())
+				.getConfiguration());
+		return super.getPreviousPage();
+	}
 }
