@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:complexnodeandway.structure="http://complexwayandnode/1.0/structure">
+  <complexnodeandway.structure:Building latitude="1.0" outgoingWays="/3 /4"/>
+  <complexnodeandway.structure:Building latitude="2.0" longitude="2.0" outgoingWays="/5" incomingWays="/3"/>
+  <complexnodeandway.structure:Building latitude="3.0" longitude="3.0" incomingWays="/4 /5"/>
+  <complexnodeandway.structure:CarRoute startOfWay="/0" endOfWay="/1" length="10.0" countOfTracks="2"/>
+  <complexnodeandway.structure:CarRoute startOfWay="/0" endOfWay="/2" length="15.0" countOfTracks="4"/>
+  <complexnodeandway.structure:CarRoute startOfWay="/1" endOfWay="/2" length="5.0" countOfTracks="3"/>
+</xmi:XMI>

@@ -122,7 +122,7 @@ public class Ecore2TgAnalyzer {
 	public void searchForEdgeClasses(TransformParams params,
 			HashMap<EReference, ArrayList<EReference>> overwritten) {
 		this.ereferenceWithOverwritten = overwritten;
-		this.searchForEdgeClasses(params);
+		this.doSearch(params);
 	}
 
 	/**

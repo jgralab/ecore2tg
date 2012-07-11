@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="complexwayandnode"
+    nsURI="http://complexwayandnode/1.0" nsPrefix="complexwayandnode">
+  <eSubpackages name="Structure" nsURI="http://complexwayandnode/1.0/structure" nsPrefix="complexnodeandway.structure">
+    <eClassifiers xsi:type="ecore:EClass" name="Node" abstract="true">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="latitude" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="longitude" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="outgoingWays" upperBound="-1"
+          eType="#//Structure/Way" eOpposite="#//Structure/Way/startOfWay"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="incomingWays" upperBound="-1"
+          eType="#//Structure/Way" eOpposite="#//Structure/Way/endOfWay"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Intersection" eSuperTypes="#//Structure/Node"/>
+    <eClassifiers xsi:type="ecore:EClass" name="Building" eSuperTypes="#//Structure/Node"/>
+    <eClassifiers xsi:type="ecore:EClass" name="Way" abstract="true">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="startOfWay" lowerBound="1"
+          eType="#//Structure/Node" eOpposite="#//Structure/Node/outgoingWays"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="endOfWay" lowerBound="1"
+          eType="#//Structure/Node" eOpposite="#//Structure/Node/incomingWays"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="length" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="CarRoute" eSuperTypes="#//Structure/Way">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="countOfTracks" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="HikingTrail" eSuperTypes="#//Structure/Way">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="difficultness" eType="#//Structure/TrailTypes"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EEnum" name="TrailTypes">
+      <eLiterals name="SIMPLE" literal="SIMPLE"/>
+      <eLiterals name="MODERATE" value="1"/>
+      <eLiterals name="CHALLENGING" value="2"/>
+      <eLiterals name="HARD" value="3"/>
+    </eClassifiers>
+  </eSubpackages>
+  <eSubpackages name="CardUse" nsURI="http://complexwayandnode/1.0/carduse" nsPrefix="complexwayandnode.carduse">
+    <eClassifiers xsi:type="ecore:EClass" name="Card">
+      <eStructuralFeatures xsi:type="ecore:EReference" name="parts" lowerBound="1"
+          upperBound="-1" eType="#//CardUse/Section" containment="true"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="author" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Section">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="title" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="shownnodes" upperBound="-1"
+          eType="#//Structure/Node"/>
+    </eClassifiers>
+  </eSubpackages>
+</ecore:EPackage>

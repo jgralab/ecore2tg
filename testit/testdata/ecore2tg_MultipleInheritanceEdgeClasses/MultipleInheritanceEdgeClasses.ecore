@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="testmultipleinheritanceedgeclasses"
+    nsURI="http://testmultipleinheritanceedgeclasses/1.0" nsPrefix="testmultipleinheritanceedgeclasses">
+  <eClassifiers xsi:type="ecore:EClass" name="A" eSuperTypes="#//C">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="edgeforA" upperBound="-1"
+        eType="#//EdgeAB" eOpposite="#//EdgeAB/a"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EdgeAB" eSuperTypes="#//EdgeCD">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="a" lowerBound="1" eType="#//A"
+        eOpposite="#//A/edgeforA"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="b" lowerBound="1" eType="#//B"
+        eOpposite="#//B/edgeforB"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="B" eSuperTypes="#//D">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="edgeforB" upperBound="-1"
+        eType="#//EdgeAB" eOpposite="#//EdgeAB/b"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BetterEdgeAB" eSuperTypes="#//EdgeAB"/>
+  <eClassifiers xsi:type="ecore:EClass" name="C">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="edgeforC" upperBound="-1"
+        eType="#//EdgeCD"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="D"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EdgeCD">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="d" lowerBound="1" eType="#//D"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="K">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="edgeforK" upperBound="-1"
+        eType="#//EdgeKL"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="L"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EdgeKL">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="l" lowerBound="1" eType="#//L"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BetterEdgeKL" eSuperTypes="#//EdgeKL"/>
+</ecore:EPackage>

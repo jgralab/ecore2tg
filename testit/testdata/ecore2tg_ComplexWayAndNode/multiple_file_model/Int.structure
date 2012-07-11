@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<complexnodeandway.structure:Intersection xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:complexnodeandway.structure="http://complexwayandnode/1.0/structure" latitude="5.5" longitude="6.6">
+  <outgoingWays xsi:type="complexnodeandway.structure:CarRoute" href="CR3.structure#/"/>
+  <incomingWays xsi:type="complexnodeandway.structure:CarRoute" href="My.structure#/"/>
+</complexnodeandway.structure:Intersection>

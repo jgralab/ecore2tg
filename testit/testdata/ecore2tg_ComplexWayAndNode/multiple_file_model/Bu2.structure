@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<complexnodeandway.structure:Building xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:complexnodeandway.structure="http://complexwayandnode/1.0/structure" latitude="1.1" longitude="2.2">
+  <outgoingWays xsi:type="complexnodeandway.structure:CarRoute" href="My.structure#/"/>
+  <outgoingWays xsi:type="complexnodeandway.structure:HikingTrail" href="HT1.structure#/"/>
+  <incomingWays xsi:type="complexnodeandway.structure:CarRoute" href="CR2.structure#/"/>
+</complexnodeandway.structure:Building>

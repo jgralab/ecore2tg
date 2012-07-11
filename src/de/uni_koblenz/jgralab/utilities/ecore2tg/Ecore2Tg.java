@@ -839,7 +839,8 @@ public class Ecore2Tg {
 			if (this.analyzer.getFoundEdgeClasses() == null
 					|| !this.ereferenceWithOverwritten.isEmpty()) {
 				this.analyzer.searchForEdgeClasses(this.getConfiguration()
-						.getTransformationOption());
+						.getTransformationOption(),
+						this.ereferenceWithOverwritten);
 			}
 			if (this.getConfiguration().getTransformationOption() == TransformParams.AUTOMATIC_TRANSFORMATION) {
 				this.badEReferences.addAll(this.analyzer
@@ -1848,14 +1849,14 @@ public class Ecore2Tg {
 										parent.get_from().get_roleName()) || erefFromEdgeToEClass1
 										.getName().equals(
 												parent.get_to().get_roleName()))) {
-							subtypes[1] = true;
+							subtypes[0] = true;
 						}
 						if ((erefFromEdgeToEClass2 != null)
 								&& (erefFromEdgeToEClass2.getName().equals(
 										parent.get_from().get_roleName()) || erefFromEdgeToEClass2
 										.getName().equals(
 												parent.get_to().get_roleName()))) {
-							subtypes[0] = true;
+							subtypes[1] = true;
 						}
 					}
 				}
@@ -1892,15 +1893,15 @@ public class Ecore2Tg {
 			if ((erefFromEClass2ToEdge != null)
 					&& (erefFromEdgeToEClass1 != null)) {
 				this.fillIncidenceWith2EReference(inc1, erefFromEClass2ToEdge,
-						erefFromEdgeToEClass1, cont2, subtypes[1],
+						erefFromEdgeToEClass1, cont2, subtypes[0],
 						this.takeRolenameOfToEdge);
 			} else if (erefFromEClass2ToEdge != null) {
 				this.fillIncidenceWithToEdgeClassEReference(inc1,
-						erefFromEClass2ToEdge, cont2, subtypes[1],
+						erefFromEClass2ToEdge, cont2, subtypes[0],
 						this.takeRolenameOfToEdge);
 			} else if (erefFromEdgeToEClass1 != null) {
 				this.fillIncidenceWithFromEdgeClassEReference(inc1,
-						erefFromEdgeToEClass1, cont2, subtypes[1],
+						erefFromEdgeToEClass1, cont2, subtypes[0],
 						!this.takeRolenameOfToEdge);
 			} else {
 				this.fillIncidenceDefault(inc1, cont2);
@@ -1909,15 +1910,15 @@ public class Ecore2Tg {
 			if ((erefFromEClass1ToEdge != null)
 					&& (erefFromEdgeToEClass2 != null)) {
 				this.fillIncidenceWith2EReference(inc2, erefFromEClass1ToEdge,
-						erefFromEdgeToEClass2, cont1, subtypes[0],
+						erefFromEdgeToEClass2, cont1, subtypes[1],
 						this.takeRolenameOfToEdge);
 			} else if (erefFromEClass1ToEdge != null) {
 				this.fillIncidenceWithToEdgeClassEReference(inc2,
-						erefFromEClass1ToEdge, cont1, subtypes[0],
+						erefFromEClass1ToEdge, cont1, subtypes[1],
 						this.takeRolenameOfToEdge);
 			} else if (erefFromEdgeToEClass2 != null) {
 				this.fillIncidenceWithFromEdgeClassEReference(inc2,
-						erefFromEdgeToEClass2, cont1, subtypes[0],
+						erefFromEdgeToEClass2, cont1, subtypes[1],
 						!this.takeRolenameOfToEdge);
 			} else {
 				this.fillIncidenceDefault(inc2, cont1);
@@ -3039,7 +3040,8 @@ public class Ecore2Tg {
 		}
 		String packagename = this.configuration
 				.getDefinedPackagesOfEdgeClassesMap().get(packagekey);
-		return this.getPackageByName(packagename);
+		EPackage epack = this.getEPackageByName(packagename);
+		return this.packagemap.get(epack);
 	}
 
 	/**

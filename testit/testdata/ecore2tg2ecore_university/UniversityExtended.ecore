@@ -31,10 +31,10 @@
           eType="#//administration/Lecture" eOpposite="#//administration/Lecture/lecturer"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="Assistant" eSuperTypes="#//people/Person">
-      <eStructuralFeatures xsi:type="ecore:EAttribute" name="isDoctoralCandidate"
-          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="tutorial" upperBound="-1"
           eType="#//administration/Tutorial" eOpposite="#//administration/Tutorial/tutor"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="isDoctoralCandidate"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EEnum" name="SalaryRank">
       <eLiterals name="W1"/>
@@ -111,11 +111,11 @@
   <eSubpackages name="connection" nsURI="http://universityextended/1.0/connection"
       nsPrefix="connection">
     <eClassifiers xsi:type="ecore:EClass" name="Visits">
-      <eStructuralFeatures xsi:type="ecore:EAttribute" name="motivation" eType="#//connection/Motivation"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="course" lowerBound="1"
           eType="#//administration/Course" eOpposite="#//administration/Course/visitor"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="student" lowerBound="1"
           eType="#//people/Student" eOpposite="#//people/Student/courseVisit"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="motivation" eType="#//connection/Motivation"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EEnum" name="Motivation">
       <eLiterals name="HIGH_INTEREST"/>

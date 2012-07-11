@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<complexnodeandway.structure:CarRoute xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:complexnodeandway.structure="http://complexwayandnode/1.0/structure" length="15.0" countOfTracks="3">
+  <startOfWay xsi:type="complexnodeandway.structure:Intersection" href="Int2.structure#/"/>
+  <endOfWay xsi:type="complexnodeandway.structure:Building" href="Bu1.structure#/"/>
+</complexnodeandway.structure:CarRoute>
