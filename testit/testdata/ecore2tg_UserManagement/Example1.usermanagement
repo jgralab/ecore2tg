@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<usermanagement:Society xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:usermanagement="http://usermanagement/1.0">
+  <specialGroups name="Detective Club" admin="//@specialGroups.0/@entry.0/@user">
+    <entry>
+      <user dateOfBirth="1950-04-14T23:00:00.000+0100" username="Sherlock Holmes" rulingGroups="//@specialGroups.0"/>
+    </entry>
+    <entry>
+      <user dateOfBirth="1965-06-18T00:00:00.000+0100" username="Watson"/>
+    </entry>
+  </specialGroups>
+  <specialGroups name="Cooking Club" admin="//@specialGroups.1/@entry.0/@user">
+    <entry>
+      <user dateOfBirth="1977-10-30T00:00:00.000+0100" username="Mary Brown" rulingGroups="//@specialGroups.1"/>
+    </entry>
+  </specialGroups>
+</usermanagement:Society>
