@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ASCII"?>
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:simplenodeandway="http://simplenodeandway/1.0">
+  <simplenodeandway:Node latitude="1.0" incomingWays="/3 /4"/>
+  <simplenodeandway:Node latitude="2.0" longitude="2.0" outgoingWays="/3"/>
+  <simplenodeandway:Node latitude="30.0" longitude="3.0" outgoingWays="/4"/>
+  <simplenodeandway:Way length="10.0" endOfWay="/0" startOfWay="/1"/>
+  <simplenodeandway:Way length="1.4" endOfWay="/0" startOfWay="/2"/>
+</xmi:XMI>

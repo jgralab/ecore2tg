@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="specialcases"
+    nsURI="http://specialcases/1.0" nsPrefix="specialcases">
+  <eClassifiers xsi:type="ecore:EClass" name="A">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="toB" upperBound="-1" eType="#//EdgeAB"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="B">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="toA" upperBound="-1" eType="#//EdgeAB"
+        eOpposite="#//EdgeAB/b"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EdgeAB">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="b" lowerBound="1" eType="#//B"
+        eOpposite="#//B/toA"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="C">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="toD" upperBound="-1" eType="#//EdgeCD"
+        eOpposite="#//EdgeCD/c"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="D"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EdgeCD">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="d" lowerBound="1" eType="#//D"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="c" lowerBound="1" eType="#//C"
+        eOpposite="#//C/toD"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="E">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="toF" upperBound="-1" eType="#//EdgeEF"
+        eOpposite="#//EdgeEF/e"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EdgeEF">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="f" lowerBound="1" eType="#//F"
+        containment="true" eOpposite="#//F/toE"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="e" lowerBound="1" eType="#//E"
+        eOpposite="#//E/toF"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="F">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="toE" eType="#//EdgeEF"
+        eOpposite="#//EdgeEF/f"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="G">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="toH" upperBound="-1" eType="#//EdgeGH"
+        eOpposite="#//EdgeGH/g"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EdgeGH">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="g" lowerBound="1" eType="#//G"
+        containment="true" eOpposite="#//G/toH"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="h" lowerBound="1" eType="#//H"
+        eOpposite="#//H/toG"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="H">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="toG" upperBound="-1" eType="#//EdgeGH"
+        eOpposite="#//EdgeGH/h"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="I">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="toJ" upperBound="-1" eType="#//EdgeIJ"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EdgeIJ">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="j" lowerBound="1" eType="#//J"
+        eOpposite="#//J/toI"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="J">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="toI" eType="#//EdgeIJ"
+        containment="true" eOpposite="#//EdgeIJ/j"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="K">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="toL" upperBound="-1" eType="#//EdgeKL"
+        eOpposite="#//EdgeKL/k"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EdgeKL">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="l" lowerBound="1" eType="#//L"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="k" lowerBound="1" eType="#//K"
+        containment="true" eOpposite="#//K/toL"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="L"/>
+</ecore:EPackage>
