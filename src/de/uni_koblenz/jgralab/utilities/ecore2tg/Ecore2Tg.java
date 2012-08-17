@@ -131,11 +131,9 @@ public class Ecore2Tg {
 		String[] ar = cli.getOptionValues(OPTION_FILENAME_METAMODEL);
 
 		Resource res = Ecore2Tg.loadMetaModelFromEcoreFile(ar[0]);
-		ResourceSet rs = res.getResourceSet();
 		for (int i = 1; i < ar.length; i++) {
-			String inputFile = ar[i];
-			URI fileURI = URI.createFileURI(inputFile);
-			rs.getResource(fileURI, true);
+		        // we register but ignore additional metamodels right now.
+		        Ecore2Tg.loadMetaModelFromEcoreFile(ar[i]);
 		}
 		Ecore2Tg ecore2tg = new Ecore2Tg(res);
 
