@@ -127,8 +127,17 @@ public class Ecore2Tg {
 		assert cli != null : "No CommandLine object has been generated!";
 
 		// Getting name of input file
-		Ecore2Tg ecore2tg = new Ecore2Tg(
-				cli.getOptionValue(OPTION_FILENAME_METAMODEL));
+
+		String[] ar = cli.getOptionValues(OPTION_FILENAME_METAMODEL);
+
+		Resource res = Ecore2Tg.loadMetaModelFromEcoreFile(ar[0]);
+		ResourceSet rs = res.getResourceSet();
+		for (int i = 1; i < ar.length; i++) {
+			String inputFile = ar[i];
+			URI fileURI = URI.createFileURI(inputFile);
+			rs.getResource(fileURI, true);
+		}
+		Ecore2Tg ecore2tg = new Ecore2Tg(res);
 
 		// Getting name of config file
 		String configfile = cli.getOptionValue(OPTION_FILENAME_CONFIG);
@@ -3203,9 +3212,13 @@ public class Ecore2Tg {
 				// ok, do nothing
 			}
 			// EObject is an GraphClassInstance
-			else {
+			else if (this.graphclass.get_qualifiedName().equals(
+					eclass.getName())) {
 				// Graphclass
 				this.transformAttributeValues(eob, graph, graph);
+			} else {
+				// skip, not in metamodel
+				continue;
 			}
 
 			// Examine further
@@ -4107,19 +4120,17 @@ public class Ecore2Tg {
 		for (VertexClass fromVC : vcList) {
 
 			for (EndsAt ea : fromVC.getEndsAtIncidences()) {
-				IncidenceClass ic = (IncidenceClass) ea.getAlpha();
+				IncidenceClass ic = ea.getAlpha();
 				if (ic.getFirstGoesToIncidence() != null) {
-					String rn = (((IncidenceClass) ((EdgeClass) ic
-							.getFirstGoesToIncidence().getAlpha())
-							.getFirstComesFromIncidence().getOmega()))
+					String rn = (ic.getFirstGoesToIncidence().getAlpha()
+							.getFirstComesFromIncidence().getOmega())
 							.get_roleName();
 					if (rn.equals(rolename)) {
 						duplicated = true;
 					}
 				} else if (ic.getFirstComesFromIncidence() != null) {
-					String rn = (((IncidenceClass) ((EdgeClass) ic
-							.getFirstComesFromIncidence().getAlpha())
-							.getFirstGoesToIncidence().getOmega()))
+					String rn = (ic.getFirstComesFromIncidence().getAlpha()
+							.getFirstGoesToIncidence().getOmega())
 							.get_roleName();
 					if (rn.equals(rolename)) {
 						duplicated = true;
