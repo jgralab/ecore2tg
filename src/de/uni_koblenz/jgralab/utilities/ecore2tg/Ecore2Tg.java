@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -79,6 +80,7 @@ public class Ecore2Tg {
 	 * Options for Command-Line-Tool
 	 * */
 	private static final String OPTION_FILENAME_METAMODEL = "i";
+	private static final String OPTION_FILENAME_METAMODEL_IGNORE = "ii";
 	private static final String OPTION_FILENAME_SCHEMA = "o";
 	private static final String OPTION_FILENAME_CONFIG = "c";
 	private static final String OPTION_FILENAME_MODEL = "m";
@@ -130,12 +132,30 @@ public class Ecore2Tg {
 
 		String[] ar = cli.getOptionValues(OPTION_FILENAME_METAMODEL);
 
-		Resource res = Ecore2Tg.loadMetaModelFromEcoreFile(ar[0]);
-		for (int i = 1; i < ar.length; i++) {
-		        // we register but ignore additional metamodels right now.
-		        Ecore2Tg.loadMetaModelFromEcoreFile(ar[i]);
+		// Getting parts of metamodels that should be ignored
+		List<String> ignoreStrings = new ArrayList<String>();
+		if (cli.hasOption(OPTION_FILENAME_METAMODEL_IGNORE)) {
+			String[] ignorePathes = cli
+					.getOptionValues(OPTION_FILENAME_METAMODEL_IGNORE);
+			ignoreStrings = Arrays.asList(ignorePathes);
 		}
-		Ecore2Tg ecore2tg = new Ecore2Tg(res);
+
+		List<Resource> resList = new ArrayList<Resource>();
+		Resource res = Ecore2Tg.loadMetaModelFromEcoreFile(ar[0]);
+		resList.add(res);
+		for (int i = 1; i < ar.length; i++) {
+			// we register but ignore additional metamodels right now.
+			Resource loaded = Ecore2Tg.loadEcoreFileIntoResourceSet(ar[i],
+					res.getResourceSet());
+			if (!ignoreStrings.contains(ar[i])) {
+				resList.add(loaded);
+			}
+		}
+
+		String[] ignorePathes = cli
+				.getOptionValues(OPTION_FILENAME_METAMODEL_IGNORE);
+
+		Ecore2Tg ecore2tg = new Ecore2Tg(resList);
 
 		// Getting name of config file
 		String configfile = cli.getOptionValue(OPTION_FILENAME_CONFIG);
@@ -302,6 +322,15 @@ public class Ecore2Tg {
 		input.setRequired(true);
 		input.setArgName("filename");
 		oh.addOption(input);
+
+		// OPTION_FILENAME_METAMODEL_IGNORE = "ii";
+		Option input_ignore = new Option(
+				OPTION_FILENAME_METAMODEL_IGNORE,
+				"input_ignore",
+				true,
+				"(optional): Ecore Metamodel part given also as -i option that should not be transformed.");
+		input_ignore.setArgName("filename");
+		oh.addOption(input_ignore);
 
 		// OPTION_FILENAME_SCHEMA = "o";
 		Option output = new Option(
@@ -618,10 +647,12 @@ public class Ecore2Tg {
 	// --------------------------------------------------------------------------
 
 	/**
-	 * Complete Ecore metamodel represented as Resource all EPackages in that
-	 * Resource will become transformed
+	 * Complete Ecore metamodel represented as List all EPackages in that list
+	 * will become transformed
 	 */
-	private final Resource metamodelResource;
+	private final List<Resource> metamodelResources;
+
+	private List<EObject> metamodelEObjects;
 
 	/**
 	 * grUML SchemaGraph that represents the transformed Ecore metamodel
@@ -695,38 +726,72 @@ public class Ecore2Tg {
 	 */
 	public Ecore2Tg(String pathToEcoreFile) {
 		// Load the Ecore metamodel
-		this.metamodelResource = loadMetaModelFromEcoreFile(pathToEcoreFile);
+		this.metamodelResources = new ArrayList<Resource>();
+		this.metamodelResources
+				.add(loadMetaModelFromEcoreFile(pathToEcoreFile));
+		this.metamodelEObjects = new ArrayList<EObject>();
+		this.metamodelEObjects.addAll(this.metamodelResources.get(0)
+				.getContents());
 		this.configuration = new Ecore2TgConfiguration();
-		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResource);
+		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResources);
+
 	}
 
 	public Ecore2Tg(Resource ecoreSchema) {
-		this.metamodelResource = ecoreSchema;
+		this.metamodelResources = new ArrayList<Resource>();
+		this.metamodelResources.add(ecoreSchema);
+		this.metamodelEObjects = new ArrayList<EObject>();
+		this.metamodelEObjects.addAll(ecoreSchema.getContents());
 		this.configuration = new Ecore2TgConfiguration();
-		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResource);
+		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResources);
+	}
+
+	public Ecore2Tg(List<Resource> ecoreSchema) {
+		this.metamodelResources = ecoreSchema;
+		this.metamodelEObjects = new ArrayList<EObject>();
+		for (Resource r : this.metamodelResources) {
+			this.metamodelEObjects.addAll(r.getContents());
+		}
+		this.configuration = new Ecore2TgConfiguration();
+		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResources);
 	}
 
 	public Ecore2Tg(Ecore2TgAnalyzer anal) {
-		this.metamodelResource = anal.getMetamodelResource();
+		this.metamodelResources = anal.getMetamodelResource();
+		this.metamodelEObjects = new ArrayList<EObject>();
+		for (Resource r : this.metamodelResources) {
+			this.metamodelEObjects.addAll(r.getContents());
+		}
 		this.analyzer = anal;
 		this.configuration = new Ecore2TgConfiguration();
 	}
 
 	public Ecore2Tg(String pathToEcoreFile, Ecore2TgConfiguration conf) {
 		// Load the Ecore metamodel
-		this.metamodelResource = loadMetaModelFromEcoreFile(pathToEcoreFile);
+		this.metamodelResources = new ArrayList<Resource>();
+		this.metamodelResources
+				.add(loadMetaModelFromEcoreFile(pathToEcoreFile));
+		this.metamodelEObjects.addAll(this.metamodelResources.get(0)
+				.getContents());
 		this.configuration = conf;
-		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResource);
+		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResources);
 	}
 
 	public Ecore2Tg(Resource ecoreSchema, Ecore2TgConfiguration conf) {
-		this.metamodelResource = ecoreSchema;
+		this.metamodelResources = new ArrayList<Resource>();
+		this.metamodelResources.add(ecoreSchema);
+		this.metamodelEObjects = new ArrayList<EObject>();
+		this.metamodelEObjects.addAll(ecoreSchema.getContents());
 		this.configuration = conf;
-		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResource);
+		this.analyzer = new Ecore2TgAnalyzer(this.metamodelResources);
 	}
 
 	public Ecore2Tg(Ecore2TgAnalyzer anal, Ecore2TgConfiguration conf) {
-		this.metamodelResource = anal.getMetamodelResource();
+		this.metamodelResources = anal.getMetamodelResource();
+		this.metamodelEObjects = new ArrayList<EObject>();
+		for (Resource r : this.metamodelResources) {
+			this.metamodelEObjects.addAll(r.getContents());
+		}
 		this.analyzer = anal;
 		this.configuration = conf;
 	}
@@ -754,11 +819,11 @@ public class Ecore2Tg {
 		this.initializeMaps();
 
 		// Start
-		EPackage rootPackage = (EPackage) this.metamodelResource.getContents()
-				.get(0);
-		if (this.metamodelResource.getContents().size() > 1) {
+		EPackage rootPackage = (EPackage) this.metamodelResources.get(0)
+				.getContents().get(0);
+		if (this.metamodelResources.get(0).getContents().size() > 1) {
 			System.out.println("More than one root package in metamodel. ");
-			for (EObject ob : this.metamodelResource.getContents()) {
+			for (EObject ob : this.metamodelResources.get(0).getContents()) {
 				System.out.println("  Package: " + ((EPackage) ob).getName());
 				if (((EPackage) ob).getNsURI() == null) {
 					((EPackage) ob).setNsURI(((EPackage) ob).getName());
@@ -774,7 +839,7 @@ public class Ecore2Tg {
 									+ ((EPackage) ob).getName().toLowerCase());
 				}
 			}
-			for (EObject ob : this.metamodelResource.getContents()) {
+			for (EObject ob : this.metamodelResources.get(0).getContents()) {
 				EPackage tp = (EPackage) ob;
 				if (!tp.getName().contains("Type")) {
 					rootPackage = tp;
@@ -863,7 +928,7 @@ public class Ecore2Tg {
 		Ecore2TgAnalyzer.sortEClasses(this.edgeclasses);
 
 		// Add the 2 Attributes nsPrefix and nsURI to the GraphClass
-		if (((EPackage) this.metamodelResource.getContents().get(0))
+		if (((EPackage) this.metamodelResources.get(0).getContents().get(0))
 				.getEAnnotation(EAnnotationKeys.SOURCE_STRING) == null) {
 			Attribute nsPrefix = this.schemagraph.createAttribute();
 			nsPrefix.set_name("nsPrefix");
@@ -884,14 +949,15 @@ public class Ecore2Tg {
 		// package is created and the high level EPackages are added as
 		// Subpackages
 		Package defaultPackage;
-		if (this.metamodelResource.getContents().size() > 1) {
+		if (this.metamodelResources.size() > 1
+				|| this.metamodelResources.get(0).getContents().size() > 1) {
 
 			// Create the DefaultPackage for the Schema
 			defaultPackage = this.schemagraph.createPackage();
 
 			// Transform the EClasses skeletons and EPackages and put them into
 			// the defaultPackage
-			for (EObject ob : this.metamodelResource.getContents()) {
+			for (EObject ob : this.metamodelEObjects) {
 				EPackage p = (EPackage) ob;
 				String qualname = p.getName().toLowerCase();
 				defaultPackage.add_subpackage(this
@@ -899,13 +965,14 @@ public class Ecore2Tg {
 			}
 		} else {
 			defaultPackage = this.transformEPackagesWithContent(
-					(EPackage) this.metamodelResource.getContents().get(0), "");
+					(EPackage) this.metamodelResources.get(0).getContents()
+							.get(0), "");
 			Comment dwr = this.schemagraph.createComment();
 			dwr.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 					+ EAnnotationKeys.DEFAULT_WAS_ROOT
 					+ " "
-					+ ((EPackage) this.metamodelResource.getContents().get(0))
-							.getName());
+					+ ((EPackage) this.metamodelResources.get(0).getContents()
+							.get(0)).getName());
 			this.graphclass.add_comment(dwr);
 		}
 		defaultPackage.set_qualifiedName("");
@@ -996,7 +1063,7 @@ public class Ecore2Tg {
 	private void examineUsersEdgeClassList() {
 		for (String name : this.getConfiguration().getEdgeClassesList()) {
 			EClass eclass = Ecore2TgAnalyzer.getEClassByName(name,
-					this.metamodelResource);
+					this.metamodelResources);
 			if (eclass == null) {
 				System.err.println("Invalid user input: Can not declare "
 						+ name
@@ -1010,7 +1077,7 @@ public class Ecore2Tg {
 		}
 		// Check for Subclasses
 		ArrayList<EClass> childs = Ecore2TgAnalyzer.getSubclassesOfEClasses(
-				this.metamodelResource, this.edgeclasses);
+				this.metamodelEObjects, this.edgeclasses);
 		this.edgeclasses.addAll(childs);
 	}
 
@@ -1021,7 +1088,7 @@ public class Ecore2Tg {
 	private void examineUsersDirectionMap() {
 		for (String name : this.configuration.getDirectionMap().keySet()) {
 			EReference ref = Ecore2TgAnalyzer.getEReferenceByName(name,
-					this.metamodelResource);
+					this.metamodelResources);
 			if (ref != null) {
 				if (this.configuration.getDirectionMap().get(name) == Ecore2TgConfiguration.FROM) {
 					this.fromERefererences.add(ref);
@@ -1051,10 +1118,10 @@ public class Ecore2Tg {
 		for (String word : this.configuration
 				.getPairsOfOverwritingEReferences().keySet()) {
 			EReference keyref = Ecore2TgAnalyzer.getEReferenceByName(word,
-					this.metamodelResource);
+					this.metamodelResources);
 			EReference valref = Ecore2TgAnalyzer.getEReferenceByName(
 					this.configuration.getPairsOfOverwritingEReferences().get(
-							word), this.metamodelResource);
+							word), this.metamodelResources);
 			if ((keyref == null) || (valref == null)) {
 				System.err
 						.println("Invalid user input: "
@@ -1106,9 +1173,9 @@ public class Ecore2Tg {
 		for (String key : this.configuration.getNamesOfEdgeClassesMap()
 				.keySet()) {
 			if ((Ecore2TgAnalyzer.getEReferenceByName(key,
-					this.metamodelResource) == null)
+					this.metamodelResources) == null)
 					&& (Ecore2TgAnalyzer.getEClassByName(key,
-							this.metamodelResource) == null)) {
+							this.metamodelResources) == null)) {
 				System.err.println("Invalid user input: "
 						+ key
 						+ " does not exist. Name "
@@ -1119,7 +1186,7 @@ public class Ecore2Tg {
 		for (String key : this.configuration
 				.getDefinedPackagesOfEdgeClassesMap().keySet()) {
 			if (Ecore2TgAnalyzer.getEReferenceByName(key,
-					this.metamodelResource) == null) {
+					this.metamodelResources) == null) {
 				System.err.println("Invalid user input: EReference "
 						+ key
 						+ " does not exist. Package "
@@ -1648,8 +1715,12 @@ public class Ecore2Tg {
 									 * .getContents().get(0))
 									 * .get_qualifiedName() +
 									 */"Date");
-				this.schemagraph.createContainsDomain(this.packagemap
-						.get(this.metamodelResource.getContents().get(0)), rec);
+
+				this.schemagraph.createContainsDomain(this.schemagraph
+						.getFirstSchema()
+						.getFirstContainsDefaultPackageIncidence().getOmega(),
+						rec);
+
 				this.dateDomain = rec;
 			}
 			return this.dateDomain;
@@ -1776,7 +1847,7 @@ public class Ecore2Tg {
 
 			ArrayList<EReference> resultlist = new ArrayList<EReference>();
 			boolean[] subtypes = Ecore2TgAnalyzer.getEdgesEReferences(
-					this.metamodelResource, eclass,
+					this.metamodelEObjects, eclass,
 					this.ereferenceWithOverwritten, resultlist,
 					this.badEReferences, this.ereferencesOfEdgeClasses,
 					this.ereferencesOfEdgeClassesresult);
@@ -1791,7 +1862,7 @@ public class Ecore2Tg {
 			this.transformedEReferences.add(erefFromEClass2ToEdge);
 
 			// Remember additonal containment EReferences of EdgeClasses
-			if (((EPackage) this.metamodelResource.getContents().get(0))
+			if (((EPackage) this.metamodelResources.get(0).getContents().get(0))
 					.getEAnnotation(EAnnotationKeys.SOURCE_STRING) == null) {
 				if (resultlist.size() == 6) {
 					EReference fromCont = resultlist.get(5);
@@ -2117,7 +2188,7 @@ public class Ecore2Tg {
 								// Try.......
 								ArrayList<EReference> res = new ArrayList<EReference>();
 								Ecore2TgAnalyzer.getEdgesEReferences(
-										this.metamodelResource, parent,
+										this.metamodelEObjects, parent,
 										this.ereferenceWithOverwritten, res,
 										this.badEReferences,
 										this.ereferencesOfEdgeClasses,
@@ -2979,7 +3050,7 @@ public class Ecore2Tg {
 	 * @return EPackage that is found or null if it does not exist
 	 * */
 	private EPackage getEPackageByName(String qualname) {
-		for (EObject ob : this.metamodelResource.getContents()) {
+		for (EObject ob : this.metamodelEObjects) {
 			EPackage p = (EPackage) ob;
 			if (p.getName().equalsIgnoreCase(qualname)) {
 				return p;
@@ -3582,8 +3653,17 @@ public class Ecore2Tg {
 
 		// Get the EdgeClass
 		EdgeClass transEC = this.ereference2edgeclass_map.get(eref);
-		de.uni_koblenz.jgralab.schema.EdgeClass edgeclass = (de.uni_koblenz.jgralab.schema.EdgeClass) this.schem
-				.getAttributedElementClass(transEC.get_qualifiedName());
+		if (transEC == null) {
+			// EReference is not transformed
+			return;
+		}
+		de.uni_koblenz.jgralab.schema.EdgeClass edgeclass = null;
+		try {
+			edgeclass = (de.uni_koblenz.jgralab.schema.EdgeClass) this.schem
+					.getAttributedElementClass(transEC.get_qualifiedName());
+		} catch (NullPointerException ex) {
+			System.out.println("Why?");
+		}
 		// Create the Edge in the right direction
 		if (this.definingDirectionEReferences.contains(eref)) {
 			graph.createEdge(edgeclass, v, oneend);
@@ -3762,34 +3842,44 @@ public class Ecore2Tg {
 	 * @return Resource with the Ecore Metamodel
 	 * */
 	public static Resource loadMetaModelFromEcoreFile(String path) {
+		ResourceSet resSet = new ResourceSetImpl();
+
+		// Register the Metamodel to verify the namespace
+		resSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
+				.put("xmi", new XMIResourceFactoryImpl());
+		resSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
+				.put("ecore", new EcoreResourceFactoryImpl());
+		resSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
+				.put("javaxmi", new XMIResourceFactoryImpl());
+
+		return loadEcoreFileIntoResourceSet(path, resSet);
+
+	}
+
+	/**
+	 * Load the content of an Ecore file to an existing ResourceSet
+	 * 
+	 * @param path
+	 * @param resSet
+	 * @return
+	 */
+	public static Resource loadEcoreFileIntoResourceSet(String path,
+			ResourceSet resSet) {
 		try {
 			// URI from the .ecore File
 			URI fileURI = URI.createFileURI(path);
-
-			ResourceSet resSet = new ResourceSetImpl();
-
-			// Register the Metamodel to verify the namespace
-			resSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
-					.put("xmi", new XMIResourceFactoryImpl());
-			resSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
-					.put("ecore", new EcoreResourceFactoryImpl());
-			resSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
-					.put("javaxmi", new XMIResourceFactoryImpl());
-
 			Resource xmiResource = resSet.getResource(fileURI, true);
 
 			for (EObject o : xmiResource.getContents()) {
-				EPackage p = (EPackage) o;
-				registerEPackagesAndExtensions(p, resSet);
+				registerEPackagesAndExtensions((EPackage) o, resSet);
 			}
 
-			// Return it as result
 			return xmiResource;
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
-
 	}
 
 	/**
@@ -3806,7 +3896,7 @@ public class Ecore2Tg {
 		EList<EObject> list = new BasicEList<EObject>();
 
 		// Get the ResourceSet
-		ResourceSet resSet = this.metamodelResource.getResourceSet();
+		ResourceSet resSet = this.metamodelResources.get(0).getResourceSet();
 
 		ArrayList<Resource> modelResources = new ArrayList<Resource>();
 		for (String path : paths) {

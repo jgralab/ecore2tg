@@ -2,6 +2,7 @@ package de.uni_koblenz.jgralab.utilities.ecore2tg.wizard;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -80,7 +81,7 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 	/**
 	 * Currently chosen metamodel
 	 */
-	private Resource metamodelResource;
+	private List<Resource> metamodelResource;
 
 	/**
 	 * Constructor
@@ -115,6 +116,7 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 	public IWizardPage getNextPage(IWizardPage page) {
 		// First page: fill list of second page before showing
 		if (page instanceof Ecore2TgWizardPage1Files) {
+			this.anal = new Ecore2TgAnalyzer(this.metamodelResource);
 			if (this.page1Files.useDefaultOptions()) {
 				// no second page if default options should be used
 				return null;
@@ -132,7 +134,6 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 		// Second page: fill table of third page before showing
 		else if (page instanceof Ecore2TgWizardPage2GenOptions) {
 			this.page2GenOptions.saveConfiguration(this.getConfiguration());
-			this.anal = new Ecore2TgAnalyzer(this.metamodelResource);
 			this.anal
 					.searchForEdgeClasses(TransformParams.AUTOMATIC_TRANSFORMATION);
 			// If look for EdgeClasses, show result
@@ -327,7 +328,7 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 	/**
 	 * @return the Ecore metamodel to transform
 	 */
-	public Resource getMetamodel() {
+	public List<Resource> getMetamodel() {
 		return this.metamodelResource;
 	}
 
@@ -337,7 +338,7 @@ public class Ecore2TgWizard extends Wizard implements IImportWizard {
 	 * @param m
 	 *            the new Ecore metamodel
 	 */
-	public void setMetamodel(Resource m) {
+	public void setMetamodel(List<Resource> m) {
 		this.metamodelResource = m;
 	}
 }

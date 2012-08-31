@@ -6,6 +6,7 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -220,7 +221,8 @@ public class Ecore2TgWizardPage2GenOptions extends WizardPage {
 
 	@Override
 	public IWizardPage getPreviousPage() {
-		this.saveConfiguration(((Ecore2TgWizard) this.getWizard()).getConfiguration());
+		this.saveConfiguration(((Ecore2TgWizard) this.getWizard())
+				.getConfiguration());
 		return super.getPreviousPage();
 	}
 
@@ -230,19 +232,20 @@ public class Ecore2TgWizardPage2GenOptions extends WizardPage {
 	 */
 	private void fillEClassesListWidget(Ecore2TgConfiguration conf) {
 		ArrayList<String> eclassList = new ArrayList<String>();
-		TreeIterator<EObject> it = ((Ecore2TgWizard) this.getWizard())
-				.getMetamodel().getAllContents();
-		while (it.hasNext()) {
-			EObject o = it.next();
-			if (o instanceof EClass) {
-				EClass eclass = (EClass) o;
-				String name = eclass.getName();
-				EPackage pack = eclass.getEPackage();
-				while (pack != null) {
-					name = pack.getName() + "." + name;
-					pack = pack.getESuperPackage();
+		for (Resource r : ((Ecore2TgWizard) this.getWizard()).getMetamodel()) {
+			TreeIterator<EObject> it = r.getAllContents();
+			while (it.hasNext()) {
+				EObject o = it.next();
+				if (o instanceof EClass) {
+					EClass eclass = (EClass) o;
+					String name = eclass.getName();
+					EPackage pack = eclass.getEPackage();
+					while (pack != null) {
+						name = pack.getName() + "." + name;
+						pack = pack.getESuperPackage();
+					}
+					eclassList.add(name);
 				}
-				eclassList.add(name);
 			}
 		}
 		this.listWidgetEClasses.setItems(eclassList.toArray(new String[] {}));

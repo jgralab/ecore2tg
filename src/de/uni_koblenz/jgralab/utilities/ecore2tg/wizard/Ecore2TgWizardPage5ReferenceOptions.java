@@ -2,6 +2,7 @@ package de.uni_koblenz.jgralab.utilities.ecore2tg.wizard;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
@@ -204,6 +205,9 @@ public class Ecore2TgWizardPage5ReferenceOptions extends WizardPage {
 	public void saveConfiguration(Ecore2TgConfiguration conf) {
 		RefInfoStructure[] refArray = (RefInfoStructure[]) this.referenceTableViewer
 				.getInput();
+		if (refArray == null) {
+			return;
+		}
 		for (RefInfoStructure s : refArray) {
 			String refname = Ecore2TgAnalyzer
 					.getQualifiedReferenceName(s.reference);
@@ -255,40 +259,44 @@ public class Ecore2TgWizardPage5ReferenceOptions extends WizardPage {
 	 * and direction of the EdgeClasses resulting from an EReference or a pair
 	 * of EReferences
 	 */
-	public void fillRefTable(Resource r, Collection<EClass> edgeClasses) {
+	public void fillRefTable(List<Resource> rList,
+			Collection<EClass> edgeClasses) {
 		ArrayList<String> packageNames = new ArrayList<String>();
 		packageNames.add("");
 		ArrayList<EReference> refSet = new ArrayList<EReference>();
-		TreeIterator<EObject> iter = r.getAllContents();
+		for (Resource r : rList) {
 
-		while (iter.hasNext()) {
-			EObject ob = iter.next();
-			if (ob instanceof EPackage) {
-				EPackage pack = (EPackage) ob;
-				String name = pack.getName();
-				pack = pack.getESuperPackage();
-				while (pack != null) {
-					name = pack.getName() + "." + name;
+			TreeIterator<EObject> iter = r.getAllContents();
+
+			while (iter.hasNext()) {
+				EObject ob = iter.next();
+				if (ob instanceof EPackage) {
+					EPackage pack = (EPackage) ob;
+					String name = pack.getName();
 					pack = pack.getESuperPackage();
-				}
-				packageNames.add(name);
-			} else if (ob instanceof EReference) {
-				EReference ref = (EReference) ob;
-				if (!(edgeClasses.contains(ref.getEContainingClass()) || edgeClasses
-						.contains(ref.getEReferenceType()))) {
-					if (ref.getEOpposite() == null) {
-						refSet.add(ref);
-					} else if (!refSet.contains(ref.getEOpposite())) {
-						if (ref.getName().compareTo(
-								ref.getEOpposite().getName()) < 0) {
+					while (pack != null) {
+						name = pack.getName() + "." + name;
+						pack = pack.getESuperPackage();
+					}
+					packageNames.add(name);
+				} else if (ob instanceof EReference) {
+					EReference ref = (EReference) ob;
+					if (!(edgeClasses.contains(ref.getEContainingClass()) || edgeClasses
+							.contains(ref.getEReferenceType()))) {
+						if (ref.getEOpposite() == null) {
 							refSet.add(ref);
-						} else {
-							refSet.add(ref.getEOpposite());
+						} else if (!refSet.contains(ref.getEOpposite())) {
+							if (ref.getName().compareTo(
+									ref.getEOpposite().getName()) < 0) {
+								refSet.add(ref);
+							} else {
+								refSet.add(ref.getEOpposite());
+							}
 						}
 					}
 				}
-			}
 
+			}
 		}
 		this.packageColumn.setEditingSupport(new RefPackageEditingSupport(
 				this.referenceTableViewer, packageNames

@@ -1,5 +1,9 @@
 package de.uni_koblenz.jgralab.utilities.ecore2tg.wizard;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -48,7 +52,7 @@ public class Ecore2TgWizardPage1Files extends WizardPage {
 	private Text textConfigFile;
 	private Button buttonConfigFileBrowse;
 
-	private Resource ecoreSchema;
+	private List<Resource> ecoreSchema;
 
 	protected Ecore2TgWizardPage1Files() {
 		super(pageName);
@@ -101,17 +105,29 @@ public class Ecore2TgWizardPage1Files extends WizardPage {
 						.getActiveWorkbenchWindow();
 				Shell shell = window.getShell();
 
-				FileDialog fileDialog = new FileDialog(shell);
+				FileDialog fileDialog = new FileDialog(shell, SWT.MULTI);
 				fileDialog.setText("Select an Ecore schema file");
 				fileDialog.setFilterExtensions(new String[] { "*.ecore" });
 				fileDialog
 						.setFilterNames(new String[] { "Ecore-files (*.ecore)" });
 				String path = fileDialog.open();
-
 				if (path != null) {
+					String[] filenames = fileDialog.getFileNames();
 					Ecore2TgWizardPage1Files.this.textEcoreFile.setText(path);
-					Ecore2TgWizardPage1Files.this.ecoreSchema = Ecore2Tg
-							.loadMetaModelFromEcoreFile(path);
+					Ecore2TgWizardPage1Files.this.ecoreSchema = new ArrayList<Resource>();
+
+					Resource res = Ecore2Tg.loadMetaModelFromEcoreFile(path);
+					Ecore2TgWizardPage1Files.this.ecoreSchema.add(res);
+					for (int i = 1; i < filenames.length; i++) {
+						String fn = filenames[i];
+						if (!fn.startsWith("/")) {
+							fn = fileDialog.getFilterPath() + File.separator
+									+ fn;
+						}
+						Resource r = Ecore2Tg.loadEcoreFileIntoResourceSet(fn,
+								res.getResourceSet());
+						Ecore2TgWizardPage1Files.this.ecoreSchema.add(r);
+					}
 					((Ecore2TgWizard) Ecore2TgWizardPage1Files.this.getWizard())
 							.setMetamodel(Ecore2TgWizardPage1Files.this.ecoreSchema);
 					if (Ecore2TgWizardPage1Files.this.isComplete()) {
@@ -302,7 +318,7 @@ public class Ecore2TgWizardPage1Files extends WizardPage {
 	/**
 	 * @return the Resource of the loaded Ecore schema
 	 */
-	public Resource getEcoreSchemaResource() {
+	public List<Resource> getEcoreSchemaResource() {
 		return this.ecoreSchema;
 	}
 

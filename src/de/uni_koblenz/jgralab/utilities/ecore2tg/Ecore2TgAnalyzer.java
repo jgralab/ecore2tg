@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EClass;
@@ -24,7 +25,8 @@ public class Ecore2TgAnalyzer {
 	/**
 	 * Ecore metamodel
 	 */
-	private Resource metamodelResource;
+	private List<Resource> metamodelResources;
+	private List<EObject> metamodelEObjects;
 
 	/**
 	 * Map that saves for the EdgeClasses EReferences which overwrite which
@@ -70,8 +72,8 @@ public class Ecore2TgAnalyzer {
 	/**
 	 * @return the Ecore metamodel
 	 */
-	public Resource getMetamodelResource() {
-		return this.metamodelResource;
+	public List<Resource> getMetamodelResource() {
+		return this.metamodelResources;
 	}
 
 	public ArrayList<EClass> getFoundEdgeClasses() {
@@ -112,7 +114,23 @@ public class Ecore2TgAnalyzer {
 	 * @param metamodel
 	 */
 	public Ecore2TgAnalyzer(Resource metamodel) {
-		this.metamodelResource = metamodel;
+		this.metamodelResources = new ArrayList<Resource>();
+		this.metamodelResources.add(metamodel);
+		this.metamodelEObjects = new ArrayList<EObject>();
+		this.metamodelEObjects.addAll(metamodel.getContents());
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param metamodel
+	 */
+	public Ecore2TgAnalyzer(List<Resource> metamodel) {
+		this.metamodelResources = metamodel;
+		this.metamodelEObjects = new ArrayList<EObject>();
+		for (Resource r : this.metamodelResources) {
+			this.metamodelEObjects.addAll(r.getContents());
+		}
 	}
 
 	// --------------------------------------------------------------------------
@@ -167,7 +185,7 @@ public class Ecore2TgAnalyzer {
 
 		// Take the childs of that candidates
 		ArrayList<EClass> childs = getSubclassesOfEClasses(
-				this.metamodelResource, candidates);
+				this.metamodelEObjects, candidates);
 
 		// Check if count of EReferences are not greater than 2 and Multiplicity
 		// is ok
@@ -282,7 +300,7 @@ public class Ecore2TgAnalyzer {
 			temp.addAll(ec.getEAllSuperTypes());
 		}
 		this.unclearEReferences.addAll(temp);
-		Collection<EClass> c = getSubclassesOfEClasses(this.metamodelResource,
+		Collection<EClass> c = getSubclassesOfEClasses(this.metamodelEObjects,
 				this.unclearEReferences);
 		this.unclearEReferences.addAll(c);
 
@@ -297,7 +315,7 @@ public class Ecore2TgAnalyzer {
 	 *            ArrayList with all yet found candidates
 	 * */
 	private void searchCandidates(ArrayList<EClass> candidates) {
-		for (EObject ob : this.metamodelResource.getContents()) {
+		for (EObject ob : this.metamodelEObjects) {
 			this.searchCandidates(candidates, (EPackage) ob);
 		}
 	}
@@ -373,7 +391,7 @@ public class Ecore2TgAnalyzer {
 	private boolean checkSuperEdgeClassCandidatesOnPointingEReferences(
 			EClass candidate) {
 		ArrayList<EReference> erefs = new ArrayList<EReference>();
-		getEReferences_that_point_on_EClass(this.metamodelResource, candidate,
+		getEReferences_that_point_on_EClass(this.metamodelEObjects, candidate,
 				erefs);
 		// 3 Pointing EReferences
 		if (erefs.size() == 3) {
@@ -516,7 +534,7 @@ public class Ecore2TgAnalyzer {
 
 		// Save all EReferences that references the candidate
 		ArrayList<EReference> erefs_that_point_on_candidate = new ArrayList<EReference>();
-		getEReferences_that_point_on_EClass(this.metamodelResource, candidate,
+		getEReferences_that_point_on_EClass(this.metamodelEObjects, candidate,
 				erefs_that_point_on_candidate);
 
 		// Save all EReferences that belongs to the candidate
@@ -603,7 +621,7 @@ public class Ecore2TgAnalyzer {
 
 		// Get EReferences to test
 		ArrayList<EReference> resultlist = new ArrayList<EReference>();
-		getEdgesEReferences(this.metamodelResource, candidate,
+		getEdgesEReferences(this.metamodelEObjects, candidate,
 				this.ereferenceWithOverwritten, resultlist,
 				this.badEReferences, this.ereferencesOfEdgeClasses,
 				this.ereferencesOfEdgeClassesresult);
@@ -630,7 +648,7 @@ public class Ecore2TgAnalyzer {
 		// Iterate over all parents
 		for (EClass parent : candidate.getEAllSuperTypes()) {
 			resultlist.clear();
-			getEdgesEReferences(this.metamodelResource, parent,
+			getEdgesEReferences(this.metamodelEObjects, parent,
 					this.ereferenceWithOverwritten, resultlist,
 					this.badEReferences, this.ereferencesOfEdgeClasses,
 					this.ereferencesOfEdgeClassesresult);
@@ -771,7 +789,7 @@ public class Ecore2TgAnalyzer {
 			ArrayList<EClass> candidates, ArrayList<EClass> edgeclasses) {
 		// Get EReferences to test
 		ArrayList<EReference> resultlist = new ArrayList<EReference>();
-		getEdgesEReferences(this.metamodelResource, candidate,
+		getEdgesEReferences(this.metamodelEObjects, candidate,
 				this.ereferenceWithOverwritten, resultlist,
 				this.badEReferences, this.ereferencesOfEdgeClasses,
 				this.ereferencesOfEdgeClassesresult);
@@ -818,7 +836,7 @@ public class Ecore2TgAnalyzer {
 	 *         candidate
 	 * */
 	public static boolean[] getEdgesEReferences(
-			Resource metamodel,
+			List<EObject> metamodel,
 			EClass candidate,
 			HashMap<EReference, ArrayList<EReference>> ereferenceWithOverwritten,
 			ArrayList<EReference> resultlist,
@@ -855,7 +873,7 @@ public class Ecore2TgAnalyzer {
 	 *            empty list to put the results in
 	 * */
 	private static void getEdgesEReferencesForMostSupertype(
-			Resource metamodelResource, EClass candidate,
+			List<EObject> metamodelResource, EClass candidate,
 			ArrayList<EReference> resultlist, HashSet<EReference> badEReferences) {
 
 		EReference toEnd1 = null;
@@ -1039,7 +1057,7 @@ public class Ecore2TgAnalyzer {
 	 *         candidate
 	 * */
 	private static boolean[] getEdgesEReferencesForSubtypes(
-			Resource metamodelResource, EClass candidate,
+			List<EObject> metamodelResource, EClass candidate,
 			ArrayList<EReference> resultlist,
 			HashSet<EReference> badEReferences,
 			HashMap<EReference, ArrayList<EReference>> ereferenceWithOverwritten) {
@@ -1576,6 +1594,25 @@ public class Ecore2TgAnalyzer {
 	}
 
 	/**
+	 * Search in a Resource for an EClass with the given qualified name
+	 * 
+	 * @param qualname
+	 *            Qualified name of the EClass to search for
+	 * @return the EClass with the given qualified name or null if there is no
+	 *         one
+	 * */
+	public static EClass getEClassByName(String qualname,
+			List<Resource> metamodelResource) {
+		for (Resource r : metamodelResource) {
+			EClass ec = getEClassByName(qualname, r);
+			if (ec != null) {
+				return ec;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Search in an EPackage for an EClass with the given qualified name
 	 * 
 	 * @param qualname
@@ -1618,7 +1655,7 @@ public class Ecore2TgAnalyzer {
 	 *         exist
 	 * */
 	public static EReference getEReferenceByName(String qualName,
-			Resource metamodelResource) {
+			List<Resource> metamodelResource) {
 		int pointbeforerefname = qualName.lastIndexOf(".");
 		String refname = qualName.substring(pointbeforerefname + 1);
 		String classname = qualName.substring(0, pointbeforerefname);
@@ -1647,8 +1684,9 @@ public class Ecore2TgAnalyzer {
 	 *            The ArrayList of all found EReferences
 	 * */
 	public static void getEReferences_that_point_on_EClass(
-			Resource metamodelResource, EClass e, ArrayList<EReference> erefs) {
-		for (EObject ob : metamodelResource.getContents()) {
+			List<EObject> metamodelResource, EClass e,
+			ArrayList<EReference> erefs) {
+		for (EObject ob : metamodelResource) {
 			getEReferences_that_point_on_EClass(e, (EPackage) ob, erefs);
 		}
 	}
@@ -1697,9 +1735,9 @@ public class Ecore2TgAnalyzer {
 	 * @return list with all subclasses of the given EClasses
 	 * */
 	public static ArrayList<EClass> getSubclassesOfEClasses(
-			Resource metamodelResource, Collection<EClass> parents) {
+			List<EObject> metamodelResource, Collection<EClass> parents) {
 		ArrayList<EClass> childs = new ArrayList<EClass>();
-		for (EObject ob : metamodelResource.getContents()) {
+		for (EObject ob : metamodelResource) {
 			findSubclassesOfEClasses((EPackage) ob, parents, childs);
 		}
 		return childs;
