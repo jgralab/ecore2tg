@@ -6,13 +6,13 @@ import javax.xml.stream.XMLStreamException;
 
 import de.uni_koblenz.jgralab.Graph;
 import de.uni_koblenz.jgralab.GraphIO;
-import de.uni_koblenz.jgralab.GraphIOException;
+import de.uni_koblenz.jgralab.exception.GraphIOException;
 import de.uni_koblenz.jgralab.grumlschema.SchemaGraph;
 import de.uni_koblenz.jgralab.schema.Schema;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.TransformParams;
-import de.uni_koblenz.jgralab.utilities.rsa.SchemaGraph2XMI;
+import de.uni_koblenz.jgralab.utilities.rsa2tg.SchemaGraph2XMI;
 import de.uni_koblenz.jgralab.utilities.tg2dot.Tg2Dot;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.SchemaGraph2Schema;
 
@@ -497,7 +497,8 @@ public class Ecore2TgMainTest {
 					"universitycourses");
 
 			conf.getDirectionMap().put(
-					"universitycourses.work.Lecture.lecturer", Ecore2TgConfiguration.TO);
+					"universitycourses.work.Lecture.lecturer",
+					Ecore2TgConfiguration.TO);
 			conf.getDirectionMap().put("universitycourses.work.Course.visitor",
 					Ecore2TgConfiguration.TO);
 			conf.setAsGraphClass("universitycourses.UniversityCoursesModel");

@@ -8,15 +8,15 @@ import org.eclipse.emf.ecore.EPackage;
 
 import de.uni_koblenz.jgralab.Graph;
 import de.uni_koblenz.jgralab.GraphIO;
-import de.uni_koblenz.jgralab.GraphIOException;
 import de.uni_koblenz.jgralab.ImplementationType;
-import de.uni_koblenz.jgralab.codegenerator.CodeGeneratorConfiguration;
+import de.uni_koblenz.jgralab.exception.GraphIOException;
 import de.uni_koblenz.jgralab.grumlschema.SchemaGraph;
 import de.uni_koblenz.jgralab.schema.Schema;
+import de.uni_koblenz.jgralab.schema.codegenerator.CodeGeneratorConfiguration;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2TgConfiguration.TransformParams;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2Ecore;
-import de.uni_koblenz.jgralab.utilities.rsa.Rsa2Tg;
+import de.uni_koblenz.jgralab.utilities.rsa2tg.Rsa2Tg;
 import de.uni_koblenz.jgralab.utilities.tg2dot.Tg2Dot;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.Schema2SchemaGraph;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.SchemaGraph2Schema;

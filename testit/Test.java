@@ -1,6 +1,6 @@
 import java.io.IOException;
 
-import de.uni_koblenz.jgralab.GraphIOException;
+import de.uni_koblenz.jgralab.exception.GraphIOException;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg;
 
 public class Test {

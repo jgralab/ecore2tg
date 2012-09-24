@@ -44,11 +44,10 @@ import de.uni_koblenz.jgralab.AttributedElement;
 import de.uni_koblenz.jgralab.Edge;
 import de.uni_koblenz.jgralab.Graph;
 import de.uni_koblenz.jgralab.GraphIO;
-import de.uni_koblenz.jgralab.GraphIOException;
 import de.uni_koblenz.jgralab.JGraLab;
 import de.uni_koblenz.jgralab.Record;
 import de.uni_koblenz.jgralab.Vertex;
-import de.uni_koblenz.jgralab.codegenerator.CodeGeneratorConfiguration;
+import de.uni_koblenz.jgralab.exception.GraphIOException;
 import de.uni_koblenz.jgralab.grumlschema.SchemaGraph;
 import de.uni_koblenz.jgralab.grumlschema.domains.BooleanDomain;
 import de.uni_koblenz.jgralab.grumlschema.domains.CollectionDomain;
@@ -76,6 +75,7 @@ import de.uni_koblenz.jgralab.grumlschema.structure.NamedElement;
 import de.uni_koblenz.jgralab.grumlschema.structure.Package;
 import de.uni_koblenz.jgralab.grumlschema.structure.VertexClass;
 import de.uni_koblenz.jgralab.schema.Schema;
+import de.uni_koblenz.jgralab.schema.codegenerator.CodeGeneratorConfiguration;
 import de.uni_koblenz.jgralab.utilities.ecore2tg.Tg2EcoreConfiguration.EdgeDirection;
 import de.uni_koblenz.jgralab.utilities.tg2schemagraph.Schema2SchemaGraph;
 
@@ -253,8 +253,7 @@ public class Tg2Ecore {
 
 		String cfilename = cli.getOptionValue(OPTION_FILENAME_CONFIG);
 		if (cfilename != null) {
-			config = Tg2EcoreConfiguration
-					.loadConfigurationFromFile(cfilename);
+			config = Tg2EcoreConfiguration.loadConfigurationFromFile(cfilename);
 		}
 		Tg2Ecore tg2ecore = new Tg2Ecore(sg, config);
 
@@ -470,8 +469,8 @@ public class Tg2Ecore {
 		Vertex tempvertex = this.schemagraph.getFirstContainsDefaultPackage()
 				.getOmega();
 		if (tempvertex instanceof de.uni_koblenz.jgralab.grumlschema.structure.Package) {
-			defaultpackage = (Package) this.schemagraph
-					.getFirstContainsDefaultPackage().getOmega();
+			defaultpackage = this.schemagraph.getFirstContainsDefaultPackage()
+					.getOmega();
 		} else {
 			System.out.println("No default package in SchemaGraph - Error.");
 		}
@@ -2033,7 +2032,7 @@ public class Tg2Ecore {
 		for (HasRecordDomainComponent d : domain
 				.getHasRecordDomainComponentIncidences()) {
 			EStructuralFeature eat = this.createEAttributeWith(d.get_name(),
-					null, (Domain) d.getOmega(), false);
+					null, d.getOmega(), false);
 			if (eat != null) {
 				eclass.getEStructuralFeatures().add(eat);
 			}
@@ -2503,7 +2502,7 @@ public class Tg2Ecore {
 					while (it.hasNext()) {
 						HasRecordDomainComponent hrdc = it.next();
 						if (hrdc.get_name().equals(receat.getName())) {
-							d = (Domain) hrdc.getOmega();
+							d = hrdc.getOmega();
 						}
 					}
 					Object transrecval = this.getAttributeValueOf(newValue, d,
