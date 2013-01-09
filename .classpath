@@ -4,5 +4,9 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="testit"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
+	<classpathentry kind="lib" path="/common/lib/apache/commons/cli/commons-cli-1.2.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/de.uni_koblenz.jgralab.eclipseplugin"/>
+	<classpathentry kind="lib" path="/de.uni_koblenz.jgralab.eclipseplugin/lib/org.riediger.plist.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
