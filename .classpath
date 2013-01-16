@@ -4,7 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="testit"/>
-	<classpathentry kind="lib" path="/jgralab4eclipse/lib/apache/commons/cli/commons-cli-1.2.jar"/>
-	<classpathentry kind="lib" path="/jgralab4eclipse/lib/plist/org.riediger.plist.jar"/>
+	<classpathentry kind="lib" path="lib/apache/commons/cli/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/plist/org.riediger.plist.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
