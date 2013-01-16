@@ -893,8 +893,8 @@ public class Ecore2Tg {
 
 		Comment gc = this.schemagraph.createComment();
 		gc.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG);
-		this.graphclass.add_comment(gc);
-		schema.add_graphClass(this.graphclass);
+		this.graphclass.add_comments(gc);
+		schema.add_graphclass(this.graphclass);
 
 		// Examine user input:
 		this.examineUsersEdgeClassList();
@@ -937,8 +937,8 @@ public class Ecore2Tg {
 			nsURI.set_name("nsURI");
 			nsURI.set_defaultValue("\"" + rootPackage.getNsURI() + "\"");
 			nsURI.add_domain(sd);
-			this.graphclass.add_attribute(nsPrefix);
-			this.graphclass.add_attribute(nsURI);
+			this.graphclass.add_attributes(nsPrefix);
+			this.graphclass.add_attributes(nsURI);
 		}
 
 		// Determine the default Package - if the Ecore metamodel has a root
@@ -957,7 +957,7 @@ public class Ecore2Tg {
 			for (EObject ob : this.metamodelEObjects) {
 				EPackage p = (EPackage) ob;
 				String qualname = p.getName().toLowerCase();
-				defaultPackage.add_subpackage(this
+				defaultPackage.add_subpackages(this
 						.transformEPackagesWithContent(p, qualname));
 			}
 		} else {
@@ -970,7 +970,7 @@ public class Ecore2Tg {
 					+ " "
 					+ ((EPackage) this.metamodelResources.get(0).getContents()
 							.get(0)).getName());
-			this.graphclass.add_comment(dwr);
+			this.graphclass.add_comments(dwr);
 		}
 		defaultPackage.set_qualifiedName("");
 		this.schemagraph.createContainsDefaultPackage(schema, defaultPackage);
@@ -981,7 +981,7 @@ public class Ecore2Tg {
 			Comment gccom = this.schemagraph.createComment();
 			gccom.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 					+ EAnnotationKeys.GENERATED_GRAPHCLASS);
-			this.graphclass.add_comment(gccom);
+			this.graphclass.add_comments(gccom);
 		}
 
 		// Transform the EClasses that are EdgeClasses
@@ -998,7 +998,8 @@ public class Ecore2Tg {
 				this.graphclass);
 
 		for (EPackage old : this.packagemap.keySet()) {
-			if (!this.packagemap.get(old).get_subpackage().iterator().hasNext()
+			if (!this.packagemap.get(old).get_subpackages().iterator()
+					.hasNext()
 					&& !this.packagemap.get(old)
 							.getContainsGraphElementClassIncidences()
 							.iterator().hasNext()
@@ -1231,11 +1232,11 @@ public class Ecore2Tg {
 			Comment c = this.schemagraph.createComment();
 			c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 					+ EAnnotationKeys.EPACKAGE_NSPREFIX + pack.getNsPrefix());
-			activePackage.add_comment(c);
+			activePackage.add_comments(c);
 			c = this.schemagraph.createComment();
 			c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 					+ EAnnotationKeys.EPACKAGE_NSURI + pack.getNsURI());
-			activePackage.add_comment(c);
+			activePackage.add_comments(c);
 		}
 		this.transformEAnnotations(pack.getEAnnotations(), activePackage);
 
@@ -1312,7 +1313,7 @@ public class Ecore2Tg {
 						Attribute activeAttribute = this.transformEAttribute(
 								eatt, this.graphclass);
 						if (activeAttribute != null) {
-							this.graphclass.add_attribute(activeAttribute);
+							this.graphclass.add_attributes(activeAttribute);
 						}
 					}
 				}
@@ -1343,7 +1344,7 @@ public class Ecore2Tg {
 						Attribute activeAttribute = this.transformEAttribute(
 								eatt, this.graphclass);
 						if (activeAttribute != null) {
-							this.graphclass.add_attribute(activeAttribute);
+							this.graphclass.add_attributes(activeAttribute);
 						}
 					}
 				}
@@ -1398,7 +1399,7 @@ public class Ecore2Tg {
 			String name = subEPackage.getName().toLowerCase();
 			Package subPackage = this.transformEPackagesWithContent(
 					subEPackage, packageprefixForFurtherCalls + name);
-			activePackage.add_subpackage(subPackage);
+			activePackage.add_subpackages(subPackage);
 		}
 
 		return activePackage;
@@ -1432,13 +1433,13 @@ public class Ecore2Tg {
 			if ((ea.getUpperBound() != 1) && ea.isOrdered()) {
 				ListDomain lc = this.schemagraph.createListDomain();
 				lc.add_basedomain(component);
-				rd.add_componentdomain(lc).set_name(ea.getName());
+				rd.add_componentdomains(lc).set_name(ea.getName());
 			} else if ((ea.getUpperBound() != 1) && ea.isUnique()) {
 				SetDomain sc = this.schemagraph.createSetDomain();
 				sc.add_basedomain(component);
-				rd.add_componentdomain(sc).set_name(ea.getName());
+				rd.add_componentdomains(sc).set_name(ea.getName());
 			} else {
-				rd.add_componentdomain(component).set_name(ea.getName());
+				rd.add_componentdomains(component).set_name(ea.getName());
 			}
 		}
 		for (EReference eref : eclass.getEAllReferences()) {
@@ -1456,13 +1457,13 @@ public class Ecore2Tg {
 			if ((eref.getUpperBound() != 1) && eref.isOrdered()) {
 				ListDomain lc = this.schemagraph.createListDomain();
 				lc.add_basedomain(component);
-				rd.add_componentdomain(lc).set_name(eref.getName());
+				rd.add_componentdomains(lc).set_name(eref.getName());
 			} else if ((eref.getUpperBound() != 1) && eref.isUnique()) {
 				SetDomain sc = this.schemagraph.createSetDomain();
 				sc.add_basedomain(component);
-				rd.add_componentdomain(sc).set_name(eref.getName());
+				rd.add_componentdomains(sc).set_name(eref.getName());
 			} else {
-				rd.add_componentdomain(component).set_name(eref.getName());
+				rd.add_componentdomains(component).set_name(eref.getName());
 			}
 		}
 		return rd;
@@ -1493,7 +1494,7 @@ public class Ecore2Tg {
 				com.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 						+ EAnnotationKeys.CHANGED_ENUM_LITERAL + goodname + " "
 						+ name);
-				en.add_comment(com);
+				en.add_comments(com);
 			}
 			constants = constants.plus(goodname);
 		}
@@ -1534,7 +1535,7 @@ public class Ecore2Tg {
 			Comment com = this.schemagraph.createComment();
 			com.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 					+ EAnnotationKeys.INTERFACE);
-			activeVertexClass.add_comment(com);
+			activeVertexClass.add_comments(com);
 		} else {
 			activeVertexClass.set_abstract(false);
 		}
@@ -1553,7 +1554,7 @@ public class Ecore2Tg {
 				for (String k : ean.getDetails().keySet()) {
 					Comment comment = this.schemagraph.createComment();
 					comment.set_text(k);
-					target.add_comment(comment);
+					target.add_comments(comment);
 				}
 			} else {
 				commentString = EAnnotationKeys.ECORE_EANNOTATION_FLAG + " "
@@ -1565,7 +1566,7 @@ public class Ecore2Tg {
 
 				Comment comment = this.schemagraph.createComment();
 				comment.set_text(commentString);
-				target.add_comment(comment);
+				target.add_comments(comment);
 			}
 		}
 	}
@@ -1704,7 +1705,7 @@ public class Ecore2Tg {
 				for (int i = 0; i < 6; i++) {
 					Domain component = this.schemagraph.createIntegerDomain();
 					component.set_qualifiedName("Integer");
-					rec.add_componentdomain(component).set_name(compNames[i]);
+					rec.add_componentdomains(component).set_name(compNames[i]);
 				}
 				rec.set_qualifiedName(/*
 									 * this.packagemap.get(
@@ -1737,7 +1738,7 @@ public class Ecore2Tg {
 			Comment c = this.schemagraph.createComment();
 			c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 					+ EAnnotationKeys.WAS_BIG_INTEGER + " " + atOrCompName);
-			elForComment.add_comment(c);
+			elForComment.add_comments(c);
 			return dom;
 		}
 		if (this.configuration.isConvertBigNumbers()
@@ -1770,7 +1771,7 @@ public class Ecore2Tg {
 
 			// EdgeClasses can have Supertypes
 			for (EClass parent : eclass.getESuperTypes()) {
-				edgeclass.add_superclass(this.edgeclassmap.get(parent));
+				edgeclass.add_superclasses(this.edgeclassmap.get(parent));
 			}
 
 			// EdgeClasses can have Attributes
@@ -1778,7 +1779,7 @@ public class Ecore2Tg {
 				Attribute activeAttribute = this.transformEAttribute(eatt,
 						edgeclass);
 				if (activeAttribute != null) {
-					edgeclass.add_attribute(activeAttribute);
+					edgeclass.add_attributes(activeAttribute);
 				}
 			}
 
@@ -1877,7 +1878,7 @@ public class Ecore2Tg {
 						com.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 								+ EAnnotationKeys.CONTAINMENT_EXISTS
 								+ fromCont.getName() + " " + contName + " TO");
-						edgeclass.add_comment(com);
+						edgeclass.add_comments(com);
 					}
 					if (toCont != null) {
 						Comment com = this.schemagraph.createComment();
@@ -1888,7 +1889,7 @@ public class Ecore2Tg {
 								+ this.vertexclassmap.get(
 										toCont.getEReferenceType())
 										.get_qualifiedName() + " FROM");
-						edgeclass.add_comment(com);
+						edgeclass.add_comments(com);
 
 					}
 				}
@@ -1901,7 +1902,7 @@ public class Ecore2Tg {
 			supers.add(edgeclass);
 			while (!supers.isEmpty()) {
 				EdgeClass current = supers.iterator().next();
-				for (EdgeClass parent : current.get_superclass()) {
+				for (EdgeClass parent : current.get_superclasses()) {
 					supers.add(parent);
 					if (this.takeRolenameOfToEdge) {
 						if ((erefFromEClass1ToEdge != null)
@@ -2318,8 +2319,8 @@ public class Ecore2Tg {
 			edgeclass.add_to(endOfEdge);
 
 			// Add the incidences to the VertexClasses
-			this.vertexclassmap.get(start).add_incidence(startOfEdge);
-			this.vertexclassmap.get(end).add_incidence(endOfEdge);
+			this.vertexclassmap.get(start).add_incidences(startOfEdge);
+			this.vertexclassmap.get(end).add_incidences(endOfEdge);
 
 			if (toStart != null) {
 				this.ereferencesEdgeClass2start.add(toStart);
@@ -2344,43 +2345,43 @@ public class Ecore2Tg {
 				Comment c = this.schemagraph.createComment();
 				c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 						+ EAnnotationKeys.GENERATE_DIRECTION_TO_START);
-				edgeclass.add_comment(c);
+				edgeclass.add_comments(c);
 			} else if (this.takeRolenameOfToEdge) {
 				Comment c = this.schemagraph.createComment();
 				c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 						+ EAnnotationKeys.REFERENCE_NAME_TO_START_WAS
 						+ toStart.getName());
-				edgeclass.add_comment(c);
+				edgeclass.add_comments(c);
 			}
 			if (fromStart == null) {
 				Comment c = this.schemagraph.createComment();
 				c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 						+ EAnnotationKeys.GENERATE_DIRECTION_FROM_START);
-				edgeclass.add_comment(c);
+				edgeclass.add_comments(c);
 			} else if (!this.takeRolenameOfToEdge) {
 				Comment c = this.schemagraph.createComment();
 				c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 						+ EAnnotationKeys.REFERENCE_NAME_TO_TARGET_WAS
 						+ fromStart.getName());
-				edgeclass.add_comment(c);
+				edgeclass.add_comments(c);
 			}
 			if (toEnd == null) {
 				Comment c = this.schemagraph.createComment();
 				c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 						+ EAnnotationKeys.GENERATE_DIRECTION_TO_END);
-				edgeclass.add_comment(c);
+				edgeclass.add_comments(c);
 			} else if (this.takeRolenameOfToEdge) {
 				Comment c = this.schemagraph.createComment();
 				c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 						+ EAnnotationKeys.REFERENCE_NAME_TO_TARGET_WAS
 						+ toEnd.getName());
-				edgeclass.add_comment(c);
+				edgeclass.add_comments(c);
 			}
 			if (fromEnd == null) {
 				Comment c = this.schemagraph.createComment();
 				c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 						+ EAnnotationKeys.GENERATE_DIRECTION_FROM_END);
-				edgeclass.add_comment(c);
+				edgeclass.add_comments(c);
 			} else if (!this.takeRolenameOfToEdge) { // @TODO wenns so bleiben
 				// soll, annotation key
 				// ändern
@@ -2388,7 +2389,7 @@ public class Ecore2Tg {
 				c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 						+ EAnnotationKeys.REFERENCE_NAME_TO_START_WAS
 						+ fromEnd.getName());
-				edgeclass.add_comment(c);
+				edgeclass.add_comments(c);
 			}
 
 		}// End Iteration over all EClasses that are EdgeClasses
@@ -2410,7 +2411,7 @@ public class Ecore2Tg {
 			for (EClass supereclass : eclass.getESuperTypes()) {
 				VertexClass supervertex = this.vertexclassmap.get(supereclass);
 				if (supervertex != null) {
-					vertexClass.add_superclass(supervertex);
+					vertexClass.add_superclasses(supervertex);
 				} else {
 					System.err.println("Program can not add supertype "
 							+ supereclass + " to "
@@ -2423,7 +2424,7 @@ public class Ecore2Tg {
 				Attribute activeAttribute = this.transformEAttribute(eatt,
 						vertexClass);
 				if (activeAttribute != null) {
-					vertexClass.add_attribute(activeAttribute);
+					vertexClass.add_attributes(activeAttribute);
 				}
 			}
 
@@ -2492,7 +2493,7 @@ public class Ecore2Tg {
 		} else if (this.edgeclassmap.containsKey(start)) {
 			gec = this.edgeclassmap.get(start);
 		}
-		gec.add_attribute(at);
+		gec.add_attributes(at);
 
 	}
 
@@ -2526,8 +2527,8 @@ public class Ecore2Tg {
 		this.fillIncidenceWith1EReference(inc2, ereference);
 
 		// Add the incidences to the VertexClasses
-		this.vertexclassmap.get(eclass1).add_incidence(inc1);
-		this.vertexclassmap.get(eclass2).add_incidence(inc2);
+		this.vertexclassmap.get(eclass1).add_incidences(inc1);
+		this.vertexclassmap.get(eclass2).add_incidences(inc2);
 
 		// Create a new EdgeClass
 		EdgeClass activeEdgeClass = this.schemagraph.createEdgeClass();
@@ -2572,7 +2573,7 @@ public class Ecore2Tg {
 			c.set_text(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 					+ EAnnotationKeys.GENERATE_DIRECTION_FROM);
 		}
-		activeEdgeClass.add_comment(c);
+		activeEdgeClass.add_comments(c);
 
 		// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		// Determine the Name of the EdgeClass
@@ -2687,8 +2688,8 @@ public class Ecore2Tg {
 		this.fillIncidenceWith1EReference(inc2, ereference);
 
 		// Add the incidences to the VertexClasses
-		this.vertexclassmap.get(eclass1).add_incidence(inc1);
-		this.vertexclassmap.get(eclass2).add_incidence(inc2);
+		this.vertexclassmap.get(eclass1).add_incidences(inc1);
+		this.vertexclassmap.get(eclass2).add_incidences(inc2);
 
 		// Annotations
 		this.transformEAnnotations(ereference.getEAnnotations(),
@@ -4162,14 +4163,14 @@ public class Ecore2Tg {
 		list.add(vc);
 
 		// Put all parents in
-		Iterator<? extends VertexClass> it = vc.get_superclass().iterator();
+		Iterator<? extends VertexClass> it = vc.get_superclasses().iterator();
 		while (it.hasNext()) {
 			VertexClass parent = it.next();
 			this.fillSetWithParents(parent, list);
 		}
 
 		// Put all childs in
-		it = vc.get_subclass().iterator();
+		it = vc.get_subclasses().iterator();
 		while (it.hasNext()) {
 			VertexClass child = it.next();
 			this.fillSetWithChildren(child, list);
@@ -4181,7 +4182,7 @@ public class Ecore2Tg {
 		list.add(vc);
 
 		// Put all parents in
-		Iterator<? extends VertexClass> it = vc.get_superclass().iterator();
+		Iterator<? extends VertexClass> it = vc.get_superclasses().iterator();
 		while (it.hasNext()) {
 			VertexClass parent = it.next();
 			this.fillSetWithParents(parent, list);
@@ -4193,7 +4194,7 @@ public class Ecore2Tg {
 		list.add(vc);
 
 		// Put all childs in
-		Iterator<? extends VertexClass> it = vc.get_subclass().iterator();
+		Iterator<? extends VertexClass> it = vc.get_subclasses().iterator();
 		while (it.hasNext()) {
 			VertexClass child = it.next();
 			this.fillSetWithChildren(child, list);

@@ -226,7 +226,7 @@ public class Tg2Ecore {
 
 	public static void main(String[] args) {
 		System.out.println("Tg to Ecore");
-		System.out.println("=========");
+		System.out.println("===========");
 		JGraLab.setLogLevel(Level.OFF);
 
 		// Retrieving all command line options
@@ -497,7 +497,7 @@ public class Tg2Ecore {
 			EPackage oldEpack = this.rootpackage;
 			this.rootpackage = this.rootpackage.getESubpackages().get(0);
 			oldEpack.getESubpackages().remove(this.rootpackage);
-			defaultpackage = defaultpackage.get_subpackage().iterator().next();
+			defaultpackage = defaultpackage.get_subpackages().iterator().next();
 		}
 
 		// Generate nsPrefix and nsURI for all SubPackages
@@ -562,7 +562,7 @@ public class Tg2Ecore {
 
 		if (this.config.isOption_backToEcore()) {
 			Iterator<? extends Comment> ic = this.schemagraph
-					.getGraphClassVertices().iterator().next().get_comment()
+					.getGraphClassVertices().iterator().next().get_comments()
 					.iterator();
 			while (ic.hasNext()) {
 				String comText = ic.next().get_text();
@@ -653,9 +653,9 @@ public class Tg2Ecore {
 				EdgeClass ec = (EdgeClass) v;
 				// If the EdgeClass has sub-, superclasses or attributes,
 				// transform it to an EClass
-				if (ec.get_subclass().iterator().hasNext()
-						|| ec.get_superclass().iterator().hasNext()
-						|| ec.get_attribute().iterator().hasNext()) {
+				if (ec.get_subclasses().iterator().hasNext()
+						|| ec.get_superclasses().iterator().hasNext()
+						|| ec.get_attributes().iterator().hasNext()) {
 					EClass eclass = EcoreFactory.eINSTANCE.createEClass();
 					this.edgeclasses2eclasses.put(ec, eclass);
 					epack.getEClassifiers().add(eclass);
@@ -683,7 +683,7 @@ public class Tg2Ecore {
 			}
 		}
 		// Subpackages
-		for (Package sub : pack.get_subpackage()) {
+		for (Package sub : pack.get_subpackages()) {
 			EPackage esub = this.transformPackagesWithContent(sub);
 			epack.getESubpackages().add(esub);
 		}
@@ -703,7 +703,7 @@ public class Tg2Ecore {
 		boolean found = false;
 		// Look for comments, if it is a back transformation
 		if (this.config.isOption_backToEcore()) {
-			for (Comment c : p.get_comment()) {
+			for (Comment c : p.get_comments()) {
 				if (c.get_text().startsWith(
 						EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 								+ EAnnotationKeys.EPACKAGE_NSPREFIX)) {
@@ -742,7 +742,7 @@ public class Tg2Ecore {
 		}
 
 		// Iterate over all child packages
-		for (Package sub : p.get_subpackage()) {
+		for (Package sub : p.get_subpackages()) {
 			this.generatePackageNS(sub);
 		}
 
@@ -766,7 +766,7 @@ public class Tg2Ecore {
 		// Look for comments
 		boolean returncausecomment = false;
 		if (this.config.isOption_backToEcore()) {
-			for (Comment com : graphClass.get_comment()) {
+			for (Comment com : graphClass.get_comments()) {
 				// Check if GraphClass is generated
 				if (com.get_text().equals(
 						EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
@@ -779,7 +779,7 @@ public class Tg2Ecore {
 				// from Ecore2Tg
 				if (com.get_text().startsWith(
 						EAnnotationKeys.ECORE_2_TG_METADATA_FLAG)) {
-					for (Attribute at : graphClass.get_attribute()) {
+					for (Attribute at : graphClass.get_attributes()) {
 						if (at.get_name().equals("nsPrefix")) {
 							this.rootpackage.setNsPrefix(at.get_defaultValue()
 									.replace("\"", ""));
@@ -801,7 +801,7 @@ public class Tg2Ecore {
 		// Now, an EClass is generated for the GraphClass
 		EClass gc_eclass = EcoreFactory.eINSTANCE.createEClass();
 		gc_eclass.setName(graphClass.get_qualifiedName());
-		for (Attribute at : graphClass.get_attribute()) {
+		for (Attribute at : graphClass.get_attributes()) {
 			if (!at.get_name().equals("nsPrefix")
 					&& !at.get_name().equals("nsURI")) {
 				EStructuralFeature eat = this.transformAttribute(at);
@@ -871,11 +871,11 @@ public class Tg2Ecore {
 				simplename = simplename.substring(0, simplename.length() - 1);
 			}
 			eclass.setName(simplename);
-			for (VertexClass supervc : vc.get_superclass()) {
+			for (VertexClass supervc : vc.get_superclasses()) {
 				eclass.getESuperTypes().add(
 						this.vertexclass2eclass.get(supervc));
 			}
-			for (Attribute at : vc.get_attribute()) {
+			for (Attribute at : vc.get_attributes()) {
 				EStructuralFeature transAt = this.transformAttribute(at);
 				if (transAt != null) {
 					eclass.getEStructuralFeatures().add(transAt);
@@ -886,7 +886,7 @@ public class Tg2Ecore {
 				eclass.setAbstract(true);
 			}
 			// Test if VertexClass is interface
-			for (Comment com : vc.get_comment()) {
+			for (Comment com : vc.get_comments()) {
 				if (com.get_text().equals(
 						EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 								+ EAnnotationKeys.INTERFACE)) {
@@ -923,7 +923,7 @@ public class Tg2Ecore {
 			boolean badFrom = false;
 			boolean badTo = false;
 			if (this.config.isOption_backToEcore()) {
-				for (Comment c : ec.get_comment()) {
+				for (Comment c : ec.get_comments()) {
 					if (c.get_text().equals(
 							EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 									+ EAnnotationKeys.GENERATE_DIRECTION_FROM)) {
@@ -1077,7 +1077,7 @@ public class Tg2Ecore {
 		for (int i = 0; i < eclist.size(); i++) {
 			int position = i;
 			EdgeClass element = eclist.get(i);
-			for (EdgeClass superec : element.get_superclass()) {
+			for (EdgeClass superec : element.get_superclasses()) {
 				int j = eclist.indexOf(superec);
 				if (j > position) {
 					eclist.set(position, superec);
@@ -1117,13 +1117,13 @@ public class Tg2Ecore {
 			eclass.setName(simplename);
 
 			// Attributes
-			for (Attribute at : edgeclass.get_attribute()) {
+			for (Attribute at : edgeclass.get_attributes()) {
 				EStructuralFeature transAt = this.transformAttribute(at);
 				eclass.getEStructuralFeatures().add(transAt);
 			}
 
 			// Supertypes
-			for (EdgeClass sup : edgeclass.get_superclass()) {
+			for (EdgeClass sup : edgeclass.get_superclasses()) {
 				eclass.getESuperTypes().add(this.edgeclasses2eclasses.get(sup));
 			}
 
@@ -1252,7 +1252,7 @@ public class Tg2Ecore {
 		boolean same_as_parent_from_start = false;
 		boolean same_as_parent_from_target = false;
 
-		for (EdgeClass parec : edgeclass.get_superclass()) {
+		for (EdgeClass parec : edgeclass.get_superclasses()) {
 			ConceptualEdgeClass ecconc = this.edgeclasses2concepts.get(parec);
 			if (from_start_ref.getName().equals(
 					"outgoing_" + eclass.getName().toLowerCase())) {
@@ -1321,7 +1321,7 @@ public class Tg2Ecore {
 
 		// Get the inherited incidences
 		if (generate_to_start && generate_from_start) {
-			for (EdgeClass parec : edgeclass.get_superclass()) {
+			for (EdgeClass parec : edgeclass.get_superclasses()) {
 				ConceptualEdgeClass parentconcept = this.edgeclasses2concepts
 						.get(parec);
 				if ((parentconcept.erefFromECToStart != null)
@@ -1334,7 +1334,7 @@ public class Tg2Ecore {
 		// Get the inherited incidences for the concept - necessary for the
 		// model later
 		if (generate_to_end && generate_from_end) {
-			for (EdgeClass parec : edgeclass.get_superclass()) {
+			for (EdgeClass parec : edgeclass.get_superclasses()) {
 				ConceptualEdgeClass parentconcept = this.edgeclasses2concepts
 						.get(parec);
 				if ((parentconcept.erefFromECToTarget != null)
@@ -1595,7 +1595,7 @@ public class Tg2Ecore {
 			// determine which EReferences are generated ones
 			// and shouldn't rest because of that
 			EReference tempHelp = null;
-			for (Comment c : edgeclass.get_comment()) {
+			for (Comment c : edgeclass.get_comments()) {
 				if (c.get_text().equals(
 						EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 								+ EAnnotationKeys.GENERATE_DIRECTION_FROM_END)) {
@@ -1724,7 +1724,7 @@ public class Tg2Ecore {
 							.get_basedomain() instanceof LongDomain))) {
 				Iterator<? extends Comment> it = ((NamedElement) at
 						.getFirstHasAttributeIncidence().getAlpha())
-						.get_comment().iterator();
+						.get_comments().iterator();
 				while (it.hasNext()) {
 					String c = it.next().get_text();
 					if (c.startsWith(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
@@ -1742,7 +1742,7 @@ public class Tg2Ecore {
 							.get_basedomain() instanceof DoubleDomain))) {
 				Iterator<? extends Comment> it = ((NamedElement) at
 						.getFirstHasAttributeIncidence().getAlpha())
-						.get_comment().iterator();
+						.get_comments().iterator();
 				while (it.hasNext()) {
 					String c = it.next().get_text();
 					if (c.startsWith(EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
@@ -1930,7 +1930,7 @@ public class Tg2Ecore {
 
 			EEnumLiteral elit = EcoreFactory.eINSTANCE.createEEnumLiteral();
 			String litname = con;
-			for (Comment com : domain.get_comment()) {
+			for (Comment com : domain.get_comments()) {
 				if (com.get_text().startsWith(
 						EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 								+ EAnnotationKeys.CHANGED_ENUM_LITERAL + con
@@ -2057,7 +2057,7 @@ public class Tg2Ecore {
 	 */
 	private void transformCommentsToEAnnotations(NamedElement source,
 			EModelElement target) {
-		for (Comment comment : source.get_comment()) {
+		for (Comment comment : source.get_comments()) {
 			String text = comment.get_text();
 			this.transformSingleComment(target, text);
 		}
@@ -2076,7 +2076,7 @@ public class Tg2Ecore {
 	 */
 	private void transformCommentsToEAnnotationForGraphClass(GraphClass source,
 			EClass target) {
-		for (Comment comment : source.get_comment()) {
+		for (Comment comment : source.get_comments()) {
 			String text = comment.get_text();
 			if (text.startsWith(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG)) {
 				// Comment contains the Configurations of Ecore2Tg -> no
@@ -2393,20 +2393,21 @@ public class Tg2Ecore {
 	 */
 	private void transformAttributeValues(AttributedElement<?, ?> ae,
 			AttributedElementClass vc, EObject eob) {
-		for (Attribute at : vc.get_attribute()) {
+		for (Attribute at : vc.get_attributes()) {
 			this.transformAttributeValue(ae, eob, at);
 		}
 		if (vc instanceof VertexClass) {
 			for (AttributedElementClass par : ((VertexClass) vc)
-					.get_superclass()) {
-				for (Attribute at : par.get_attribute()) {
+					.get_superclasses()) {
+				for (Attribute at : par.get_attributes()) {
 					this.transformAttributeValue(ae, eob, at);
 				}
 			}
 		}
 		if (vc instanceof EdgeClass) {
-			for (AttributedElementClass par : ((EdgeClass) vc).get_superclass()) {
-				for (Attribute at : par.get_attribute()) {
+			for (AttributedElementClass par : ((EdgeClass) vc)
+					.get_superclasses()) {
+				for (Attribute at : par.get_attributes()) {
 					this.transformAttributeValue(ae, eob, at);
 				}
 			}
@@ -2577,7 +2578,7 @@ public class Tg2Ecore {
 
 			String literal = atvalue.toString();
 
-			for (Comment com : domain.get_comment()) {
+			for (Comment com : domain.get_comments()) {
 				if (com.get_text().startsWith(
 						EAnnotationKeys.ECORE_2_TG_METADATA_FLAG
 								+ EAnnotationKeys.CHANGED_ENUM_LITERAL

@@ -353,14 +353,14 @@ public class Ecore2TgConfiguration {
 		Comment co = schemagraph.createComment();
 		co.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
 				+ " transformation mode: " + this.transopt.toString());
-		defpack.add_comment(co);
+		defpack.add_comments(co);
 
 		// root Package
 		if ((this.schemaName != null) && !this.schemaName.equals("")) {
 			Comment c = schemagraph.createComment();
 			c.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
 					+ " name of taken root package: " + this.schemaName);
-			defpack.add_comment(c);
+			defpack.add_comments(c);
 		}
 
 		// Graphclass
@@ -370,7 +370,7 @@ public class Ecore2TgConfiguration {
 			c.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
 					+ " name of eclass transformed to graphclass: "
 					+ this.nameOfEClassThatIsGraphClass);
-			defpack.add_comment(c);
+			defpack.add_comments(c);
 		}
 
 		// EdgeClass declaration
@@ -383,7 +383,7 @@ public class Ecore2TgConfiguration {
 				text += ec + ", ";
 			}
 			c.set_text(text.substring(0, text.length() - 2));
-			defpack.add_comment(c);
+			defpack.add_comments(c);
 		}
 
 		// Aggregation Influence
@@ -396,7 +396,7 @@ public class Ecore2TgConfiguration {
 				c.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
 						+ " aggregation influence DIRECTION_WHOLE_TO_PART");
 			}
-			defpack.add_comment(c);
+			defpack.add_comments(c);
 		}
 
 		// Directions
@@ -414,7 +414,7 @@ public class Ecore2TgConfiguration {
 				}
 			}
 			c.set_text(text.substring(0, text.length() - 2));
-			defpack.add_comment(c);
+			defpack.add_comments(c);
 		}
 
 		// names of edgeclasses
@@ -427,7 +427,7 @@ public class Ecore2TgConfiguration {
 				text += str + " results in " + this.edgeNames.get(str) + ", ";
 			}
 			c.set_text(text.substring(0, text.length() - 2));
-			defpack.add_comment(c);
+			defpack.add_comments(c);
 		}
 
 		// generate role names
@@ -435,7 +435,7 @@ public class Ecore2TgConfiguration {
 			Comment c = schemagraph.createComment();
 			c.set_text(EAnnotationKeys.ECORE_2_TG_CONFIG_FLAG
 					+ " rolenames are created");
-			defpack.add_comment(c);
+			defpack.add_comments(c);
 		}
 
 		// declare packages
@@ -449,7 +449,7 @@ public class Ecore2TgConfiguration {
 						+ this.reference2packagenameMap.get(str) + ", ";
 			}
 			c.set_text(text.substring(0, text.length() - 2));
-			defpack.add_comment(c);
+			defpack.add_comments(c);
 		}
 
 		// overwriting references
@@ -463,7 +463,7 @@ public class Ecore2TgConfiguration {
 						+ this.erefs2overwritteneref.get(str) + ", ";
 			}
 			c.set_text(text.substring(0, text.length() - 2));
-			defpack.add_comment(c);
+			defpack.add_comments(c);
 		}
 	}
 

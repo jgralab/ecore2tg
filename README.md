@@ -39,7 +39,7 @@ In the new Eclipse instance, you can find the `ecore2tg` wizards by selecting Fi
 
 ## License
 
-Copyright (C) 2007-2012 The JGraLab Team <ist@uni-koblenz.de>
+Copyright (C) 2007-2013 The JGraLab Team <ist@uni-koblenz.de>
 
 Distributed under the General Public License (Version 3), with the following
 additional grant:
