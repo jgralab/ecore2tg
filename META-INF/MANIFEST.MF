@@ -4,13 +4,13 @@ Main-Class: de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg
 Bundle-ManifestVersion: 2
 Bundle-Name: Ecore2Tg
 Bundle-SymbolicName: de.uni_koblenz.jgralab.ecore2tg;singleton:=true
-Bundle-Version: 0.0.3
+Bundle-Version: 0.0.4
 Bundle-Activator: de.uni_koblenz.jgralab.utilities.ecore2tg.plugin.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.emf.ecore;bundle-version="2.7.0",
  org.eclipse.emf.ecore.xmi;bundle-version="2.7.0",
  org.junit,
- de.uni_koblenz.jgralab;bundle-version="7.3.0"
+ de.uni_koblenz.jgralab;bundle-version="7.3.2"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
