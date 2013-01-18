@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.riediger.plist.PList;
-import org.riediger.plist.PListDict;
-import org.riediger.plist.PListException;
+import de.uni_koblenz.ist.utilities.plist.PList;
+import de.uni_koblenz.ist.utilities.plist.PListDict;
+import de.uni_koblenz.ist.utilities.plist.PListException;
 
 public class Tg2EcoreConfiguration {
 

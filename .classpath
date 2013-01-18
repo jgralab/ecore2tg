@@ -3,7 +3,6 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="testit"/>
-	<classpathentry kind="lib" path="/jgralab/lib/plist/org.riediger.plist.jar"/>
 	<classpathentry kind="lib" path="/jgralab/lib/apache/commons/cli/commons-cli-1.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>

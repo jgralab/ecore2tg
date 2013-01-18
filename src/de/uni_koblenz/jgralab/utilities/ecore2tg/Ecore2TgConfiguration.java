@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
-import org.riediger.plist.PList;
-import org.riediger.plist.PListDict;
-import org.riediger.plist.PListException;
-
+import de.uni_koblenz.ist.utilities.plist.PList;
+import de.uni_koblenz.ist.utilities.plist.PListDict;
+import de.uni_koblenz.ist.utilities.plist.PListException;
 import de.uni_koblenz.jgralab.grumlschema.SchemaGraph;
 import de.uni_koblenz.jgralab.grumlschema.structure.Comment;
 import de.uni_koblenz.jgralab.grumlschema.structure.GraphClass;
