@@ -35,6 +35,7 @@ public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 
 	private Button buttonTransformGC;
 	private Button buttonMakeGC2Root;
+	private Button buttonNoEClassForEdgeClasses;
 
 	private Text textRootPackageName;
 	private Text textRootPackageNsPrefix;
@@ -55,6 +56,7 @@ public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 		layout.numColumns = 1;
 
 		this.createOneRoleToUniControl();
+		this.createNoEClassesForEdgeClassesControl();
 		this.createGraphClassControls();
 		this.createRootPackageControls();
 
@@ -70,6 +72,13 @@ public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 		this.buttonOneRoleToUni = new Button(this.container, SWT.CHECK);
 		this.buttonOneRoleToUni
 				.setText("Transform Edges with only one rolename to unidirectional EReferences");
+	}
+
+	private void createNoEClassesForEdgeClassesControl() {
+		this.buttonNoEClassForEdgeClasses = new Button(this.container,
+				SWT.CHECK);
+		this.buttonNoEClassForEdgeClasses
+				.setText("Transform all EdgeClasses to EReferences and not to EClasses. (Forget about attributes and generalizations)");
 	}
 
 	/**
@@ -162,12 +171,20 @@ public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 			this.buttonOneRoleToUni.setSelection(false);
 		}
 
+		// Option: no EClasses for EdgeClasses
+		if (conf.isOption_noEClassForEdgeClasses()) {
+			this.buttonNoEClassForEdgeClasses.setSelection(true);
+		} else {
+			this.buttonNoEClassForEdgeClasses.setSelection(false);
+		}
+
 		// Option: transform GraphClass
 		if (conf.isOption_transformGraphClass()) {
 			this.buttonTransformGC.setSelection(true);
 		} else {
 			this.buttonTransformGC.setSelection(false);
 		}
+
 		// Option: make GraphClass to root
 		if (conf.isOption_makeGraphClassToRootElement()) {
 			this.buttonMakeGC2Root.setSelection(true);
@@ -180,11 +197,13 @@ public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 				&& !conf.getOption_rootpackageName().equals("")) {
 			this.textRootPackageName.setText(conf.getOption_rootpackageName());
 		}
+
 		// Option: root package nsPrefix
 		if (conf.getOption_nsPrefix() != null
 				&& !conf.getOption_nsPrefix().equals("")) {
 			this.textRootPackageNsPrefix.setText(conf.getOption_nsPrefix());
 		}
+
 		// Option: root package nsURI
 		if (conf.getOption_nsURI() != null
 				&& !conf.getOption_nsURI().equals("")) {
@@ -210,6 +229,10 @@ public class Tg2EcoreWizardPage2GenOptions extends WizardPage {
 				.getSelection());
 		// Option: make GraphClass to root
 		conf.setOption_makeGraphClassToRootElement(this.buttonMakeGC2Root
+				.getSelection());
+
+		// Option: no eclasses for edgeclasses
+		conf.setOption_noEClassForEdgeClasses(this.buttonNoEClassForEdgeClasses
 				.getSelection());
 
 		// Option: root package name

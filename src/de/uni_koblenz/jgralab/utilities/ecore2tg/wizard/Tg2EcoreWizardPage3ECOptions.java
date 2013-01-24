@@ -120,19 +120,22 @@ public class Tg2EcoreWizardPage3ECOptions extends WizardPage {
 	public void enterConfiguration(Tg2EcoreConfiguration conf) {
 		ArrayList<EcInfoStructure> ecInfos = new ArrayList<EcInfoStructure>();
 		Tg2EcoreWizard wiz = (Tg2EcoreWizard) this.getWizard();
-		for (EdgeClass ec : wiz.getSchema().getGraphClass().getEdgeClasses()) {
-			if (ec.hasAttributes() || !ec.getAllSuperClasses().isEmpty()
-					|| !ec.getAllSubClasses().isEmpty()) {
-				EcInfoStructure str = new EcInfoStructure(ec);
-				if (conf.getOption_definerolenames().containsKey(
-						ec.getQualifiedName())) {
-					HashMap<EdgeDirection, String> map = conf
-							.getOption_definerolenames().get(
-									ec.getQualifiedName());
-					str.addFromRoleName = map.get(EdgeDirection.From);
-					str.addToRoleName = map.get(EdgeDirection.To);
+		if (!conf.isOption_noEClassForEdgeClasses()) {
+			for (EdgeClass ec : wiz.getSchema().getGraphClass()
+					.getEdgeClasses()) {
+				if (ec.hasAttributes() || !ec.getAllSuperClasses().isEmpty()
+						|| !ec.getAllSubClasses().isEmpty()) {
+					EcInfoStructure str = new EcInfoStructure(ec);
+					if (conf.getOption_definerolenames().containsKey(
+							ec.getQualifiedName())) {
+						HashMap<EdgeDirection, String> map = conf
+								.getOption_definerolenames().get(
+										ec.getQualifiedName());
+						str.addFromRoleName = map.get(EdgeDirection.From);
+						str.addToRoleName = map.get(EdgeDirection.To);
+					}
+					ecInfos.add(str);
 				}
-				ecInfos.add(str);
 			}
 		}
 		this.ecTableViewer.setInput(ecInfos.toArray(new EcInfoStructure[] {}));

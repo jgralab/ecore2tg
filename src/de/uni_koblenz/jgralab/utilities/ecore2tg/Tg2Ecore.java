@@ -98,6 +98,7 @@ public class Tg2Ecore {
 	private static final String OPTION_NSPREFIX = "p";
 	private static final String OPTION_NSURI = "n";
 	private static final String OPTION_DEFINEROLENAME = "d";
+	private static final String OPTION_NOECLASSFOREDGECLASSES = "nec";
 
 	/**
 	 * Processes all command line parameters and returns a {@link CommandLine}
@@ -186,6 +187,16 @@ public class Tg2Ecore {
 		gcroot.setRequired(false);
 		oh.addOption(gcroot);
 
+		Option noec = new Option(
+				OPTION_NOECLASSFOREDGECLASSES,
+				"no_eclasses_for_edgeclasses",
+				false,
+				"(optional): EdgeClasses are not transformed to EClasses. "
+						+ "Attributes and inheritance relationships are lost. "
+						+ "only top level EdgeClasses exist as EReferences after the transformation.");
+		noec.setRequired(false);
+		oh.addOption(noec);
+
 		// OPTION_ROOTPACKAGENAME = "rn";
 		Option rpn = new Option(OPTION_ROOTPACKAGENAME, "rootpackagename",
 				true, "(optional): name of the rootpackage");
@@ -263,6 +274,8 @@ public class Tg2Ecore {
 				.hasOption(OPTION_TRANSFORMGRAPHCLASS));
 		config.setOption_makeGraphClassToRootElement(cli
 				.hasOption(OPTION_MAKEGRAPHCLASS2ROOT));
+		config.setOption_noEClassForEdgeClasses(cli
+				.hasOption(OPTION_NOECLASSFOREDGECLASSES));
 
 		String rn = cli.getOptionValue(OPTION_ROOTPACKAGENAME);
 		if (rn != null) {
@@ -653,12 +666,21 @@ public class Tg2Ecore {
 				EdgeClass ec = (EdgeClass) v;
 				// If the EdgeClass has sub-, superclasses or attributes,
 				// transform it to an EClass
-				if (ec.get_subclasses().iterator().hasNext()
-						|| ec.get_superclasses().iterator().hasNext()
-						|| ec.get_attributes().iterator().hasNext()) {
-					EClass eclass = EcoreFactory.eINSTANCE.createEClass();
-					this.edgeclasses2eclasses.put(ec, eclass);
-					epack.getEClassifiers().add(eclass);
+				if ((ec.get_subclasses().iterator().hasNext()
+						|| ec.get_superclasses().iterator().hasNext() || ec
+						.get_attributes().iterator().hasNext())) {
+					if (this.config.isOption_noEClassForEdgeClasses()) {
+						if (!ec.get_superclasses().iterator().hasNext()) {
+							EReference[] refs = {
+									EcoreFactory.eINSTANCE.createEReference(),
+									EcoreFactory.eINSTANCE.createEReference() };
+							this.edgeclasses2ereferen.put(ec, refs);
+						}
+					} else {
+						EClass eclass = EcoreFactory.eINSTANCE.createEClass();
+						this.edgeclasses2eclasses.put(ec, eclass);
+						epack.getEClassifiers().add(eclass);
+					}
 				}
 				// If not, just make two EReferences out of it
 				else {
@@ -2284,9 +2306,28 @@ public class Tg2Ecore {
 			}
 			// transform to links
 			else {
-				this.transformEdgeToLinks(edgeclass, startob, endob);
-
+				if (this.edgeclasses2ereferen.containsKey(edgeclass)) {
+					this.transformEdgeToLinks(edgeclass, startob, endob);
+				} else if (this.config.isOption_noEClassForEdgeClasses()) {
+					ArrayList<EdgeClass> topSuperClasses = new ArrayList<EdgeClass>();
+					this.getTopSuperEdgeClasses(edgeclass, topSuperClasses);
+					for (EdgeClass ec : topSuperClasses) {
+						this.transformEdgeToLinks(ec, startob, endob);
+					}
+				} else {
+					throw new RuntimeException("Should never happen.");
+				}
 			}
+		}
+	}
+
+	private void getTopSuperEdgeClasses(EdgeClass ec, List<EdgeClass> tops) {
+		if (ec.get_superclasses().iterator().hasNext()) {
+			for (EdgeClass sup : ec.get_superclasses()) {
+				this.getTopSuperEdgeClasses(sup, tops);
+			}
+		} else {
+			tops.add(ec);
 		}
 	}
 
@@ -2397,20 +2438,36 @@ public class Tg2Ecore {
 			this.transformAttributeValue(ae, eob, at);
 		}
 		if (vc instanceof VertexClass) {
-			for (AttributedElementClass par : ((VertexClass) vc)
-					.get_superclasses()) {
-				for (Attribute at : par.get_attributes()) {
-					this.transformAttributeValue(ae, eob, at);
-				}
-			}
+			this.transformAttributeValueForSuperVertexClassesAttributes(
+					(VertexClass) vc, (Vertex) ae, eob);
 		}
 		if (vc instanceof EdgeClass) {
-			for (AttributedElementClass par : ((EdgeClass) vc)
-					.get_superclasses()) {
-				for (Attribute at : par.get_attributes()) {
-					this.transformAttributeValue(ae, eob, at);
-				}
+			this.transformAttributeValueForSuperEdgeClassesAttributes(
+					(EdgeClass) vc, (Edge) ae, eob);
+		}
+	}
+
+	private void transformAttributeValueForSuperVertexClassesAttributes(
+			VertexClass vc, Vertex ae, EObject eob) {
+		for (AttributedElementClass par : vc.get_superclasses()) {
+			for (Attribute at : par.get_attributes()) {
+				this.transformAttributeValue(ae, eob, at);
+
 			}
+			this.transformAttributeValueForSuperVertexClassesAttributes(
+					(VertexClass) par, ae, eob);
+		}
+	}
+
+	private void transformAttributeValueForSuperEdgeClassesAttributes(
+			EdgeClass vc, Edge ae, EObject eob) {
+		for (AttributedElementClass par : vc.get_superclasses()) {
+			for (Attribute at : par.get_attributes()) {
+				this.transformAttributeValue(ae, eob, at);
+
+			}
+			this.transformAttributeValueForSuperEdgeClassesAttributes(
+					(EdgeClass) par, ae, eob);
 		}
 	}
 
@@ -2545,6 +2602,7 @@ public class Tg2Ecore {
 				return list;
 			} else {
 				// eob.eSet(eattr, atvalue);
+
 				return atvalue;
 			}
 		}
@@ -2564,7 +2622,7 @@ public class Tg2Ecore {
 				return list;
 			} else {
 				// eob.eSet(eattr, atvalue);
-				return atvalue;
+				return new ArrayList<Object>(((Set<?>) atvalue));
 			}
 		}
 		// ++++++++++++++

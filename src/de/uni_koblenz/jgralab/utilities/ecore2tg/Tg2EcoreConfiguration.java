@@ -42,6 +42,12 @@ public class Tg2EcoreConfiguration {
 	private boolean option_makeGraphClassToRootElement = false;
 
 	/**
+	 * Option to forbid the transformation of EdgeClasses to EClasses. If set,
+	 * EdgeClass attributes and inheritance relationships are lost
+	 */
+	private boolean option_noEClassForEdgeClasses = false;
+
+	/**
 	 * Option to set the name of the resulting rootpackage, if no name is set
 	 * "rootpackage" is chosen.
 	 */
@@ -155,6 +161,15 @@ public class Tg2EcoreConfiguration {
 		this.option_makeGraphClassToRootElement = mg;
 	}
 
+	public boolean isOption_noEClassForEdgeClasses() {
+		return this.option_noEClassForEdgeClasses;
+	}
+
+	public void setOption_noEClassForEdgeClasses(
+			boolean option_noEClassForEdgeClasses) {
+		this.option_noEClassForEdgeClasses = option_noEClassForEdgeClasses;
+	}
+
 	/**
 	 * @return the name of the rootpackage of the resulting metamodel
 	 */
@@ -249,6 +264,10 @@ public class Tg2EcoreConfiguration {
 			ds.put("transform_one_role_to_uni", true);
 		}
 
+		if (this.option_noEClassForEdgeClasses) {
+			ds.put("no_eclasses_for_edgeclasses", true);
+		}
+
 		if (this.option_transformGraphClass) {
 			ds.put("transform_graphclass", true);
 		} else {
@@ -323,6 +342,10 @@ public class Tg2EcoreConfiguration {
 		if (ds.containsKey("transform_one_role_to_uni")) {
 			config.setOption_oneroleToUni(ds
 					.getBoolean("transform_one_role_to_uni"));
+		}
+		if (ds.containsKey("no_eclasses_for_edgeclasses")) {
+			config.setOption_noEClassForEdgeClasses(ds
+					.getBoolean("no_eclasses_for_edgeclasses"));
 		}
 		if (ds.containsKey("transform_graphclass")) {
 			config.setOption_transformGraphClass(ds
