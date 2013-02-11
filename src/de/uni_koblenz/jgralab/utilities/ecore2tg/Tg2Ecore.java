@@ -2735,7 +2735,9 @@ public class Tg2Ecore {
 	 *            to save place
 	 */
 	public void saveEcoreModel(ArrayList<EObject> eobs, String path) {
-		if (path.substring(path.lastIndexOf(File.separator)).contains(".")) {
+		if ((path.contains(File.separator) && path.substring(
+				path.lastIndexOf(File.separator)).contains("."))
+				|| (!path.contains(File.separator) && path.contains("."))) {
 			this.saveEcoreModel(eobs, path, false);
 		} else {
 			this.saveEcoreModel(eobs, path, true);
