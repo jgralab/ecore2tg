@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="ecore2tg" basedir="." default="build">
+
+<property name="projectname" value="ecore2tg" />
+<property name="main.fq" value="de.uni_koblenz.jgralab.utilities.ecore2tg.Ecore2Tg" />
+
+<property name="compileexcludes"
+      value=
+"de/uni_koblenz/jgralab/utilities/ecore2tg/plugin/*,de/uni_koblenz/jgralab/utilities/ecore2tg/wizard/*,
+de/uni_koblenz/jgralab/utilities/ecore2tg/wizard/jfaceviewerprovider/*" />
+
+<property name="manifest.static" value="true" />
+
+<import file="../jgralab/common.xml" />
+
+
+<path id="classpathExtension">
+
+</path>
+
+
+<target name="unjar" depends="common.unjar">
+<unjar dest="${tmp.dir}" src="${jgralab.location}"/>
+<delete dir="${tmp.dir}/META-INF"/>
+</target>
+
+</project>
