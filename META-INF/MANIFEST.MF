@@ -11,6 +11,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.emf.ecore;bundle-version="2.7.0",
  org.eclipse.emf.ecore.xmi;bundle-version="2.7.0",
  org.junit,
- de.uni_koblenz.jgralab.eclipseplugin;bundle-version="7.4.1"
+ de.uni_koblenz.jgralab;bundle-version="7.6.3"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: de.uni_koblenz.jgralab.utilities.ecore2tg,
+ de.uni_koblenz.jgralab.utilities.ecore2tg.wizard
